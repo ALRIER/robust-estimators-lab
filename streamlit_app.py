@@ -1,10 +1,11 @@
 import streamlit as st
+import time
 import plotly.graph_objects as go
 import numpy as np
 from src.synthetic_data import DemoScenario, draw_sample
 from src.estimators import location_estimates
-from src.mini_ga import MiniGAConfig, demo_ga
-from src.simplex import demo_surface_with_population
+from src.mini_ga import MiniGAConfig, run_pedagogical_ga
+from src.simplex import empirical_landscape, landscape_figure
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -14,6 +15,29 @@ st.markdown("""<style>
 </style>""", unsafe_allow_html=True)
 st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
+
+@st.cache_data(show_spinner="Evaluating the pedagogical simplex landscape…")
+def build_layer2_demo(family, contamination, rate, scale, n, ga_population, coverage, metric, seed):
+    """Build a cached, scenario-conditioned mini-GA demonstration."""
+    scenario = DemoScenario(family, contamination, rate, scale, n, seed)
+    sample = draw_sample(scenario)
+    rng = np.random.default_rng(seed + 77)
+    bootstrap_count = {"HPF1-style · 25%": 18, "HPF2-style · 50%": 36, "Full demo · 90%": 60}[coverage]
+    # The three visible estimators are a teaching slice, not the 26-D thesis vector.
+    locations = []
+    for _ in range(bootstrap_count):
+        x = sample.values[rng.integers(0, len(sample.values), len(sample.values))]
+        e = location_estimates(x)
+        locations.append([e["Mean"], e["Huber"], e["Biweight"]])
+    locations = np.asarray(locations)
+    metric_fn = (lambda weights: np.quantile((locations @ weights.T - sample.true_location) ** 2, .95, axis=0)) if metric == "q95" else (lambda weights: ((locations @ weights.T - sample.true_location) ** 2).mean(axis=0))
+    config = MiniGAConfig(population_size=ga_population, generations=40, mutation_rate=.18, seed=seed)
+    run = run_pedagogical_ga(metric_fn, config)
+    surface = empirical_landscape(locations - sample.true_location, metric=metric, step=.025)
+    singleton = np.eye(3)
+    benchmark_index = int(np.argmin(metric_fn(singleton)))
+    return {"run": run, "surface": surface, "locations": locations, "labels": ["Mean", "Huber", "Biweight"], "benchmark": singleton[benchmark_index], "benchmark_label": ["Mean", "Huber", "Biweight"][benchmark_index], "bootstrap_count": bootstrap_count}
+
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
 
 with tabs[0]:
@@ -45,18 +69,50 @@ with tabs[0]:
         st.subheader("Why this matters"); st.info("No single estimator is uniformly best. The data-generating regime can change the ranking of estimators.")
 
 with tabs[1]:
-    st.markdown('<span class="badge demo">DEMO MODE — pedagogical simulation</span>', unsafe_allow_html=True)
-    st.caption("Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
-    run=demo_ga(MiniGAConfig())
-    gen=st.slider("Generation",0,30,30)
-    st.plotly_chart(demo_surface_with_population(run['populations'][gen],run['best_path'][:gen+1]),use_container_width=True)
-    c,d=st.columns([2,1])
-    with c:
-        cv=go.Figure(go.Scatter(x=run['generations'],y=run['best_scores'],mode='lines',line=dict(color='#e6533f')));cv.add_vline(x=gen,line_dash='dash');cv.update_layout(title='Convergence — pedagogical objective',height=300,xaxis_title='Generation',yaxis_title='Demo error')
-        st.plotly_chart(cv,use_container_width=True)
-    with d:
-        w=run['best_path'][gen];st.metric('Best demo error',f"{run['best_scores'][gen]:.4f}");st.write(f"A Biweight: {w[0]:.2f}  ");st.write(f"B Median: {w[1]:.2f}  ");st.write(f"C Trimean: {w[2]:.2f}")
-        st.warning("This is not a recorded thesis trajectory. Real final weights appear in Thesis results.")
+    st.markdown('<span class="badge demo">DEMO MODE — scenario-conditioned pedagogical simulation</span>', unsafe_allow_html=True)
+    st.caption("Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only. The animated path is a live mini-GA, not a recorded thesis trajectory.")
+    controls, visual = st.columns([1, 3])
+    with controls:
+        st.subheader("Build a search regime")
+        l2_family = st.selectbox("Family", ["normal", "lognormal", "weibull", "exgaussian"], key="l2_family")
+        l2_contam = st.selectbox("Contamination structure", ["none", "upper_tail", "symmetric", "bimodal", "point_mass"], key="l2_contam")
+        l2_rate = st.slider("Contamination rate", 0.0, .30, .10, .01, key="l2_rate")
+        l2_scale = st.slider("Outlier scale", 1.5, 20.0, 10.0, .5, key="l2_scale")
+        l2_n = st.select_slider("Sample size", [300, 500, 1000, 2500, 5000], value=1000, key="l2_n")
+        l2_pop = st.select_slider("GA population", [36, 54, 72, 96], value=72, key="l2_pop")
+        l2_coverage = st.selectbox("Screening budget (HPF analogy)", ["HPF1-style · 25%", "HPF2-style · 50%", "Full demo · 90%"], index=1, help="HPF1/HPF2 are screening stages in the thesis. Here the setting controls only the amount of demo resampling; it is not a thesis replay.")
+        l2_metric = st.radio("Demo objective", ["q95", "mean"], horizontal=True, format_func=lambda x: "q95(MSE) — tail risk" if x == "q95" else "Mean MSE")
+        l2_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l2_seed"))
+        load = st.button("Load this regime", type="primary", use_container_width=True)
+    key = (l2_family,l2_contam,l2_rate,l2_scale,l2_n,l2_pop,l2_coverage,l2_metric,l2_seed)
+    if "l2_key" not in st.session_state or st.session_state.l2_key != key or load:
+        st.session_state.l2_key = key; st.session_state.l2_frame = 0; st.session_state.l2_playing = False
+    demo = build_layer2_demo(*key)
+    with visual:
+        play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
+        if play_col.button("▶ Play GA", use_container_width=True): st.session_state.l2_playing = True
+        if pause_col.button("❚❚ Pause", use_container_width=True): st.session_state.l2_playing = False
+        if reset_col.button("↺ Reset", use_container_width=True): st.session_state.l2_frame = 0; st.session_state.l2_playing = False
+        speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal")
+        frame = st.slider("Generation (manual scrubber)", 0, len(demo["run"]["generations"]) - 1, int(st.session_state.l2_frame), key="l2_scrubber")
+        st.session_state.l2_frame = frame
+        objective = (lambda weights: np.quantile((demo["locations"] @ weights.T) ** 2, .95, axis=0)) if l2_metric == "q95" else (lambda weights: ((demo["locations"] @ weights.T) ** 2).mean(axis=0))
+        fig = landscape_figure(demo["surface"], demo["run"]["populations"][frame], demo["run"]["best_path"][:frame+1], objective, demo["labels"], demo["benchmark"])
+        st.plotly_chart(fig, use_container_width=True)
+    a,b,c,d = st.columns(4)
+    a.metric("Generation", f"{frame} / 40")
+    b.metric("Best demo objective", f"{demo['run']['best_scores'][frame]:.5f}")
+    c.metric("Population diversity", f"{demo['run']['diversity'][frame]:.4f}")
+    d.metric("Best single benchmark", demo["benchmark_label"])
+    st.info(f"Narration cue: the black points are the generation-{frame} population. The red line is the best solution found so far. Each candidate is compared against the selected {l2_metric} objective over {demo['bootstrap_count']} resampled datasets; the yellow diamond is the strongest single-estimator benchmark in this pedagogical slice.")
+    if st.session_state.l2_playing:
+        if st.session_state.l2_frame < 40:
+            time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
+            st.session_state.l2_frame += 1
+            st.rerun()
+        else:
+            st.session_state.l2_playing = False
+            st.success("Demo run complete. Scrub the timeline or change the regime to compare a new search landscape.")
 
 with tabs[2]:
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
