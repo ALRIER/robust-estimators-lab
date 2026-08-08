@@ -85,17 +85,21 @@ with tabs[1]:
         l2_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l2_seed"))
         load = st.button("Load this regime", type="primary", use_container_width=True)
     key = (l2_family,l2_contam,l2_rate,l2_scale,l2_n,l2_pop,l2_coverage,l2_metric,l2_seed)
+    # Apply queued animation progress before the generation widget is created.
+    if "l2_next_frame" in st.session_state:
+        st.session_state.l2_scrubber = st.session_state.pop("l2_next_frame")
     if "l2_key" not in st.session_state or st.session_state.l2_key != key or load:
-        st.session_state.l2_key = key; st.session_state.l2_frame = 0; st.session_state.l2_playing = False
+        st.session_state.l2_key = key
+        st.session_state.l2_scrubber = 0
+        st.session_state.l2_playing = False
     demo = build_layer2_demo(*key)
     with visual:
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True): st.session_state.l2_playing = False
-        if reset_col.button("↺ Reset", use_container_width=True): st.session_state.l2_frame = 0; st.session_state.l2_playing = False
+        if reset_col.button("↺ Reset", use_container_width=True): st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
         speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal")
-        frame = st.slider("Generation (manual scrubber)", 0, len(demo["run"]["generations"]) - 1, int(st.session_state.l2_frame), key="l2_scrubber")
-        st.session_state.l2_frame = frame
+        frame = st.slider("Generation (manual scrubber)", 0, len(demo["run"]["generations"]) - 1, key="l2_scrubber")
         objective = (lambda weights: np.quantile((demo["locations"] @ weights.T) ** 2, .95, axis=0)) if l2_metric == "q95" else (lambda weights: ((demo["locations"] @ weights.T) ** 2).mean(axis=0))
         fig = landscape_figure(demo["surface"], demo["run"]["populations"][frame], demo["run"]["best_path"][:frame+1], objective, demo["labels"], demo["benchmark"])
         st.plotly_chart(fig, use_container_width=True)
@@ -106,9 +110,10 @@ with tabs[1]:
     d.metric("Best single benchmark", demo["benchmark_label"])
     st.info(f"Narration cue: the black points are the generation-{frame} population. The red line is the best solution found so far. Each candidate is compared against the selected {l2_metric} objective over {demo['bootstrap_count']} resampled datasets; the yellow diamond is the strongest single-estimator benchmark in this pedagogical slice.")
     if st.session_state.l2_playing:
-        if st.session_state.l2_frame < 40:
+        if frame < 40:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
-            st.session_state.l2_frame += 1
+            # A widget value cannot be mutated after rendering; queue it for the next rerun.
+            st.session_state.l2_next_frame = frame + 1
             st.rerun()
         else:
             st.session_state.l2_playing = False
