@@ -41,32 +41,70 @@ def build_layer2_demo(family, contamination, rate, scale, n, ga_population, cove
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
 
 with tabs[0]:
-    st.markdown('<span class="badge demo">DEMO MODE — pedagogical simulation</span>', unsafe_allow_html=True)
-    a,b=st.columns([1,3])
-    with a:
-        family=st.selectbox("Distribution family",["normal","lognormal","weibull","exgaussian"])
-        contamination=st.selectbox("Contamination",["none","upper_tail","symmetric","bimodal","point_mass"])
-        rate=st.slider("Contamination rate",0.,.30,.10,.01); scale=st.slider("Outlier scale",1.5,20.,10.,.5)
-        n=st.select_slider("Sample size",[100,200,500,1000,1500],value=500)
-        seed=st.number_input("Demo seed",value=20260808,step=1)
-    sample=draw_sample(DemoScenario(family,contamination,float(rate),float(scale),int(n),int(seed)))
-    est=location_estimates(sample.values)
-    with b:
-        metrics=st.columns(5)
-        for col,(name,value) in zip(metrics,est.items()): col.metric(name,f"{value:.3f}")
+    st.markdown('<span class="badge demo">DEMO MODE — pedagogical sample construction</span>', unsafe_allow_html=True)
+    st.caption("Build a regime, then watch inliers accumulate before the selected contamination is added. For skewed families this shows a density profile, not a symmetric bell curve.")
+    controls, visual = st.columns([1, 3])
+    with controls:
+        st.subheader("Build a data-generating regime")
+        l1_family = st.selectbox("Distribution family", ["normal", "lognormal", "weibull", "exgaussian"], key="l1_family")
+        l1_contam = st.selectbox("Contamination structure", ["none", "upper_tail", "symmetric", "bimodal", "point_mass"], index=1, key="l1_contam")
+        l1_rate = st.slider("Contamination rate", 0.0, .30, .10, .01, key="l1_rate")
+        l1_scale = st.slider("Outlier scale", 1.5, 20.0, 10.0, .5, key="l1_scale")
+        l1_n = st.select_slider("Population / sample size", [100, 300, 500, 1000, 1500, 2500, 5000], value=1500, key="l1_n")
+        l1_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l1_seed"))
+        rebuild = st.button("Generate this regime", type="primary", use_container_width=True)
+    l1_key=(l1_family,l1_contam,l1_rate,l1_scale,l1_n,l1_seed)
+    if "l1_next_frame" in st.session_state:
+        st.session_state.l1_scrubber=st.session_state.pop("l1_next_frame")
+    if "l1_key" not in st.session_state or st.session_state.l1_key != l1_key or rebuild:
+        st.session_state.l1_key=l1_key; st.session_state.l1_scrubber=0; st.session_state.l1_playing=False
+    sample=draw_sample(DemoScenario(l1_family,l1_contam,float(l1_rate),float(l1_scale),int(l1_n),l1_seed))
+    # Pedagogical ordering: the baseline distribution forms first, contamination follows.
+    build_order=np.r_[np.flatnonzero(~sample.is_outlier),np.flatnonzero(sample.is_outlier)]
+    batch=max(20,int(np.ceil(l1_n/50)))
+    frames=list(range(0,l1_n+1,batch))
+    if frames[-1] != l1_n: frames.append(l1_n)
+    with visual:
+        play,pause,reset,speed_col=st.columns([1,1,1,1.4])
+        if play.button("▶ Play construction",use_container_width=True,key="l1_play"): st.session_state.l1_playing=True
+        if pause.button("❚❚ Pause",use_container_width=True,key="l1_pause"): st.session_state.l1_playing=False
+        if reset.button("↺ Reset",use_container_width=True,key="l1_reset"): st.session_state.l1_scrubber=0; st.session_state.l1_playing=False
+        l1_speed=speed_col.select_slider("Animation pace",["Slow","Normal","Fast"],value="Normal",key="l1_speed")
+        frame_index=st.slider("Construction progress",0,len(frames)-1,key="l1_scrubber")
+        visible_ids=build_order[:frames[frame_index]]
+        values=sample.values[visible_ids]; visible_outliers=sample.is_outlier[visible_ids]
+        phase="baseline inliers" if not visible_outliers.any() else ("contamination arriving" if (~visible_outliers).any() else "contamination segment")
+        st.caption(f"Step {frame_index+1} / {len(frames)} · {len(values):,} of {l1_n:,} observations · phase: {phase}")
         fig=go.Figure()
-        fig.add_trace(go.Histogram(x=sample.values[~sample.is_outlier],nbinsx=45,histnorm='probability density',name='Inliers',opacity=.6,marker_color='#3576a8'))
-        if sample.is_outlier.any(): fig.add_trace(go.Histogram(x=sample.values[sample.is_outlier],nbinsx=45,histnorm='probability density',name='Outliers',opacity=.75,marker_color='#e6533f'))
-        for name,value in est.items(): fig.add_vline(x=value,line_width=2,annotation_text=name,annotation_position='top')
-        fig.add_vline(x=sample.true_location,line_dash='dash',annotation_text='True location')
-        fig.update_layout(barmode='overlay',height=420,xaxis_title='Value',yaxis_title='Density',margin=dict(l=10,r=10,t=35,b=20))
+        if (~visible_outliers).any(): fig.add_trace(go.Histogram(x=values[~visible_outliers],nbinsx=48,histnorm='probability density',name='Inliers',opacity=.62,marker_color='#3576a8'))
+        if visible_outliers.any(): fig.add_trace(go.Histogram(x=values[visible_outliers],nbinsx=48,histnorm='probability density',name='Contamination',opacity=.78,marker_color='#e6533f'))
+        if len(values)>8:
+            current=location_estimates(values)
+            for name,value in current.items(): fig.add_vline(x=value,line_width=1.5,line_dash='dot',annotation_text=name,annotation_position='top')
+        fig.add_vline(x=sample.true_location,line_dash='dash',line_width=2,annotation_text='Synthetic target')
+        fig.update_layout(barmode='overlay',height=460,xaxis_title='Observed value',yaxis_title='Density',margin=dict(l=10,r=10,t=35,b=20),legend=dict(orientation='h',y=1.02))
         st.plotly_chart(fig,use_container_width=True)
-    c,d=st.columns([1.4,1])
-    with c:
-        errors={name:abs(value-sample.true_location) for name,value in est.items()}
-        st.plotly_chart(go.Figure(go.Bar(x=list(errors.values()),y=list(errors.keys()),orientation='h',marker_color='#e6533f')).update_layout(title='Absolute deviation from synthetic target',height=300,margin=dict(l=10,r=10,t=35,b=20)),use_container_width=True)
-    with d:
-        st.subheader("Why this matters"); st.info("No single estimator is uniformly best. The data-generating regime can change the ranking of estimators.")
+    p1,p2=st.columns([1.45,1])
+    with p1:
+        strip=go.Figure()
+        strip.add_trace(go.Scatter(x=np.arange(len(values))[~visible_outliers],y=values[~visible_outliers],mode='markers',name='Inliers',marker=dict(size=5,color='#3576a8',opacity=.55)))
+        if visible_outliers.any(): strip.add_trace(go.Scatter(x=np.arange(len(values))[visible_outliers],y=values[visible_outliers],mode='markers',name='Contamination',marker=dict(size=6,color='#e6533f',opacity=.8)))
+        strip.update_layout(title='Observation stream used to build the displayed density',height=280,xaxis_title='Construction order',yaxis_title='Value',margin=dict(l=10,r=10,t=40,b=20),legend=dict(orientation='h',y=1.04))
+        st.plotly_chart(strip,use_container_width=True)
+    with p2:
+        st.subheader("Teaching cue")
+        st.info("The blue baseline establishes the family profile. Red observations then alter the location and tail behaviour. The estimator markers move as the evidence arrives.")
+        if len(values)>8:
+            current=location_estimates(values)
+            for name,value in current.items(): st.metric(name,f"{value:.3f}")
+    if st.session_state.l1_playing:
+        if frame_index < len(frames)-1:
+            time.sleep({"Slow":.65,"Normal":.28,"Fast":.10}[l1_speed])
+            st.session_state.l1_next_frame=frame_index+1
+            st.rerun()
+        else:
+            st.session_state.l1_playing=False
+            st.success("Construction complete. Layer 2 can now use this same kind of regime logic for its mini-GA demonstration.")
 
 with tabs[1]:
     st.markdown('<span class="badge demo">DEMO MODE — scenario-conditioned pedagogical simulation</span>', unsafe_allow_html=True)
@@ -95,10 +133,10 @@ with tabs[1]:
     demo = build_layer2_demo(*key)
     with visual:
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
-        if play_col.button("▶ Play GA", use_container_width=True): st.session_state.l2_playing = True
-        if pause_col.button("❚❚ Pause", use_container_width=True): st.session_state.l2_playing = False
-        if reset_col.button("↺ Reset", use_container_width=True): st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
-        speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal")
+        if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
+        if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
+        if reset_col.button("↺ Reset", use_container_width=True, key="l2_reset"): st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
+        speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l2_speed")
         frame = st.slider("Generation (manual scrubber)", 0, len(demo["run"]["generations"]) - 1, key="l2_scrubber")
         objective = (lambda weights: np.quantile((demo["locations"] @ weights.T) ** 2, .95, axis=0)) if l2_metric == "q95" else (lambda weights: ((demo["locations"] @ weights.T) ** 2).mean(axis=0))
         fig = landscape_figure(demo["surface"], demo["run"]["populations"][frame], demo["run"]["best_path"][:frame+1], objective, demo["labels"], demo["benchmark"])
