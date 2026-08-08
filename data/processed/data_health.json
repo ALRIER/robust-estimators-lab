@@ -1,0 +1,13 @@
+{
+  "winner_source_files": 12,
+  "winner_rows": 36,
+  "families": [
+    "exgaussian",
+    "exwald",
+    "invgauss",
+    "lognormal",
+    "normal",
+    "weibull"
+  ],
+  "teaching_cases": 2
+}
