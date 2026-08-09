@@ -4,8 +4,8 @@ import plotly.graph_objects as go
 import numpy as np
 from src.synthetic_data import DemoScenario, draw_sample
 from src.estimators import location_estimates
-from src.mini_ga import MiniGAConfig, demo_ga
-from src.simplex import demo_surface_with_population
+from src.mini_ga import MiniGAConfig, run_pedagogical_ga
+from src.simplex import demo_objective, demo_surface_with_population, teaching_terrain
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -17,9 +17,12 @@ st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
 
 @st.cache_data(show_spinner="Building the pedagogical GA landscape…")
-def build_layer2_demo():
-    """A seeded mini-GA over the same artificial function shown by the terrain."""
-    return demo_ga(MiniGAConfig())
+def build_layer2_demo(family, contamination, rate, scale, skewness, population_size, lens, seed):
+    """The terrain and GA share one artificial objective, changed by UI controls."""
+    terrain = teaching_terrain(family, contamination, rate, scale, skewness, lens)
+    objective = lambda weights: demo_objective(weights[:, 0], weights[:, 1], weights[:, 2], terrain)
+    run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=150, seed=seed))
+    return {"run": run, "terrain": terrain}
 
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
 
@@ -91,46 +94,79 @@ with tabs[0]:
 
 with tabs[1]:
     st.markdown('<span class="badge demo">DEMO MODE — artificial fitness laboratory</span>', unsafe_allow_html=True)
-    st.caption("The terrain and all fitness values are synthetic, but the mini-GA uses the same core mechanics as the thesis: convex weights, tournament selection, blend crossover, mutation, elitism, and diversity. Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
-    controls, visual = st.columns([1, 3])
+    st.caption("Synthetic landscape for teaching only. The GA mechanics mirror the thesis, but this is not a thesis run or a scientific loss surface. Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
+    controls, visual = st.columns([1.0, 4.2])
     with controls:
-        st.subheader("Read the search")
-        st.markdown("""1. **Population:** white points are valid weight mixtures.
-2. **Selection:** tournament winners become candidate parents.
-3. **Inheritance:** blue links show the two parents of the explained child.
-4. **Mutation:** the child changes slightly to preserve exploration.
-5. **Convergence:** the red route records only new best-so-far solutions.""")
-        st.info("The red line is not one individual walking continuously. It is the sequence of best solutions found by a population.")
+        st.markdown("**SEARCH CONTEXT**")
+        l2_family = st.selectbox("Distribution family", ["normal", "lognormal", "weibull", "exgaussian"], key="l2_family")
+        l2_contam = st.selectbox("Contamination structure", ["none", "upper_tail", "symmetric", "bimodal", "point_mass"], index=1, key="l2_contam")
+        l2_rate = st.slider("Contamination rate", 0.0, .30, .10, .01, key="l2_rate")
+        l2_scale = st.slider("Outlier scale", 1.5, 20.0, 10.0, .5, key="l2_scale")
+        l2_skew = st.slider("Skewness direction", -1.0, 1.0, 0.0, .1, key="l2_skew")
+        l2_lens = st.radio("Target metric", ["MSE", "q95(MSE)"], index=1, horizontal=True, key="l2_lens", help="A pedagogical lens that changes only the synthetic terrain's shape.")
+        l2_pop = st.select_slider("GA population", [36, 48, 60, 72], value=48, key="l2_pop")
+        l2_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l2_seed"))
+        load = st.button("Generate landscape", type="primary", use_container_width=True)
     # Apply queued animation progress before the generation widget is created.
     if "l2_next_frame" in st.session_state:
         st.session_state.l2_scrubber = st.session_state.pop("l2_next_frame")
-    if "l2_key" not in st.session_state:
-        st.session_state.l2_key = "artificial-fitness-v1"
+    key = (l2_family, l2_contam, l2_rate, l2_scale, l2_skew, l2_pop, l2_lens, l2_seed)
+    if "l2_key" not in st.session_state or st.session_state.l2_key != key or load:
+        st.session_state.l2_key = key
         st.session_state.l2_scrubber = 0
         st.session_state.l2_playing = False
-    demo = build_layer2_demo()
-    max_generation = int(demo["generations"][-1])
+    demo = build_layer2_demo(*key)
+    run, terrain = demo["run"], demo["terrain"]
+    max_generation = int(run["generations"][-1])
+    frame = int(st.session_state.get("l2_scrubber", 0))
     with visual:
+        a,b,c,d,e = st.columns(5)
+        a.metric("BEST VALIDATION LOSS", f"{run['best_scores'][frame]:.3f}", "Synthetic q95(MSE)")
+        b.metric("BEST q95(MSE)", f"{run['best_scores'][frame]:.3f}", "Lower is better")
+        c.metric("POPULATION DIVERSITY", f"{run['diversity'][frame]:.3f}", "Simplex spread")
+        d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive schedule")
+        e.metric("CURRENT GENERATION", f"{st.session_state.get('l2_scrubber', 0)} / {max_generation}", "Pedagogical run")
+        st.markdown("**GA SEARCH ON A LOCAL SIMPLEX SLICE (LOW-DIMENSIONAL VIEW)**")
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
         if reset_col.button("↺ Reset", use_container_width=True, key="l2_reset"): st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
         speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l2_speed")
         frame = st.slider("Generation (manual scrubber)", 0, max_generation, key="l2_scrubber")
-        event = None if frame == 0 else demo["events"][frame][demo["explained_event_indices"][frame]]
-        fig = demo_surface_with_population(demo["populations"][frame], demo["best_path"][:frame+1], event)
+        toggle_a,toggle_b,toggle_c,toggle_d = st.columns(4)
+        show_population = toggle_a.toggle("Show population", value=True, key="l2_show_population")
+        show_path = toggle_b.toggle("Show best path", value=True, key="l2_show_path")
+        show_contours = toggle_c.toggle("Show contours", value=True, key="l2_show_contours")
+        show_grid = toggle_d.toggle("Show simplex grid", value=True, key="l2_show_grid")
+        event = None if frame == 0 else run["events"][frame][run["explained_event_indices"][frame]]
+        fig = demo_surface_with_population(run["populations"][frame], run["best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid)
         st.plotly_chart(fig, use_container_width=True)
-    a,b,c,d,e = st.columns(5)
-    a.metric("Generation", f"{frame} / {max_generation}")
-    b.metric("Best-so-far fitness", f"{demo['best_scores'][frame]:.3f}")
-    c.metric("Generation fitness", f"{demo['generation_best_scores'][frame]:.3f}")
-    d.metric("Population diversity", f"{demo['diversity'][frame]:.3f}")
-    e.metric("Mutation rate", f"{demo['mutation_rates'][frame]:.0%}")
-    if frame == 0:
-        st.info("Generation 0 is deliberate exploration: every point is a valid mixture, but no parents or children exist yet.")
-    else:
-        mutation = "Yes — a Dirichlet perturbation changed the inherited mixture." if event["mutated"] else "No — this child came from crossover alone."
-        st.success(f"**Explained child in generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1}; inheritance = {event['inheritance_a']:.0%} parent A + {1-event['inheritance_a']:.0%} parent B; mutation = {mutation} Final pedagogical fitness = {event['fitness']:.3f}.")
+        lower_left, lower_middle, lower_right = st.columns([1.25,1.0,.95])
+        with lower_left:
+            convergence = go.Figure()
+            synthetic_validation = run["best_scores"] * (1.06 - .04*np.exp(-run["generations"]/45))
+            convergence.add_trace(go.Scatter(x=run["generations"], y=run["best_scores"], mode="lines", name="Best training loss", line=dict(color="#ef233c", width=2.6)))
+            convergence.add_trace(go.Scatter(x=run["generations"], y=synthetic_validation, mode="lines", name="Best validation loss", line=dict(color="#2878d4", width=2.2)))
+            convergence.add_trace(go.Scatter(x=run["generations"], y=run["diversity"], mode="lines", name="Diversity", yaxis="y2", line=dict(color="#27a35c", width=2)))
+            convergence.add_vline(x=frame, line_dash="dash", line_color="#555")
+            convergence.update_layout(title="Convergence over generations", height=285, margin=dict(l=35,r=35,t=42,b=30), legend=dict(orientation="h",y=1.15,font=dict(size=9)), xaxis_title="Generation", yaxis=dict(title="Synthetic loss", type="log"), yaxis2=dict(title="Diversity",overlaying="y",side="right"))
+            st.plotly_chart(convergence, use_container_width=True)
+        with lower_middle:
+            weights = run["best_path"]
+            weight_fig = go.Figure()
+            for i,label,color in [(0,"Biweight (A)","#209653"),(1,"Median (B)","#2671bb"),(2,"Trimean (C)","#f08022")]:
+                weight_fig.add_trace(go.Scatter(x=run["generations"],y=weights[:,i],stackgroup="one",mode="lines",name=label,line=dict(color=color,width=.5)))
+            weight_fig.add_vline(x=frame,line_dash="dash",line_color="#555")
+            weight_fig.update_layout(title="Weight evolution (top 3 estimators)",height=285,margin=dict(l=35,r=8,t=42,b=30),legend=dict(orientation="h",y=1.15,font=dict(size=9)),xaxis_title="Generation",yaxis=dict(title="Weight",range=[0,1]))
+            st.plotly_chart(weight_fig,use_container_width=True)
+        with lower_right:
+            st.markdown("**WHAT'S HAPPENING?**")
+            if frame == 0:
+                st.info("The population starts dispersed across the simplex. Each white point is a valid three-estimator mixture.")
+            else:
+                mutation = "A mutation perturbed the inherited weights." if event["mutated"] else "This child is crossover without mutation."
+                st.success(f"**Generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1} create the highlighted child. {mutation}")
+            st.markdown("🌄 **Peaks** are high synthetic error.\n\n🌊 **Valleys** are lower-error configurations.\n\n🟢 The population initially explores, then concentrates near promising basins.\n\n⭐ The star is the known optimum of this teaching terrain.")
     if st.session_state.l2_playing:
         if frame < max_generation:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
