@@ -4,8 +4,8 @@ import plotly.graph_objects as go
 import numpy as np
 from src.synthetic_data import DemoScenario, draw_sample
 from src.estimators import location_estimates
-from src.mini_ga import MiniGAConfig, run_pedagogical_ga
-from src.simplex import empirical_landscape, landscape_figure
+from src.mini_ga import MiniGAConfig, demo_ga
+from src.simplex import demo_surface_with_population
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -16,27 +16,10 @@ st.markdown("""<style>
 st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
 
-@st.cache_data(show_spinner="Evaluating the pedagogical simplex landscape…")
-def build_layer2_demo(family, contamination, rate, scale, n, ga_population, coverage, metric, seed):
-    """Build a cached, scenario-conditioned mini-GA demonstration."""
-    scenario = DemoScenario(family, contamination, rate, scale, n, seed)
-    sample = draw_sample(scenario)
-    rng = np.random.default_rng(seed + 77)
-    bootstrap_count = {"HPF1-style · 25%": 18, "HPF2-style · 50%": 36, "Full demo · 90%": 60}[coverage]
-    # The three visible estimators are a teaching slice, not the 26-D thesis vector.
-    locations = []
-    for _ in range(bootstrap_count):
-        x = sample.values[rng.integers(0, len(sample.values), len(sample.values))]
-        e = location_estimates(x)
-        locations.append([e["Mean"], e["Huber"], e["Biweight"]])
-    locations = np.asarray(locations)
-    metric_fn = (lambda weights: np.quantile((locations @ weights.T - sample.true_location) ** 2, .95, axis=0)) if metric == "q95" else (lambda weights: ((locations @ weights.T - sample.true_location) ** 2).mean(axis=0))
-    config = MiniGAConfig(population_size=ga_population, generations=40, mutation_rate=.18, seed=seed)
-    run = run_pedagogical_ga(metric_fn, config)
-    surface = empirical_landscape(locations - sample.true_location, metric=metric, step=.025)
-    singleton = np.eye(3)
-    benchmark_index = int(np.argmin(metric_fn(singleton)))
-    return {"run": run, "surface": surface, "locations": locations, "labels": ["Mean", "Huber", "Biweight"], "benchmark": singleton[benchmark_index], "benchmark_label": ["Mean", "Huber", "Biweight"][benchmark_index], "bootstrap_count": bootstrap_count}
+@st.cache_data(show_spinner="Building the pedagogical GA landscape…")
+def build_layer2_demo():
+    """A seeded mini-GA over the same artificial function shown by the terrain."""
+    return demo_ga(MiniGAConfig())
 
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
 
@@ -107,48 +90,49 @@ with tabs[0]:
             st.success("Construction complete. Layer 2 can now use this same kind of regime logic for its mini-GA demonstration.")
 
 with tabs[1]:
-    st.markdown('<span class="badge demo">DEMO MODE — scenario-conditioned pedagogical simulation</span>', unsafe_allow_html=True)
-    st.caption("Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only. The animated path is a live mini-GA, not a recorded thesis trajectory.")
+    st.markdown('<span class="badge demo">DEMO MODE — artificial fitness laboratory</span>', unsafe_allow_html=True)
+    st.caption("The terrain and all fitness values are synthetic, but the mini-GA uses the same core mechanics as the thesis: convex weights, tournament selection, blend crossover, mutation, elitism, and diversity. Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
     controls, visual = st.columns([1, 3])
     with controls:
-        st.subheader("Build a search regime")
-        l2_family = st.selectbox("Family", ["normal", "lognormal", "weibull", "exgaussian"], key="l2_family")
-        l2_contam = st.selectbox("Contamination structure", ["none", "upper_tail", "symmetric", "bimodal", "point_mass"], key="l2_contam")
-        l2_rate = st.slider("Contamination rate", 0.0, .30, .10, .01, key="l2_rate")
-        l2_scale = st.slider("Outlier scale", 1.5, 20.0, 10.0, .5, key="l2_scale")
-        l2_n = st.select_slider("Sample size", [300, 500, 1000, 2500, 5000], value=1000, key="l2_n")
-        l2_pop = st.select_slider("GA population", [36, 54, 72, 96], value=72, key="l2_pop")
-        l2_coverage = st.selectbox("Screening budget (HPF analogy)", ["HPF1-style · 25%", "HPF2-style · 50%", "Full demo · 90%"], index=1, help="HPF1/HPF2 are screening stages in the thesis. Here the setting controls only the amount of demo resampling; it is not a thesis replay.")
-        l2_metric = st.radio("Demo objective", ["q95", "mean"], horizontal=True, format_func=lambda x: "q95(MSE) — tail risk" if x == "q95" else "Mean MSE")
-        l2_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l2_seed"))
-        load = st.button("Load this regime", type="primary", use_container_width=True)
-    key = (l2_family,l2_contam,l2_rate,l2_scale,l2_n,l2_pop,l2_coverage,l2_metric,l2_seed)
+        st.subheader("Read the search")
+        st.markdown("""1. **Population:** white points are valid weight mixtures.
+2. **Selection:** tournament winners become candidate parents.
+3. **Inheritance:** blue links show the two parents of the explained child.
+4. **Mutation:** the child changes slightly to preserve exploration.
+5. **Convergence:** the red route records only new best-so-far solutions.""")
+        st.info("The red line is not one individual walking continuously. It is the sequence of best solutions found by a population.")
     # Apply queued animation progress before the generation widget is created.
     if "l2_next_frame" in st.session_state:
         st.session_state.l2_scrubber = st.session_state.pop("l2_next_frame")
-    if "l2_key" not in st.session_state or st.session_state.l2_key != key or load:
-        st.session_state.l2_key = key
+    if "l2_key" not in st.session_state:
+        st.session_state.l2_key = "artificial-fitness-v1"
         st.session_state.l2_scrubber = 0
         st.session_state.l2_playing = False
-    demo = build_layer2_demo(*key)
+    demo = build_layer2_demo()
+    max_generation = int(demo["generations"][-1])
     with visual:
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
         if reset_col.button("↺ Reset", use_container_width=True, key="l2_reset"): st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
         speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l2_speed")
-        frame = st.slider("Generation (manual scrubber)", 0, len(demo["run"]["generations"]) - 1, key="l2_scrubber")
-        objective = (lambda weights: np.quantile((demo["locations"] @ weights.T) ** 2, .95, axis=0)) if l2_metric == "q95" else (lambda weights: ((demo["locations"] @ weights.T) ** 2).mean(axis=0))
-        fig = landscape_figure(demo["surface"], demo["run"]["populations"][frame], demo["run"]["best_path"][:frame+1], objective, demo["labels"], demo["benchmark"])
+        frame = st.slider("Generation (manual scrubber)", 0, max_generation, key="l2_scrubber")
+        event = None if frame == 0 else demo["events"][frame][demo["explained_event_indices"][frame]]
+        fig = demo_surface_with_population(demo["populations"][frame], demo["best_path"][:frame+1], event)
         st.plotly_chart(fig, use_container_width=True)
-    a,b,c,d = st.columns(4)
-    a.metric("Generation", f"{frame} / 40")
-    b.metric("Best demo objective", f"{demo['run']['best_scores'][frame]:.5f}")
-    c.metric("Population diversity", f"{demo['run']['diversity'][frame]:.4f}")
-    d.metric("Best single benchmark", demo["benchmark_label"])
-    st.info(f"Narration cue: the black points are the generation-{frame} population. The red line is the best solution found so far. Each candidate is compared against the selected {l2_metric} objective over {demo['bootstrap_count']} resampled datasets; the yellow diamond is the strongest single-estimator benchmark in this pedagogical slice.")
+    a,b,c,d,e = st.columns(5)
+    a.metric("Generation", f"{frame} / {max_generation}")
+    b.metric("Best-so-far fitness", f"{demo['best_scores'][frame]:.3f}")
+    c.metric("Generation fitness", f"{demo['generation_best_scores'][frame]:.3f}")
+    d.metric("Population diversity", f"{demo['diversity'][frame]:.3f}")
+    e.metric("Mutation rate", f"{demo['mutation_rates'][frame]:.0%}")
+    if frame == 0:
+        st.info("Generation 0 is deliberate exploration: every point is a valid mixture, but no parents or children exist yet.")
+    else:
+        mutation = "Yes — a Dirichlet perturbation changed the inherited mixture." if event["mutated"] else "No — this child came from crossover alone."
+        st.success(f"**Explained child in generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1}; inheritance = {event['inheritance_a']:.0%} parent A + {1-event['inheritance_a']:.0%} parent B; mutation = {mutation} Final pedagogical fitness = {event['fitness']:.3f}.")
     if st.session_state.l2_playing:
-        if frame < 40:
+        if frame < max_generation:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
             # A widget value cannot be mutated after rendering; queue it for the next rerun.
             st.session_state.l2_next_frame = frame + 1
