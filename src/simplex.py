@@ -67,7 +67,9 @@ def demo_objective(a, b, c, terrain=None):
 def _surface(terrain):
     grid = barycentric_grid(); x, y = barycentric_to_xy(grid)
     fitness = demo_objective(*grid.T, terrain)
-    elevation = .25 + 9.5 * (fitness - fitness.min()) / (fitness.max() - fitness.min())
+    # A restrained vertical compression keeps the valley visible without making
+    # the terrain read as a flat plane.  It is visual scaling only.
+    elevation = .62 + 8.15 * (fitness - fitness.min()) / (fitness.max() - fitness.min())
     return grid, x, y, elevation, fitness, Delaunay(np.c_[x, y]).simplices
 
 
@@ -110,7 +112,7 @@ def demo_surface_with_population(population, path, terrain, highlight_event=None
     ))
     def elevation(weights):
         values = demo_objective(weights[:,0], weights[:,1], weights[:,2], terrain)
-        return .25 + 9.5 * (values - fitness.min()) / (fitness.max() - fitness.min())
+        return .62 + 8.15 * (values - fitness.min()) / (fitness.max() - fitness.min())
     if show_contours: fig.add_trace(_contour_trace(x, y, z, triangles, np.linspace(z.min()+.5, z.max()-.4, 14)))
     if show_grid: fig.add_trace(_simplex_grid_trace(terrain, elevation))
     corners = np.array([[1,0,0],[0,1,0],[0,0,1]]); cx, cy = barycentric_to_xy(corners)
@@ -129,5 +131,5 @@ def demo_surface_with_population(population, path, terrain, highlight_event=None
         fig.add_trace(go.Scatter3d(x=px,y=py,z=pz,mode="markers",name="Selected parents",marker=dict(size=8,color="#3b82c4",line=dict(color="white",width=1.2))))
         fig.add_trace(go.Scatter3d(x=[px[0],cx[0],px[1]],y=[py[0],cy[0],py[1]],z=[pz[0],cz[0],pz[1]],mode="lines",name="Inheritance",line=dict(color="rgba(59,130,196,.88)",width=6)))
         fig.add_trace(go.Scatter3d(x=cx,y=cy,z=cz,mode="markers",name="Explained child",marker=dict(size=11,color="#e31a1c" if highlight_event["mutated"] else "#23a36a",symbol="diamond",line=dict(color="white",width=1.5))))
-    fig.update_layout(height=790, margin=dict(l=0,r=0,t=54,b=0), title=f"Artificial fitness landscape — {terrain['label']}", legend=dict(orientation="h",y=1.02,font=dict(size=11)), scene=dict(xaxis=dict(visible=False),yaxis=dict(visible=False),zaxis=dict(visible=False),bgcolor="rgba(0,0,0,0)",aspectratio=dict(x=1.35,y=1,z=.80),camera=dict(eye=dict(x=1.55,y=-1.70,z=1.28))))
+    fig.update_layout(height=850, margin=dict(l=0,r=0,t=54,b=0), title=f"Artificial fitness landscape — {terrain['label']}", legend=dict(orientation="h",y=1.02,font=dict(size=11)), scene=dict(xaxis=dict(visible=False),yaxis=dict(visible=False),zaxis=dict(visible=False),bgcolor="rgba(0,0,0,0)",aspectratio=dict(x=1.46,y=1,z=.68),camera=dict(eye=dict(x=1.76,y=-1.94,z=1.20))))
     return fig
