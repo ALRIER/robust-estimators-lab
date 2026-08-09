@@ -132,5 +132,7 @@ def demo_surface_with_population(population, path, terrain, highlight_event=None
         fig.add_trace(go.Scatter3d(x=px,y=py,z=pz,mode="markers",name="Selected parents",marker=dict(size=8,color="#3b82c4",line=dict(color="white",width=1.2))))
         fig.add_trace(go.Scatter3d(x=[px[0],cx[0],px[1]],y=[py[0],cy[0],py[1]],z=[pz[0],cz[0],pz[1]],mode="lines",name="Inheritance",line=dict(color="rgba(59,130,196,.88)",width=6)))
         fig.add_trace(go.Scatter3d(x=cx,y=cy,z=cz,mode="markers",name="Explained child",marker=dict(size=11,color="#e31a1c" if highlight_event["mutated"] else "#23a36a",symbol="diamond",line=dict(color="white",width=1.5))))
-    fig.update_layout(height=900, margin=dict(l=0,r=0,t=54,b=0), title=f"Artificial fitness landscape — {terrain['label']}", legend=dict(orientation="h",y=1.02,font=dict(size=11)), scene=dict(xaxis=dict(visible=False),yaxis=dict(visible=False),zaxis=dict(visible=False),bgcolor="rgba(0,0,0,0)",aspectratio=dict(x=1.82,y=1,z=.60),camera=dict(eye=dict(x=1.92,y=-2.08,z=1.12))))
+    # Front-on, low perspective: B--C is the foreground edge and A is the rear
+    # summit, matching the geological-search composition in the approved mockup.
+    fig.update_layout(height=900, margin=dict(l=0,r=0,t=54,b=0), title=f"Artificial fitness landscape — {terrain['label']}", legend=dict(orientation="h",y=1.02,font=dict(size=11)), scene=dict(xaxis=dict(visible=False),yaxis=dict(visible=False),zaxis=dict(visible=False),bgcolor="rgba(0,0,0,0)",aspectratio=dict(x=1.70,y=1,z=.62),camera=dict(eye=dict(x=0,y=-2.25,z=.96),center=dict(x=0,y=.08,z=-.03),projection=dict(type="perspective"))))
     return fig
