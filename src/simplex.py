@@ -65,10 +65,11 @@ def demo_objective(a, b, c, terrain=None):
     left_peak = np.exp(-((a-.28)**2/.012 + (b-.07)**2/.014 + (c-.65)**2/.018))
     right_peak = np.exp(-((a-.07)**2/.014 + (b-.28)**2/.012 + (c-.65)**2/.018))
     ridge = np.exp(-((a-.17)**2/.065 + (b-.17)**2/.065 + (c-.57)**2/.030))
-    if terrain["contamination"] == "upper_tail": right_peak *= 1.65
-    elif terrain["contamination"] == "symmetric": left_peak *= 1.28; right_peak *= 1.28
-    elif terrain["contamination"] == "point_mass": left_peak *= 1.8
-    boost = .20 + .055 * terrain["scale"] + .90 * terrain["rate"]
+    contamination = terrain.get("contamination", "upper_tail")
+    if contamination == "upper_tail": right_peak *= 1.65
+    elif contamination == "symmetric": left_peak *= 1.28; right_peak *= 1.28
+    elif contamination == "point_mass": left_peak *= 1.8
+    boost = .20 + .055 * terrain.get("scale", 10.) + .90 * terrain.get("rate", .10)
     texture = terrain["ruggedness"] * np.sin(15*a + 3*c) * np.cos(13*b - 2*c)
     return .35 + distance - .66*global_well + boost*(left_peak + right_peak + .55*ridge) + texture
 
@@ -126,9 +127,12 @@ def demo_surface_with_population(population, path, terrain, highlight_event=None
     if show_grid: fig.add_trace(_simplex_grid_trace(terrain, elevation))
     corners = np.array([[1,0,0],[0,1,0],[0,0,1]]); cx, cy = barycentric_to_xy(corners)
     fig.add_trace(go.Scatter3d(x=cx,y=cy,z=elevation(corners)+.15,mode="markers+text",text=["X\n(1, 0, 0)", "Y\n(0, 1, 0)", "Z\n(0, 0, 1)"],textposition="top center",marker=dict(size=7,color="#17232b"),textfont=dict(size=13,color="#17232b"),name="Simplex axes",showlegend=False,hoverinfo="skip"))
-    if show_contamination and terrain["contamination"] != "none" and terrain["rate"] > 0:
-        centers = {"upper_tail": [[.08,.27,.65]], "symmetric": [[.28,.07,.65],[.07,.28,.65]], "bimodal": [[.28,.07,.65],[.07,.28,.65],[.16,.57,.27]], "point_mass": [[.28,.07,.65]]}[terrain["contamination"]]
-        rng = np.random.default_rng(1907); count = max(5, int(terrain["rate"]*70))
+    contamination = terrain.get("contamination", "upper_tail")
+    rate = terrain.get("rate", .10)
+    if show_contamination and contamination != "none" and rate > 0:
+        rng = np.random.default_rng(1907)
+        centers = {"upper_tail": [[.08,.27,.65]], "symmetric": [[.28,.07,.65],[.07,.28,.65]], "bimodal": [[.28,.07,.65],[.07,.28,.65],[.16,.57,.27]], "point_mass": [[.28,.07,.65]]}[contamination]
+        count = max(5, int(rate*70))
         stress = np.asarray([_simplex(np.asarray(centers[i % len(centers)]) + rng.normal(0,.025,3)) for i in range(count)])
         sx, sy = barycentric_to_xy(stress)
         fig.add_trace(go.Scatter3d(x=sx,y=sy,z=elevation(stress)+.12,mode="markers",name="Contamination stress",marker=dict(size=4.5,color="rgba(255,90,35,.70)",symbol="x"),hovertemplate="Contamination stress zone<extra></extra>"))

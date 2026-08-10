@@ -23,7 +23,7 @@ st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
 
 @st.cache_data(show_spinner="Building the pedagogical GA landscape…")
-def build_layer2_demo(family, contamination, rate, scale, skewness, population_size, lens, seed):
+def build_layer2_demo(family, contamination, rate, scale, skewness, population_size, lens, seed, renderer_version):
     """The terrain and GA share one artificial objective, changed by UI controls."""
     terrain = simplex_renderer.teaching_terrain(family, contamination, rate, scale, skewness, lens)
     objective = lambda weights: simplex_renderer.demo_objective(weights[:, 0], weights[:, 1], weights[:, 2], terrain)
@@ -121,7 +121,7 @@ with tabs[1]:
         st.session_state.l2_key = key
         st.session_state.l2_scrubber = 0
         st.session_state.l2_playing = False
-    demo = build_layer2_demo(*key)
+    demo = build_layer2_demo(*key, "simplex-v4")
     run, terrain = demo["run"], demo["terrain"]
     max_generation = int(run["generations"][-1])
     frame = int(st.session_state.get("l2_scrubber", 0))
