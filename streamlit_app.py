@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import time
 import importlib
 import plotly.graph_objects as go
@@ -8,6 +9,7 @@ from src.estimators import location_estimates
 from src.mini_ga import MiniGAConfig, run_pedagogical_ga
 from src import simplex as simplex_renderer
 from src.fixed_simplex import fixed_simplex_figure
+from src.simplex_svg import simplex_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -148,8 +150,7 @@ with tabs[1]:
         show_grid = toggle_d.toggle("Show simplex grid", value=True, key="l2_show_grid")
         show_contamination = toggle_e.toggle("Show contamination", value=True, key="l2_show_contamination")
         event = None if frame == 0 else run["events"][frame][run["explained_event_indices"][frame]]
-        fixed_fig = fixed_simplex_figure(run["populations"][frame], run["generation_best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid, show_contamination)
-        st.pyplot(fixed_fig, use_container_width=True)
+        components.html(simplex_svg(run["populations"][frame], run["generation_best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid, show_contamination), height=660, scrolling=False)
         lower_left, lower_middle, lower_right = st.columns([1.25,1.0,.95])
         with lower_left:
             convergence = go.Figure()
