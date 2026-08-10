@@ -10,6 +10,7 @@ from src.mini_ga import MiniGAConfig, run_pedagogical_ga
 from src import simplex as simplex_renderer
 from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
+from src.cluster_evolution import cluster_map_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -135,8 +136,8 @@ with tabs[1]:
         c.metric("POPULATION DIVERSITY", f"{run['diversity'][frame]:.3f}", "Simplex spread")
         d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive schedule")
         e.metric("CURRENT GENERATION", f"{st.session_state.get('l2_scrubber', 0)} / {max_generation}", "Pedagogical run")
-        st.markdown("**GA SEARCH THROUGH A FIXED-CAMERA SIMPLEX LANDSCAPE**")
-        st.caption("Renderer v5 · fixed frontal camera at 43° aerial elevation · X + Y + Z = 1 · terrain height is synthetic error.")
+        st.markdown("## Cluster Evolution Map")
+        st.caption("Watch candidate solutions evolve from broad exploration to a robust target region.")
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
@@ -146,11 +147,11 @@ with tabs[1]:
         toggle_a,toggle_b,toggle_c,toggle_d,toggle_e = st.columns(5)
         show_population = toggle_a.toggle("Show population", value=True, key="l2_show_population")
         show_path = toggle_b.toggle("Show best path", value=True, key="l2_show_path")
-        show_contours = toggle_c.toggle("Show contours", value=True, key="l2_show_contours")
-        show_grid = toggle_d.toggle("Show simplex grid", value=True, key="l2_show_grid")
-        show_contamination = toggle_e.toggle("Show contamination", value=True, key="l2_show_contamination")
+        show_contours = toggle_c.toggle("Show inheritance", value=True, key="l2_show_contours")
+        show_grid = toggle_d.toggle("Show map grid", value=True, key="l2_show_grid")
+        show_contamination = toggle_e.toggle("Show eliminated", value=True, key="l2_show_contamination")
         event = None if frame == 0 else run["events"][frame][run["explained_event_indices"][frame]]
-        components.html(simplex_svg(run["populations"][frame], run["generation_best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid, show_contamination), height=660, scrolling=False)
+        components.html(cluster_map_svg(run, frame, l2_rate, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid), height=490, scrolling=False)
         lower_left, lower_middle, lower_right = st.columns([1.25,1.0,.95])
         with lower_left:
             convergence = go.Figure()
