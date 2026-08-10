@@ -133,20 +133,21 @@ with tabs[1]:
         d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive schedule")
         e.metric("CURRENT GENERATION", f"{st.session_state.get('l2_scrubber', 0)} / {max_generation}", "Pedagogical run")
         st.markdown("**GA SEARCH THROUGH A 3D SIMPLEX FITNESS VALLEY**")
-        st.caption("Landscape renderer: v3 · broad valley / rear plateaus / high initial camera")
+        st.caption("Pedagogical simplex: X + Y + Z = 1 · terrain height is synthetic error, not a fourth simplex coordinate.")
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
         if reset_col.button("↺ Reset", use_container_width=True, key="l2_reset"): st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
         speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l2_speed")
         frame = st.slider("Generation (manual scrubber)", 0, max_generation, key="l2_scrubber")
-        toggle_a,toggle_b,toggle_c,toggle_d = st.columns(4)
+        toggle_a,toggle_b,toggle_c,toggle_d,toggle_e = st.columns(5)
         show_population = toggle_a.toggle("Show population", value=True, key="l2_show_population")
         show_path = toggle_b.toggle("Show best path", value=True, key="l2_show_path")
         show_contours = toggle_c.toggle("Show contours", value=True, key="l2_show_contours")
         show_grid = toggle_d.toggle("Show simplex grid", value=True, key="l2_show_grid")
+        show_contamination = toggle_e.toggle("Show contamination", value=True, key="l2_show_contamination")
         event = None if frame == 0 else run["events"][frame][run["explained_event_indices"][frame]]
-        fig = simplex_renderer.demo_surface_with_population(run["populations"][frame], run["best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid)
+        fig = simplex_renderer.demo_surface_with_population(run["populations"][frame], run["generation_best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid, show_contamination)
         st.plotly_chart(fig, use_container_width=True)
         lower_left, lower_middle, lower_right = st.columns([1.25,1.0,.95])
         with lower_left:
@@ -169,11 +170,12 @@ with tabs[1]:
         with lower_right:
             st.markdown("**WHAT'S HAPPENING?**")
             if frame == 0:
-                st.info("The population starts dispersed across the simplex. Each white point is a valid three-component mixture; red points preserve the best solutions found so far.")
+                st.info("Generation 0 starts dispersed. White points are candidates; the red trace records the best candidate of each generation.")
             else:
                 mutation = "A mutation perturbed the inherited weights." if event["mutated"] else "This child is crossover without mutation."
                 st.success(f"**Generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1} create the highlighted child. {mutation}")
-            st.markdown("🏔️ **Rear plateaus** are high synthetic error.\n\n🌊 **The valley** spans the displayed simplex slice; lower terrain is better.\n\n⚪ White points are the current GA candidates; 🔴 red points preserve the best-so-far trace.\n\n⭐ The star marks the known optimum of this teaching terrain.")
+                st.caption(f"Inheritance: {highlight_event['inheritance_a']:.0%} from parent A and {1-highlight_event['inheritance_a']:.0%} from parent B." if (highlight_event := event) else "")
+            st.markdown("🏔️ **Rear mountains** are high synthetic error.\n\n🌊 **Blue valley** is the low-error convergence basin.\n\n⚪ Candidates · 🔴 historical best trace · 🟠 contamination stress · ⭐ perfect convergence.")
     if st.session_state.l2_playing:
         if frame < max_generation:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])

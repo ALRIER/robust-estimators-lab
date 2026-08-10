@@ -33,7 +33,6 @@ def test_terrain_figure_exposes_axes_and_search_visuals():
     terrain = teaching_terrain("normal", "upper_tail", .10, 10., 0., "q95(MSE)")
     fig = demo_surface_with_population(population, population[:4], terrain)
     names = {trace.name for trace in fig.data if trace.name}
-    assert {"Population", "Best solutions / trace", "Known teaching optimum"} <= names
-    assert fig.layout.scene.xaxis.title.text.startswith("X")
-    assert fig.layout.scene.yaxis.title.text.startswith("Y")
-    assert fig.layout.scene.zaxis.title.text.startswith("Z")
+    assert {"GA candidates", "Best-so-far trace", "Perfect convergence", "Contamination stress"} <= names
+    corner_trace = next(trace for trace in fig.data if trace.name == "Simplex axes")
+    assert list(corner_trace.text) == ["X\n(1, 0, 0)", "Y\n(0, 1, 0)", "Z\n(0, 0, 1)"]
