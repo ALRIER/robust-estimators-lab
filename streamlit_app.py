@@ -10,7 +10,7 @@ from src.mini_ga import MiniGAConfig, run_pedagogical_ga
 from src import simplex as simplex_renderer
 from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
-from src.cluster_evolution import cluster_map_svg
+from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -117,6 +117,15 @@ with tabs[1]:
         l2_pop = st.select_slider("GA population", [36, 48, 60, 72], value=48, key="l2_pop")
         l2_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l2_seed"))
         load = st.button("Generate landscape", type="primary", use_container_width=True)
+        st.markdown("**GA PLAYBACK**")
+        play_side, pause_side, reset_side = st.columns(3)
+        if play_side.button("▶", use_container_width=True, key="l2_play"):
+            st.session_state.l2_playing = True
+        if pause_side.button("❚❚", use_container_width=True, key="l2_pause"):
+            st.session_state.l2_playing = False
+        if reset_side.button("↺", use_container_width=True, key="l2_reset"):
+            st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
+        speed = st.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l2_speed")
     # Apply queued animation progress before the generation widget is created.
     if "l2_next_frame" in st.session_state:
         st.session_state.l2_scrubber = st.session_state.pop("l2_next_frame")
@@ -141,11 +150,6 @@ with tabs[1]:
         e.metric("CONTAMINATION", f"{l2_rate:.0%}", "Target-region shift")
         st.markdown("## Cluster Evolution Map")
         st.caption("Watch candidate solutions evolve from broad exploration to a robust target region.")
-        play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
-        if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
-        if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
-        if reset_col.button("↺ Reset", use_container_width=True, key="l2_reset"): st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
-        speed = speed_col.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l2_speed")
         frame = st.slider("Generation (manual scrubber)", 0, max_generation, key="l2_scrubber")
         toggle_a,toggle_b,toggle_c,toggle_d,toggle_e = st.columns(5)
         show_population = toggle_a.toggle("Show population", value=True, key="l2_show_population")
@@ -176,6 +180,7 @@ with tabs[1]:
                 st.success(f"**Generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1} create the highlighted child. {mutation}")
                 st.caption(f"Inheritance: {highlight_event['inheritance_a']:.0%} from parent A and {1-highlight_event['inheritance_a']:.0%} from parent B." if (highlight_event := event) else "")
             st.progress(float(l2_rate), text=f"Current contamination: {l2_rate:.0%}")
+            components.html(contamination_shift_svg(l2_rate), height=185, scrolling=False)
             st.markdown("🟢 **Low contamination:** broad target region.\n\n🟠 **High contamination:** target shifts and survivors become harder to find.\n\n🟣 Purple path = best candidate across snapshots.")
     if st.session_state.l2_playing:
         if frame < max_generation:
