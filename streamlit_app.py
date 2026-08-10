@@ -134,7 +134,7 @@ with tabs[1]:
         d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive schedule")
         e.metric("CURRENT GENERATION", f"{st.session_state.get('l2_scrubber', 0)} / {max_generation}", "Pedagogical run")
         st.markdown("**GA SEARCH THROUGH A FIXED-CAMERA SIMPLEX LANDSCAPE**")
-        st.caption("Pedagogical simplex: X + Y + Z = 1 · terrain height is synthetic error. The camera is deliberately fixed.")
+        st.caption("Renderer v5 · fixed frontal camera at 43° aerial elevation · X + Y + Z = 1 · terrain height is synthetic error.")
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
