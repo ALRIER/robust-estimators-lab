@@ -27,12 +27,14 @@ st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
 
 @st.cache_data(show_spinner="Building the pedagogical GA landscape…")
-def build_layer2_demo(family, contamination, rate, scale, skewness, population_size, lens, seed, renderer_version):
+def build_layer2_demo(family, contamination, mutation_rate, population_size, lens, seed, renderer_version):
     """The terrain and GA share one artificial objective, changed by UI controls."""
-    terrain = simplex_renderer.teaching_terrain(family, contamination, rate, scale, skewness, lens)
+    terrain = simplex_renderer.teaching_terrain(family, contamination, .10, 10., 0., lens)
     objective = lambda weights: simplex_renderer.demo_objective(weights[:, 0], weights[:, 1], weights[:, 2], terrain)
-    run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=150, seed=seed))
-    return {"run": run, "terrain": terrain}
+    run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=150, mutation_rate=mutation_rate, seed=seed))
+    rng = np.random.default_rng(seed + 91)
+    contamination_schedule = np.clip(rng.normal(.16, .07, len(run["generations"])), .02, .35)
+    return {"run": run, "terrain": terrain, "contamination_schedule": contamination_schedule}
 
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
 
@@ -110,12 +112,10 @@ with tabs[1]:
         st.markdown("**SEARCH CONTEXT**")
         l2_family = st.selectbox("Distribution family", ["normal", "lognormal", "weibull", "exgaussian"], key="l2_family")
         l2_contam = st.selectbox("Contamination structure", ["none", "upper_tail", "symmetric", "bimodal", "point_mass"], index=1, key="l2_contam")
-        l2_rate = st.slider("Contamination rate", 0.0, .30, .10, .01, key="l2_rate")
-        l2_scale = st.slider("Outlier scale", 1.5, 20.0, 10.0, .5, key="l2_scale")
-        l2_skew = st.slider("Skewness direction", -1.0, 1.0, 0.0, .1, key="l2_skew")
+        l2_mutation = st.select_slider("Mutation level", options=[.05, .10, .18, .28], value=.18, format_func=lambda value: f"{value:.0%}", key="l2_mutation")
         l2_lens = st.radio("Target metric", ["MSE", "q95(MSE)"], index=1, horizontal=True, key="l2_lens", help="A pedagogical lens that changes only the synthetic terrain's shape.")
         l2_pop = st.select_slider("GA population", [36, 48, 60, 72], value=48, key="l2_pop")
-        l2_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l2_seed"))
+        l2_seed = 20260810
         load = st.button("Generate landscape", type="primary", use_container_width=True)
         st.markdown("**GA PLAYBACK**")
         play_side, pause_side, reset_side = st.columns(3)
@@ -129,28 +129,21 @@ with tabs[1]:
     # Apply queued animation progress before the generation widget is created.
     if "l2_next_frame" in st.session_state:
         st.session_state.l2_scrubber = st.session_state.pop("l2_next_frame")
-    key = (l2_family, l2_contam, l2_rate, l2_scale, l2_skew, l2_pop, l2_lens, l2_seed)
+    key = (l2_family, l2_contam, l2_mutation, l2_pop, l2_lens, l2_seed)
     if "l2_key" not in st.session_state or st.session_state.l2_key != key or load:
         st.session_state.l2_key = key
         st.session_state.l2_scrubber = 0
         st.session_state.l2_playing = False
-    demo = build_layer2_demo(*key, "simplex-v4")
+    demo = build_layer2_demo(*key, "cluster-map-v2")
     run, terrain = demo["run"], demo["terrain"]
     max_generation = int(run["generations"][-1])
-    loss_span = max(1e-9, float(run["best_scores"][0] - run["best_scores"].min()))
-    robust_score = np.clip((run["best_scores"][0] - run["best_scores"]) / loss_span, 0, 1)
-    survivor_count = np.maximum(2, np.ceil(l2_pop * (1 - .70 * run["generations"] / max_generation))).astype(int)
     frame = int(st.session_state.get("l2_scrubber", 0))
+    with controls:
+        frame = st.slider("Generation", 0, max_generation, key="l2_scrubber")
+    active_rate = float(demo["contamination_schedule"][frame])
     with visual:
-        a,b,c,d,e = st.columns(5)
-        a.metric("BEST ROBUST SCORE", f"{robust_score[frame]:.2f}", "Higher is better")
-        b.metric("CURRENT SCORE", f"{robust_score[frame]:.2f}", f"Generation {frame}")
-        c.metric("SURVIVORS", f"{survivor_count[frame]}", f"of {l2_pop} candidates")
-        d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive exploration")
-        e.metric("CONTAMINATION", f"{l2_rate:.0%}", "Target-region shift")
         st.markdown("## Cluster Evolution Map")
         st.caption("Watch candidate solutions evolve from broad exploration to a robust target region.")
-        frame = st.slider("Generation (manual scrubber)", 0, max_generation, key="l2_scrubber")
         toggle_a,toggle_b,toggle_c,toggle_d,toggle_e = st.columns(5)
         show_population = toggle_a.toggle("Show population", value=True, key="l2_show_population")
         show_path = toggle_b.toggle("Show best path", value=True, key="l2_show_path")
@@ -158,19 +151,18 @@ with tabs[1]:
         show_grid = toggle_d.toggle("Show map grid", value=True, key="l2_show_grid")
         show_contamination = toggle_e.toggle("Show eliminated", value=True, key="l2_show_contamination")
         event = None if frame == 0 else run["events"][frame][run["explained_event_indices"][frame]]
-        components.html(cluster_map_svg(run, frame, l2_rate, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid), height=490, scrolling=False)
-        lower_left, lower_middle, lower_right = st.columns([1.25,1.0,.95])
+        components.html(cluster_map_svg(run, frame, active_rate, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid), height=490, scrolling=False)
+        lower_left, lower_middle, lower_right = st.columns([1.2,1.0,1.0])
         with lower_left:
-            convergence = go.Figure()
-            convergence.add_trace(go.Scatter(x=run["generations"], y=robust_score, mode="lines", name="Best robust score", fill="tozeroy", line=dict(color="#6534e8", width=2.8), fillcolor="rgba(101,52,232,.12)"))
-            convergence.add_vline(x=frame, line_dash="dash", line_color="#555")
-            convergence.update_layout(title="Best robust score (by generation)", height=285, margin=dict(l=35,r=20,t=42,b=30), showlegend=False, xaxis_title="Generation", yaxis=dict(title="Robust score", range=[0,1.05]))
-            st.plotly_chart(convergence, use_container_width=True)
+            sample = draw_sample(DemoScenario(l2_family, l2_contam, active_rate, 10.0, 360, l2_seed + frame))
+            obs = go.Figure()
+            obs.add_trace(go.Histogram(x=sample.values[~sample.is_outlier], histnorm="probability density", nbinsx=35, name="Inliers", marker_color="#8b5cf6", opacity=.55))
+            if sample.is_outlier.any(): obs.add_trace(go.Histogram(x=sample.values[sample.is_outlier], histnorm="probability density", nbinsx=35, name="Outliers", marker_color="#ef4444", opacity=.72))
+            obs.update_layout(title="Observations & contamination", barmode="overlay", height=285, margin=dict(l=25,r=10,t=42,b=25), legend=dict(orientation="h", y=1.12, font=dict(size=9)), xaxis_title="Observed value", yaxis_title="Density")
+            st.plotly_chart(obs, use_container_width=True)
         with lower_middle:
-            survivor_fig = go.Figure(go.Scatter(x=run["generations"], y=survivor_count, mode="lines", fill="tozeroy", line=dict(color="#2563eb", width=2.7), fillcolor="rgba(37,99,235,.12)"))
-            survivor_fig.add_vline(x=frame,line_dash="dash",line_color="#555")
-            survivor_fig.update_layout(title="Survivor count (by generation)",height=285,margin=dict(l=35,r=8,t=42,b=30),showlegend=False,xaxis_title="Generation",yaxis=dict(title="Surviving candidates",range=[0,l2_pop]))
-            st.plotly_chart(survivor_fig,use_container_width=True)
+            st.markdown("**HOW TO READ THIS MAP**")
+            st.markdown("1. **Initialize** — random population explores the space.\n\n2. **Score & Select** — weak candidates fade.\n\n3. **Recombine & Mutate** — survivors create variation.\n\n4. **Converge** — the purple trace approaches the target region.")
         with lower_right:
             st.markdown("**CONTAMINATION & TARGET SHIFT**")
             if frame == 0:
@@ -179,8 +171,8 @@ with tabs[1]:
                 mutation = "A mutation perturbed the inherited weights." if event["mutated"] else "This child is crossover without mutation."
                 st.success(f"**Generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1} create the highlighted child. {mutation}")
                 st.caption(f"Inheritance: {highlight_event['inheritance_a']:.0%} from parent A and {1-highlight_event['inheritance_a']:.0%} from parent B." if (highlight_event := event) else "")
-            st.progress(float(l2_rate), text=f"Current contamination: {l2_rate:.0%}")
-            components.html(contamination_shift_svg(l2_rate), height=185, scrolling=False)
+            st.progress(active_rate, text=f"Current randomized contamination: {active_rate:.0%}")
+            components.html(contamination_shift_svg(active_rate), height=185, scrolling=False)
             st.markdown("🟢 **Low contamination:** broad target region.\n\n🟠 **High contamination:** target shifts and survivors become harder to find.\n\n🟣 Purple path = best candidate across snapshots.")
     if st.session_state.l2_playing:
         if frame < max_generation:
