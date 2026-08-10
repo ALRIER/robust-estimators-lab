@@ -68,7 +68,7 @@ def fixed_simplex_figure(population, history, terrain, event=None, show_populati
     for xx, yy, zz, label in zip(cx,cy,cz,["X\n(1, 0, 0)", "Y\n(0, 1, 0)", "Z\n(0, 0, 1)"]):
         ax.scatter([xx],[yy],[zz],s=38,c="#17232b",depthshade=False); ax.text(xx,yy,zz+.25,label,fontsize=8,ha="center",va="bottom")
     # Same frontal composition, with a modest aerial lift to expose the valley.
-    ax.view_init(elev=33, azim=-90, roll=0); ax.set_proj_type("ortho")
+    ax.view_init(elev=43, azim=-90, roll=0); ax.set_proj_type("ortho")
     ax.set_box_aspect((1.8, .92, .72)); ax.set_xlim(-.04,1.04); ax.set_ylim(-.07,.93); ax.set_zlim(0,8.35)
     ax.set_axis_off(); ax.set_facecolor("white")
     fig.subplots_adjust(left=.01, right=.90, bottom=.02, top=.96)
