@@ -18,13 +18,14 @@ def fixed_simplex_figure(population, history, terrain, event=None, show_populati
     ax = fig.add_subplot(111, projection="3d")
     tri = Triangulation(x, y, triangles)
     surface = ax.plot_trisurf(tri, elevation, cmap="turbo", linewidth=.08, antialiased=True,
-                              shade=True, vmin=fitness.min(), vmax=fitness.max())
+                              shade=True, vmin=elevation.min(), vmax=np.percentile(elevation, 96))
     if show_contours:
         ax.tricontour(tri, elevation, levels=18, colors="white", linewidths=.55, alpha=.62)
 
     def z_at(weights):
         values = demo_objective(weights[:, 0], weights[:, 1], weights[:, 2], terrain)
-        return .18 + 7.9 * (values-fitness.min())/(fitness.max()-fitness.min())
+        normalized = np.clip((values-fitness.min())/(fitness.max()-fitness.min()), 0, None)
+        return .16 + 7.75 * normalized**1.35
 
     if show_grid:
         for fixed in (.2, .4, .6, .8):
@@ -47,11 +48,11 @@ def fixed_simplex_figure(population, history, terrain, event=None, show_populati
 
     if show_population:
         px, py = barycentric_to_xy(population)
-        ax.scatter(px, py, z_at(population)+.12, s=28, c="white", edgecolors="#334155", linewidths=.45, depthshade=False)
+        ax.scatter(px, py, z_at(population)+.24, s=34, c="white", edgecolors="#334155", linewidths=.55, depthshade=False)
     if show_path and len(history):
-        hx, hy = barycentric_to_xy(history); hz = z_at(history)+.18
-        ax.plot(hx, hy, hz, color="#9f1239", linewidth=1.8, linestyle="--", alpha=.84)
-        ax.scatter(hx, hy, hz, s=20, c="#ef233c", edgecolors="white", linewidths=.35, depthshade=False)
+        hx, hy = barycentric_to_xy(history); hz = z_at(history)+.38
+        ax.plot(hx, hy, hz, color="#9f1239", linewidth=2.1, linestyle="--", alpha=.90)
+        ax.scatter(hx, hy, hz, s=28, c="#ef233c", edgecolors="white", linewidths=.45, depthshade=False)
 
     target = terrain["target"][None, :]; tx, ty = barycentric_to_xy(target); tz = z_at(target)+.32
     ax.scatter(tx, ty, tz, s=210, c="#facc15", marker="*", edgecolors="#713f12", linewidths=.9, depthshade=False, zorder=20)

@@ -60,7 +60,9 @@ def demo_objective(a, b, c, terrain=None):
     terrain = terrain or teaching_terrain("normal", "upper_tail", .10, 10., 0., "Tail-risk")
     a, b, c = np.asarray(a), np.asarray(b), np.asarray(c)
     target = terrain["target"]
-    distance = 1.9 * (a-target[0])**2 + 2.0 * (b-target[1])**2 + 2.5 * (c-target[2])**2
+    # Keep the simplex floor low; only the deliberately placed rear peaks
+    # should read as high-error mountains.
+    distance = .48 * (a-target[0])**2 + .52 * (b-target[1])**2 + .68 * (c-target[2])**2
     global_well = np.exp(-((a-target[0])**2/.025 + (b-target[1])**2/.025 + (c-target[2])**2/.018))
     left_peak = np.exp(-((a-.28)**2/.012 + (b-.07)**2/.014 + (c-.65)**2/.018))
     right_peak = np.exp(-((a-.07)**2/.014 + (b-.28)**2/.012 + (c-.65)**2/.018))
@@ -69,7 +71,7 @@ def demo_objective(a, b, c, terrain=None):
     if contamination == "upper_tail": right_peak *= 1.65
     elif contamination == "symmetric": left_peak *= 1.28; right_peak *= 1.28
     elif contamination == "point_mass": left_peak *= 1.8
-    boost = .20 + .055 * terrain.get("scale", 10.) + .90 * terrain.get("rate", .10)
+    boost = .16 + .030 * terrain.get("scale", 10.) + .60 * terrain.get("rate", .10)
     texture = terrain["ruggedness"] * np.sin(15*a + 3*c) * np.cos(13*b - 2*c)
     return .35 + distance - .66*global_well + boost*(left_peak + right_peak + .55*ridge) + texture
 
@@ -79,7 +81,8 @@ def _surface(terrain):
     fitness = demo_objective(*grid.T, terrain)
     # A restrained vertical compression keeps the valley visible without making
     # the terrain read as a flat plane.  It is visual scaling only.
-    elevation = .62 + 8.15 * (fitness - fitness.min()) / (fitness.max() - fitness.min())
+    normalized = (fitness - fitness.min()) / (fitness.max() - fitness.min())
+    elevation = .16 + 7.75 * normalized**1.35
     return grid, x, y, elevation, fitness, Delaunay(np.c_[x, y]).simplices
 
 
