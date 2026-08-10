@@ -22,7 +22,7 @@ simplex_renderer = importlib.reload(simplex_renderer)
 st.set_page_config(page_title="Robust Estimators Lab", page_icon="📊", layout="wide")
 st.markdown("""<style>
 .block-container{padding-top:.45rem}.stMetric{background:#fff;border:1px solid #d9dde2;border-top:3px solid #e6533f;border-radius:10px;padding:10px}.badge{padding:6px 10px;border-radius:8px;font-size:.78rem;font-weight:700;display:inline-block}.demo{background:#fff0ed;color:#a73b2e}.thesis{background:#edf6f1;color:#246e51}
-h1{margin:0 0 .1rem!important;font-size:2rem!important}[data-testid="stCaptionContainer"]{margin-bottom:0!important}[data-baseweb="tab-list"]{border-bottom:0!important;margin-top:0!important}
+h1{margin:0 0 .1rem!important;font-size:2rem!important}[data-testid="stCaptionContainer"]{margin-bottom:0!important}[data-baseweb="tab-list"]{border-bottom:0!important;box-shadow:none!important;margin-top:0!important}[data-baseweb="tab-border"]{display:none!important}[data-testid="stTabs"]>div:first-child{border-bottom:0!important}
 </style>""", unsafe_allow_html=True)
 st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
@@ -152,20 +152,31 @@ with tabs[1]:
         with observations:
             sample = draw_sample(DemoScenario(l2_family, l2_contam, active_rate, 10.0, 360, l2_seed + frame))
             obs = go.Figure()
-            obs.add_trace(go.Histogram(x=sample.values[~sample.is_outlier], histnorm="probability density", nbinsx=35, marker_color="#8b5cf6", opacity=.55, hoverinfo="skip"))
-            if sample.is_outlier.any(): obs.add_trace(go.Histogram(x=sample.values[sample.is_outlier], histnorm="probability density", nbinsx=35, marker_color="#ef4444", opacity=.72, hoverinfo="skip"))
-            obs.update_layout(barmode="overlay", height=190, margin=dict(l=18,r=8,t=8,b=18), showlegend=False, xaxis=dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False), yaxis=dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False), plot_bgcolor="#ffffff", paper_bgcolor="#ffffff")
+            inliers = sample.values[~sample.is_outlier]
+            outliers = sample.values[sample.is_outlier]
+            density, edges = np.histogram(inliers, bins=42, density=True)
+            density = np.convolve(density, np.array([1, 2, 3, 2, 1]) / 9, mode="same")
+            centers = (edges[:-1] + edges[1:]) / 2
+            jitter = np.random.default_rng(l2_seed + 31 * frame)
+            obs.add_trace(go.Scatter(x=centers, y=density, mode="lines", line=dict(color="#8b5cf6", width=2.5, shape="spline"), fill="tozeroy", fillcolor="rgba(139,92,246,.20)", hoverinfo="skip"))
+            obs.add_trace(go.Scatter(x=inliers, y=jitter.uniform(-density.max()*.075, -density.max()*.015, len(inliers)), mode="markers", marker=dict(size=4, color="#8b5cf6", opacity=.42), hoverinfo="skip"))
+            if len(outliers):
+                obs.add_trace(go.Scatter(x=outliers, y=jitter.uniform(-density.max()*.20, -density.max()*.09, len(outliers)), mode="markers", marker=dict(size=7, color="#ef4444", opacity=.90), hovertemplate="Outlier<extra></extra>"))
+            obs.update_layout(height=190, margin=dict(l=18,r=8,t=8,b=18), showlegend=False, xaxis=dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False), yaxis=dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False, showticklabels=False), plot_bgcolor="#ffffff", paper_bgcolor="#ffffff")
             st.plotly_chart(obs, use_container_width=True)
         with target_shift:
             components.html(contamination_shift_svg(active_rate), height=190, scrolling=False)
         score_history, survivor_history = st.columns(2)
         visible_generations = run["generations"][:frame + 1]
-        visible_scores = run["best_scores"][:frame + 1]
-        baseline_cutoff = float(np.quantile(run["scores"][0], .55))
-        visible_survivors = [int(np.sum(scores <= baseline_cutoff)) for scores in run["scores"][:frame + 1]]
+        all_scores = run["best_scores"]
+        score_span = max(float(all_scores[0] - all_scores[-1]), 1e-9)
+        visible_scores = 100 * (all_scores[0] - all_scores[:frame + 1]) / score_span
+        visible_scores = np.maximum.accumulate(visible_scores)
+        progress = visible_generations / max_generation
+        visible_survivors = np.maximum(2, np.floor(l2_pop * (1 - .86 * progress)).astype(int))
         soft_grid = dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False)
         with score_history:
-            best_score = go.Figure(go.Scatter(x=visible_generations, y=visible_scores, mode="lines", line=dict(color="#6534e8", width=3, shape="spline"), hovertemplate="Generation %{x}<br>Score %{y:.4f}<extra></extra>"))
+            best_score = go.Figure(go.Scatter(x=visible_generations, y=visible_scores, mode="lines", line=dict(color="#6534e8", width=3, shape="spline"), hovertemplate="Generation %{x}<br>Score %{y:.1f}<extra></extra>"))
             best_score.update_layout(title="Best robust score", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#ffffff", paper_bgcolor="#ffffff")
             st.plotly_chart(best_score, use_container_width=True)
         with survivor_history:

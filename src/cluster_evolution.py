@@ -14,10 +14,10 @@ def contamination_shift_svg(rate):
         target_x=offset+88+panel*22*rate; target_y=58+18*panel*rate; radius=25-10*panel*rate
         dots.append(f'<circle cx="{target_x:.0f}" cy="{target_y:.0f}" r="{radius:.0f}" fill="#bbf7d0" opacity=".55" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4 3"/>')
         dots.append(f'<circle cx="{target_x:.0f}" cy="{target_y:.0f}" r="5" fill="#16a34a"/>')
-    for _ in range(max(3,int(rate*25))):
+    for _ in range(max(3, int(rate * 110))):
         dots.append(f'<circle cx="{220+rng.uniform(5,105):.0f}" cy="{75+rng.uniform(-55,55):.0f}" r="3" fill="#ef4444"/>')
     grid = ''.join(f'<line x1="15" y1="{y}" x2="345" y2="{y}" stroke="#edf0f5" stroke-dasharray="2 5"/>' for y in (30, 75, 120))
-    return f'''<html><style>body{{margin:0}}svg{{width:100%;height:190px}}</style><svg viewBox="0 0 360 180">{grid}{''.join(dots)}<path d="M150 75 L205 75" stroke="#aab3c2" stroke-width="2" marker-end="url(#a)"/><defs><marker id="a" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#aab3c2"/></marker></defs><rect x="25" y="152" width="310" height="8" rx="4" fill="#e5e7eb"/><rect x="25" y="152" width="{310*rate:.0f}" height="8" rx="4" fill="#ef4444"/></svg></html>'''
+    return f'''<html><style>body{{margin:0}}svg{{width:100%;height:190px}}</style><svg viewBox="0 0 360 180">{grid}{''.join(dots)}<path d="M150 75 L205 75" stroke="#aab3c2" stroke-width="2" marker-end="url(#a)"/><defs><marker id="a" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#aab3c2"/></marker></defs></svg></html>'''
 
 
 def _svg_point(x, y, color, r=4, opacity=1):
