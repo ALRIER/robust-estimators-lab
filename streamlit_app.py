@@ -7,6 +7,7 @@ from src.synthetic_data import DemoScenario, draw_sample
 from src.estimators import location_estimates
 from src.mini_ga import MiniGAConfig, run_pedagogical_ga
 from src import simplex as simplex_renderer
+from src.fixed_simplex import fixed_simplex_figure
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -132,8 +133,8 @@ with tabs[1]:
         c.metric("POPULATION DIVERSITY", f"{run['diversity'][frame]:.3f}", "Simplex spread")
         d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive schedule")
         e.metric("CURRENT GENERATION", f"{st.session_state.get('l2_scrubber', 0)} / {max_generation}", "Pedagogical run")
-        st.markdown("**GA SEARCH THROUGH A 3D SIMPLEX FITNESS VALLEY**")
-        st.caption("Pedagogical simplex: X + Y + Z = 1 · terrain height is synthetic error, not a fourth simplex coordinate.")
+        st.markdown("**GA SEARCH THROUGH A FIXED-CAMERA SIMPLEX LANDSCAPE**")
+        st.caption("Pedagogical simplex: X + Y + Z = 1 · terrain height is synthetic error. The camera is deliberately fixed.")
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
@@ -147,8 +148,8 @@ with tabs[1]:
         show_grid = toggle_d.toggle("Show simplex grid", value=True, key="l2_show_grid")
         show_contamination = toggle_e.toggle("Show contamination", value=True, key="l2_show_contamination")
         event = None if frame == 0 else run["events"][frame][run["explained_event_indices"][frame]]
-        fig = simplex_renderer.demo_surface_with_population(run["populations"][frame], run["generation_best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid, show_contamination)
-        st.plotly_chart(fig, use_container_width=True)
+        fixed_fig = fixed_simplex_figure(run["populations"][frame], run["generation_best_path"][:frame+1], terrain, event, show_population, show_path, show_contours, show_grid, show_contamination)
+        st.pyplot(fixed_fig, use_container_width=True)
         lower_left, lower_middle, lower_right = st.columns([1.25,1.0,.95])
         with lower_left:
             convergence = go.Figure()
