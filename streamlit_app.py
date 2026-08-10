@@ -126,7 +126,7 @@ with tabs[1]:
         c.metric("POPULATION DIVERSITY", f"{run['diversity'][frame]:.3f}", "Simplex spread")
         d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive schedule")
         e.metric("CURRENT GENERATION", f"{st.session_state.get('l2_scrubber', 0)} / {max_generation}", "Pedagogical run")
-        st.markdown("**GA SEARCH ON A LOCAL SIMPLEX SLICE (LOW-DIMENSIONAL VIEW)**")
+        st.markdown("**GA SEARCH THROUGH A 3D SIMPLEX FITNESS VALLEY**")
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
         if play_col.button("▶ Play GA", use_container_width=True, key="l2_play"): st.session_state.l2_playing = True
         if pause_col.button("❚❚ Pause", use_container_width=True, key="l2_pause"): st.session_state.l2_playing = False
@@ -162,11 +162,11 @@ with tabs[1]:
         with lower_right:
             st.markdown("**WHAT'S HAPPENING?**")
             if frame == 0:
-                st.info("The population starts dispersed across the simplex. Each white point is a valid three-estimator mixture.")
+                st.info("The population starts dispersed across the simplex. Each white point is a valid three-component mixture; red points preserve the best solutions found so far.")
             else:
                 mutation = "A mutation perturbed the inherited weights." if event["mutated"] else "This child is crossover without mutation."
                 st.success(f"**Generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1} create the highlighted child. {mutation}")
-            st.markdown("🌄 **Peaks** are high synthetic error.\n\n🌊 **Valleys** are lower-error configurations.\n\n🟢 The population initially explores, then concentrates near promising basins.\n\n⭐ The star is the known optimum of this teaching terrain.")
+            st.markdown("🏔️ **Rear plateaus** are high synthetic error.\n\n🌊 **The valley** spans the displayed simplex slice; lower terrain is better.\n\n⚪ White points are the current GA candidates; 🔴 red points preserve the best-so-far trace.\n\n⭐ The star marks the known optimum of this teaching terrain.")
     if st.session_state.l2_playing:
         if frame < max_generation:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])

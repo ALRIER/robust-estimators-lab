@@ -51,18 +51,26 @@ def teaching_terrain(family, contamination, rate, scale, skewness, lens):
 
 
 def demo_objective(a, b, c, terrain=None):
-    """Artificial teaching fitness. Lower values produce the displayed valleys."""
+    """Artificial teaching fitness. Lower values produce the displayed valley.
+
+    The broad basin deliberately spans most of the simplex so that the search
+    reads as an optimisation process, rather than as points floating on a
+    small isolated crater. The tall features are biased toward the rear of
+    the displayed triangle; the global optimum remains in the foreground
+    basin where the path and the final star are easy to read.
+    """
     terrain = terrain or teaching_terrain("normal", "upper_tail", .10, 10., 0., "Tail-risk")
     a, b, c = np.asarray(a), np.asarray(b), np.asarray(c)
     target, local = terrain["target"], terrain["local"]
-    distance = 2.3 * (a-target[0])**2 + 2.7 * (b-target[1])**2 + 1.9 * (c-target[2])**2
-    global_well = np.exp(-((a-target[0])**2/.010 + (b-target[1])**2/.015 + (c-target[2])**2/.013))
-    local_well = np.exp(-((a-local[0])**2/.018 + (b-local[1])**2/.020 + (c-local[2])**2/.023))
-    peak_1 = np.exp(-((a-.10)**2/.012 + (b-.16)**2/.018 + (c-.74)**2/.018))
-    peak_2 = np.exp(-((a-.69)**2/.018 + (b-.25)**2/.020 + (c-.06)**2/.012))
-    ridge = np.exp(-((a-.38)**2/.008 + (b-.38)**2/.085))
-    texture = terrain["ruggedness"] * np.sin(16*a + 4*b) * np.cos(12*b - 3*c)
-    return .72 + distance - .50*global_well - .24*local_well + .54*peak_1 + .42*peak_2 + terrain["ridge"]*ridge + texture
+    distance = 1.85 * (a-target[0])**2 + 2.15 * (b-target[1])**2 + 1.65 * (c-target[2])**2
+    global_well = np.exp(-((a-target[0])**2/.018 + (b-target[1])**2/.024 + (c-target[2])**2/.020))
+    local_well = np.exp(-((a-local[0])**2/.026 + (b-local[1])**2/.030 + (c-local[2])**2/.032))
+    # ``a`` maps to the rear vertex in the visual simplex projection.
+    rear_peak = np.exp(-((a-.76)**2/.016 + (b-.14)**2/.024 + (c-.10)**2/.020))
+    rear_plateau = np.exp(-((a-.56)**2/.050 + (b-.31)**2/.060 + (c-.13)**2/.042))
+    side_ridge = np.exp(-((a-.44)**2/.012 + (b-.49)**2/.070 + (c-.07)**2/.025))
+    texture = terrain["ruggedness"] * np.sin(13*a + 3*b) * np.cos(10*b - 4*c)
+    return .62 + distance - .62*global_well - .18*local_well + .72*rear_peak + .33*rear_plateau + terrain["ridge"]*side_ridge + texture
 
 
 def _surface(terrain):
@@ -117,22 +125,26 @@ def demo_surface_with_population(population, path, terrain, highlight_event=None
     if show_contours: fig.add_trace(_contour_trace(x, y, z, triangles, np.linspace(z.min()+.5, z.max()-.4, 14)))
     if show_grid: fig.add_trace(_simplex_grid_trace(terrain, elevation))
     corners = np.array([[1,0,0],[0,1,0],[0,0,1]]); cx, cy = barycentric_to_xy(corners)
-    fig.add_trace(go.Scatter3d(x=cx,y=cy,z=elevation(corners)+.15,mode="markers+text",text=["A · Biweight", "B · Median", "C · Trimean"],textposition="top center",marker=dict(size=6,color="#17232b"),textfont=dict(size=12,color="#17232b"),showlegend=False,hoverinfo="skip"))
+    fig.add_trace(go.Scatter3d(x=cx,y=cy,z=elevation(corners)+.15,mode="markers+text",text=["Biweight axis", "Median axis", "Trimean axis"],textposition="top center",marker=dict(size=6,color="#17232b"),textfont=dict(size=12,color="#17232b"),showlegend=False,hoverinfo="skip"))
     if show_population:
         px, py = barycentric_to_xy(population)
         fig.add_trace(go.Scatter3d(x=px,y=py,z=elevation(population)+.07,mode="markers",name="Population",marker=dict(size=5.5,color="rgba(250,252,255,.95)",line=dict(color="#17232b",width=1)),customdata=demo_objective(*population.T,terrain),hovertemplate="Candidate fitness=%{customdata:.3f}<extra></extra>"))
     if show_path:
         tx, ty = barycentric_to_xy(path)
-        fig.add_trace(go.Scatter3d(x=tx,y=ty,z=elevation(path)+.13,mode="lines+markers",name="Best path (so far)",line=dict(color="#1d2730",width=5),marker=dict(size=4.5,color="#f5f5f5",line=dict(color="#1d2730",width=1))))
+        fig.add_trace(go.Scatter3d(x=tx,y=ty,z=elevation(path)+.16,mode="lines+markers",name="Best solutions / trace",line=dict(color="rgba(118,16,27,.78)",width=5),marker=dict(size=5.5,color="#ef233c",line=dict(color="#ffffff",width=1.2))))
     target = terrain["target"][None,:]; tx, ty = barycentric_to_xy(target)
-    fig.add_trace(go.Scatter3d(x=tx,y=ty,z=elevation(target)+.25,mode="markers",name="Global teaching optimum",marker=dict(size=12,color="#ffe04b",symbol="diamond",line=dict(color="#684c00",width=2))))
+    # Scatter3d has no native star marker; overlay a star glyph on a gold
+    # diamond so the optimum remains unambiguous in every supported browser.
+    fig.add_trace(go.Scatter3d(x=tx,y=ty,z=elevation(target)+.24,mode="markers+text",text=["★"],textposition="middle center",textfont=dict(size=20,color="#5c4200"),name="Known teaching optimum",marker=dict(size=15,color="#ffe04b",symbol="diamond",line=dict(color="#684c00",width=2))))
     if highlight_event is not None:
         parents=np.vstack([highlight_event["parent_a"],highlight_event["parent_b"]]); child=np.asarray(highlight_event["child"])[None,:]
         px,py=barycentric_to_xy(parents); cx,cy=barycentric_to_xy(child); pz=elevation(parents)+.21; cz=elevation(child)+.29
         fig.add_trace(go.Scatter3d(x=px,y=py,z=pz,mode="markers",name="Selected parents",marker=dict(size=8,color="#3b82c4",line=dict(color="white",width=1.2))))
         fig.add_trace(go.Scatter3d(x=[px[0],cx[0],px[1]],y=[py[0],cy[0],py[1]],z=[pz[0],cz[0],pz[1]],mode="lines",name="Inheritance",line=dict(color="rgba(59,130,196,.88)",width=6)))
         fig.add_trace(go.Scatter3d(x=cx,y=cy,z=cz,mode="markers",name="Explained child",marker=dict(size=11,color="#e31a1c" if highlight_event["mutated"] else "#23a36a",symbol="diamond",line=dict(color="white",width=1.5))))
-    # Front-on, low perspective: B--C is the foreground edge and A is the rear
-    # summit, matching the geological-search composition in the approved mockup.
-    fig.update_layout(height=900, margin=dict(l=0,r=0,t=54,b=0), title=f"Artificial fitness landscape — {terrain['label']}", legend=dict(orientation="h",y=1.02,font=dict(size=11)), scene=dict(xaxis=dict(visible=False),yaxis=dict(visible=False),zaxis=dict(visible=False),bgcolor="rgba(0,0,0,0)",aspectratio=dict(x=1.70,y=1,z=.62),camera=dict(eye=dict(x=0,y=-2.25,z=.96),center=dict(x=0,y=.08,z=-.03),projection=dict(type="perspective"))))
+    # High front perspective: the B--C edge stays in front, the mountain
+    # plateau rises at the rear, and all three spatial axes are immediately
+    # legible on first render.
+    axis_style = dict(showbackground=False, showgrid=True, gridcolor="rgba(29,39,48,.16)", zeroline=False, showticklabels=False, showspikes=False)
+    fig.update_layout(height=900, margin=dict(l=0,r=0,t=54,b=0), title=f"Artificial simplex fitness valley — {terrain['label']}", legend=dict(orientation="h",y=1.02,font=dict(size=11)), scene=dict(xaxis=dict(**axis_style, title="X · simplex coordinate"),yaxis=dict(**axis_style, title="Y · simplex coordinate"),zaxis=dict(**axis_style, title="Z · synthetic loss elevation"),bgcolor="rgba(0,0,0,0)",aspectratio=dict(x=1.65,y=1,z=.78),camera=dict(eye=dict(x=1.42,y=-2.18,z=1.48),center=dict(x=0,y=.10,z=-.08),projection=dict(type="perspective"))))
     return fig

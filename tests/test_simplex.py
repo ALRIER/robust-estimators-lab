@@ -1,5 +1,5 @@
 from src.mini_ga import MiniGAConfig, demo_ga, random_simplex_population, validate_simplex
-from src.simplex import barycentric_grid, demo_objective
+from src.simplex import barycentric_grid, demo_objective, demo_surface_with_population, teaching_terrain
 
 
 def test_random_population_is_valid_simplex():
@@ -26,3 +26,14 @@ def test_explained_child_fitness_matches_displayed_terrain():
     assert event["event_type"] == "offspring"
     assert validate_simplex(event["child"])
     assert event["fitness"] == demo_objective(*event["child"])
+
+
+def test_terrain_figure_exposes_axes_and_search_visuals():
+    population = random_simplex_population(12, 3, 22)
+    terrain = teaching_terrain("normal", "upper_tail", .10, 10., 0., "q95(MSE)")
+    fig = demo_surface_with_population(population, population[:4], terrain)
+    names = {trace.name for trace in fig.data if trace.name}
+    assert {"Population", "Best solutions / trace", "Known teaching optimum"} <= names
+    assert fig.layout.scene.xaxis.title.text.startswith("X")
+    assert fig.layout.scene.yaxis.title.text.startswith("Y")
+    assert fig.layout.scene.zaxis.title.text.startswith("Z")
