@@ -105,8 +105,6 @@ with tabs[0]:
             st.success("Construction complete. Layer 2 can now use this same kind of regime logic for its mini-GA demonstration.")
 
 with tabs[1]:
-    st.markdown('<span class="badge demo">DEMO MODE — artificial fitness laboratory</span>', unsafe_allow_html=True)
-    st.caption("Synthetic landscape for teaching only. The GA mechanics mirror the thesis, but this is not a thesis run or a scientific loss surface. Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
     controls, visual = st.columns([1.0, 4.2])
     with controls:
         st.markdown("**SEARCH CONTEXT**")
@@ -140,40 +138,25 @@ with tabs[1]:
     frame = int(st.session_state.get("l2_scrubber", 0))
     with controls:
         frame = st.slider("Generation", 0, max_generation, key="l2_scrubber")
+        st.markdown("**MAP VIEW**")
+        show_population = st.toggle("Population", value=True, key="l2_show_population")
+        show_path = st.toggle("Best path", value=True, key="l2_show_path")
+        show_contours = st.toggle("Inheritance", value=True, key="l2_show_contours")
+        show_grid = st.toggle("Grid", value=True, key="l2_show_grid")
+        show_contamination = st.toggle("Eliminated", value=True, key="l2_show_contamination")
     active_rate = float(demo["contamination_schedule"][frame])
     with visual:
-        st.markdown("## Cluster Evolution Map")
-        st.caption("Watch candidate solutions evolve from broad exploration to a robust target region.")
-        toggle_a,toggle_b,toggle_c,toggle_d,toggle_e = st.columns(5)
-        show_population = toggle_a.toggle("Show population", value=True, key="l2_show_population")
-        show_path = toggle_b.toggle("Show best path", value=True, key="l2_show_path")
-        show_contours = toggle_c.toggle("Show inheritance", value=True, key="l2_show_contours")
-        show_grid = toggle_d.toggle("Show map grid", value=True, key="l2_show_grid")
-        show_contamination = toggle_e.toggle("Show eliminated", value=True, key="l2_show_contamination")
-        event = None if frame == 0 else run["events"][frame][run["explained_event_indices"][frame]]
-        components.html(cluster_map_svg(run, frame, active_rate, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid), height=490, scrolling=False)
-        lower_left, lower_middle, lower_right = st.columns([1.2,1.0,1.0])
-        with lower_left:
+        components.html(cluster_map_svg(run, frame, active_rate, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=500, scrolling=False)
+        observations, target_shift = st.columns(2)
+        with observations:
             sample = draw_sample(DemoScenario(l2_family, l2_contam, active_rate, 10.0, 360, l2_seed + frame))
             obs = go.Figure()
-            obs.add_trace(go.Histogram(x=sample.values[~sample.is_outlier], histnorm="probability density", nbinsx=35, name="Inliers", marker_color="#8b5cf6", opacity=.55))
-            if sample.is_outlier.any(): obs.add_trace(go.Histogram(x=sample.values[sample.is_outlier], histnorm="probability density", nbinsx=35, name="Outliers", marker_color="#ef4444", opacity=.72))
-            obs.update_layout(title="Observations & contamination", barmode="overlay", height=285, margin=dict(l=25,r=10,t=42,b=25), legend=dict(orientation="h", y=1.12, font=dict(size=9)), xaxis_title="Observed value", yaxis_title="Density")
+            obs.add_trace(go.Histogram(x=sample.values[~sample.is_outlier], histnorm="probability density", nbinsx=35, marker_color="#8b5cf6", opacity=.55, hoverinfo="skip"))
+            if sample.is_outlier.any(): obs.add_trace(go.Histogram(x=sample.values[sample.is_outlier], histnorm="probability density", nbinsx=35, marker_color="#ef4444", opacity=.72, hoverinfo="skip"))
+            obs.update_layout(barmode="overlay", height=235, margin=dict(l=18,r=8,t=8,b=18), showlegend=False, xaxis=dict(visible=False), yaxis=dict(visible=False), plot_bgcolor="#ffffff", paper_bgcolor="#ffffff")
             st.plotly_chart(obs, use_container_width=True)
-        with lower_middle:
-            st.markdown("**HOW TO READ THIS MAP**")
-            st.markdown("1. **Initialize** — random population explores the space.\n\n2. **Score & Select** — weak candidates fade.\n\n3. **Recombine & Mutate** — survivors create variation.\n\n4. **Converge** — the purple trace approaches the target region.")
-        with lower_right:
-            st.markdown("**CONTAMINATION & TARGET SHIFT**")
-            if frame == 0:
-                st.info("Low contamination keeps the robust target region broad and easier to reach.")
-            else:
-                mutation = "A mutation perturbed the inherited weights." if event["mutated"] else "This child is crossover without mutation."
-                st.success(f"**Generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1} create the highlighted child. {mutation}")
-                st.caption(f"Inheritance: {highlight_event['inheritance_a']:.0%} from parent A and {1-highlight_event['inheritance_a']:.0%} from parent B." if (highlight_event := event) else "")
-            st.progress(active_rate, text=f"Current randomized contamination: {active_rate:.0%}")
-            components.html(contamination_shift_svg(active_rate), height=185, scrolling=False)
-            st.markdown("🟢 **Low contamination:** broad target region.\n\n🟠 **High contamination:** target shifts and survivors become harder to find.\n\n🟣 Purple path = best candidate across snapshots.")
+        with target_shift:
+            components.html(contamination_shift_svg(active_rate), height=235, scrolling=False)
     if st.session_state.l2_playing:
         if frame < max_generation:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
