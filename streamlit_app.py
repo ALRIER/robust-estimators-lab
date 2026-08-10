@@ -128,14 +128,17 @@ with tabs[1]:
     demo = build_layer2_demo(*key, "simplex-v4")
     run, terrain = demo["run"], demo["terrain"]
     max_generation = int(run["generations"][-1])
+    loss_span = max(1e-9, float(run["best_scores"][0] - run["best_scores"].min()))
+    robust_score = np.clip((run["best_scores"][0] - run["best_scores"]) / loss_span, 0, 1)
+    survivor_count = np.maximum(2, np.ceil(l2_pop * (1 - .70 * run["generations"] / max_generation))).astype(int)
     frame = int(st.session_state.get("l2_scrubber", 0))
     with visual:
         a,b,c,d,e = st.columns(5)
-        a.metric("BEST VALIDATION LOSS", f"{run['best_scores'][frame]:.3f}", "Synthetic q95(MSE)")
-        b.metric("BEST q95(MSE)", f"{run['best_scores'][frame]:.3f}", "Lower is better")
-        c.metric("POPULATION DIVERSITY", f"{run['diversity'][frame]:.3f}", "Simplex spread")
-        d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive schedule")
-        e.metric("CURRENT GENERATION", f"{st.session_state.get('l2_scrubber', 0)} / {max_generation}", "Pedagogical run")
+        a.metric("BEST ROBUST SCORE", f"{robust_score[frame]:.2f}", "Higher is better")
+        b.metric("CURRENT SCORE", f"{robust_score[frame]:.2f}", f"Generation {frame}")
+        c.metric("SURVIVORS", f"{survivor_count[frame]}", f"of {l2_pop} candidates")
+        d.metric("MUTATION RATE", f"{run['mutation_rates'][frame]:.0%}", "Adaptive exploration")
+        e.metric("CONTAMINATION", f"{l2_rate:.0%}", "Target-region shift")
         st.markdown("## Cluster Evolution Map")
         st.caption("Watch candidate solutions evolve from broad exploration to a robust target region.")
         play_col, pause_col, reset_col, speed_col = st.columns([1,1,1,1.4])
@@ -155,30 +158,25 @@ with tabs[1]:
         lower_left, lower_middle, lower_right = st.columns([1.25,1.0,.95])
         with lower_left:
             convergence = go.Figure()
-            synthetic_validation = run["best_scores"] * (1.06 - .04*np.exp(-run["generations"]/45))
-            convergence.add_trace(go.Scatter(x=run["generations"], y=run["best_scores"], mode="lines", name="Best training loss", line=dict(color="#ef233c", width=2.6)))
-            convergence.add_trace(go.Scatter(x=run["generations"], y=synthetic_validation, mode="lines", name="Best validation loss", line=dict(color="#2878d4", width=2.2)))
-            convergence.add_trace(go.Scatter(x=run["generations"], y=run["diversity"], mode="lines", name="Diversity", yaxis="y2", line=dict(color="#27a35c", width=2)))
+            convergence.add_trace(go.Scatter(x=run["generations"], y=robust_score, mode="lines", name="Best robust score", fill="tozeroy", line=dict(color="#6534e8", width=2.8), fillcolor="rgba(101,52,232,.12)"))
             convergence.add_vline(x=frame, line_dash="dash", line_color="#555")
-            convergence.update_layout(title="Convergence over generations", height=285, margin=dict(l=35,r=35,t=42,b=30), legend=dict(orientation="h",y=1.15,font=dict(size=9)), xaxis_title="Generation", yaxis=dict(title="Synthetic loss", type="log"), yaxis2=dict(title="Diversity",overlaying="y",side="right"))
+            convergence.update_layout(title="Best robust score (by generation)", height=285, margin=dict(l=35,r=20,t=42,b=30), showlegend=False, xaxis_title="Generation", yaxis=dict(title="Robust score", range=[0,1.05]))
             st.plotly_chart(convergence, use_container_width=True)
         with lower_middle:
-            weights = run["best_path"]
-            weight_fig = go.Figure()
-            for i,label,color in [(0,"Biweight (A)","#209653"),(1,"Median (B)","#2671bb"),(2,"Trimean (C)","#f08022")]:
-                weight_fig.add_trace(go.Scatter(x=run["generations"],y=weights[:,i],stackgroup="one",mode="lines",name=label,line=dict(color=color,width=.5)))
-            weight_fig.add_vline(x=frame,line_dash="dash",line_color="#555")
-            weight_fig.update_layout(title="Weight evolution (top 3 estimators)",height=285,margin=dict(l=35,r=8,t=42,b=30),legend=dict(orientation="h",y=1.15,font=dict(size=9)),xaxis_title="Generation",yaxis=dict(title="Weight",range=[0,1]))
-            st.plotly_chart(weight_fig,use_container_width=True)
+            survivor_fig = go.Figure(go.Scatter(x=run["generations"], y=survivor_count, mode="lines", fill="tozeroy", line=dict(color="#2563eb", width=2.7), fillcolor="rgba(37,99,235,.12)"))
+            survivor_fig.add_vline(x=frame,line_dash="dash",line_color="#555")
+            survivor_fig.update_layout(title="Survivor count (by generation)",height=285,margin=dict(l=35,r=8,t=42,b=30),showlegend=False,xaxis_title="Generation",yaxis=dict(title="Surviving candidates",range=[0,l2_pop]))
+            st.plotly_chart(survivor_fig,use_container_width=True)
         with lower_right:
-            st.markdown("**WHAT'S HAPPENING?**")
+            st.markdown("**CONTAMINATION & TARGET SHIFT**")
             if frame == 0:
-                st.info("Generation 0 starts dispersed. White points are candidates; the red trace records the best candidate of each generation.")
+                st.info("Low contamination keeps the robust target region broad and easier to reach.")
             else:
                 mutation = "A mutation perturbed the inherited weights." if event["mutated"] else "This child is crossover without mutation."
                 st.success(f"**Generation {frame}:** parents #{event['parent_a_index']+1} and #{event['parent_b_index']+1} create the highlighted child. {mutation}")
                 st.caption(f"Inheritance: {highlight_event['inheritance_a']:.0%} from parent A and {1-highlight_event['inheritance_a']:.0%} from parent B." if (highlight_event := event) else "")
-            st.markdown("🏔️ **Rear mountains** are high synthetic error.\n\n🌊 **Blue valley** is the low-error convergence basin.\n\n⚪ Candidates · 🔴 historical best trace · 🟠 contamination stress · ⭐ perfect convergence.")
+            st.progress(float(l2_rate), text=f"Current contamination: {l2_rate:.0%}")
+            st.markdown("🟢 **Low contamination:** broad target region.\n\n🟠 **High contamination:** target shifts and survivors become harder to find.\n\n🟣 Purple path = best candidate across snapshots.")
     if st.session_state.l2_playing:
         if frame < max_generation:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
