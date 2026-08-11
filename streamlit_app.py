@@ -43,52 +43,51 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
 
 with tabs[0]:
-    st.markdown('<span class="badge demo">DEMO MODE — pedagogical sample construction</span>', unsafe_allow_html=True)
-    st.markdown('<div class="layer-heading">LAYER 1 — SAMPLE AND OUTLIERS</div>', unsafe_allow_html=True)
-    st.markdown('<div class="layer-subheading">Build one synthetic regime and inspect how contamination shifts classical and robust locations.</div>', unsafe_allow_html=True)
-    controls, visual = st.columns([1, 3])
+    # Layer 1 is a real, deterministic sample construction, not an analogy.
+    # A fixed internal seed makes parameter changes directly comparable without
+    # exposing an unnecessary defense-time control.
+    L1_SEED = 20260808
+    if "l1_next_stage" in st.session_state:
+        st.session_state.l1_stage = st.session_state.pop("l1_next_stage")
+    controls, visual = st.columns([.72, 5.28])
     with controls:
-        st.subheader("Build a data-generating regime")
+        st.markdown("**DATA-GENERATING REGIME**")
         l1_family = st.selectbox("Distribution family", ["normal", "lognormal", "weibull", "exgaussian"], key="l1_family")
         l1_contam = st.selectbox("Contamination structure", ["none", "upper_tail", "symmetric", "bimodal", "point_mass"], index=1, key="l1_contam")
         l1_rate = st.slider("Contamination rate", 0.0, .30, .10, .01, key="l1_rate")
         l1_scale = st.slider("Outlier scale", 1.5, 20.0, 10.0, .5, key="l1_scale")
         l1_n = st.select_slider("Population / sample size", [100, 300, 500, 1000, 1500, 2500, 5000], value=1500, key="l1_n")
-        l1_seed = int(st.number_input("Reproducible seed", value=20260808, step=1, key="l1_seed"))
-        rebuild = st.button("Generate this regime", type="primary", use_container_width=True)
-    l1_key=(l1_family,l1_contam,l1_rate,l1_scale,l1_n,l1_seed)
-    if "l1_next_frame" in st.session_state:
-        st.session_state.l1_scrubber=st.session_state.pop("l1_next_frame")
-    if "l1_key" not in st.session_state or st.session_state.l1_key != l1_key or rebuild:
-        # Start on the complete scenario so the independent teaching view is useful
-        # immediately; Reset still exposes the inlier-to-outlier construction.
-        st.session_state.l1_key=l1_key; st.session_state.l1_scrubber=0; st.session_state.l1_show_complete=True; st.session_state.l1_playing=False
-    if st.button("Use this regime in Layer 2", type="primary", use_container_width=False, key="l1_to_l2"):
-        st.session_state.l2_from_layer1 = {"family": l1_family, "contamination": l1_contam, "rate": float(l1_rate), "scale": float(l1_scale), "n": int(l1_n)}
-    sample=draw_sample(DemoScenario(l1_family,l1_contam,float(l1_rate),float(l1_scale),int(l1_n),l1_seed))
+    l1_key=(l1_family,l1_contam,l1_rate,l1_scale,l1_n)
+    if "l1_key" not in st.session_state or st.session_state.l1_key != l1_key:
+        st.session_state.l1_key=l1_key; st.session_state.l1_stage=3; st.session_state.l1_playing=False
+    with controls:
+        st.markdown("**CONSTRUCTION PLAYBACK**")
+        play, pause, reset = st.columns(3)
+        if play.button("▶", use_container_width=True, key="l1_play"):
+            st.session_state.l1_playing=True
+        if pause.button("❚❚", use_container_width=True, key="l1_pause"):
+            st.session_state.l1_playing=False
+        if reset.button("↺", use_container_width=True, key="l1_reset"):
+            st.session_state.l1_stage=0; st.session_state.l1_playing=False
+        l1_speed=st.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l1_speed")
+        stage=st.select_slider("Construction stage", options=[0,1,2,3], value=3, format_func=lambda item: ("Baseline", "Outliers enter", "Contamination grows", "Complete")[item], key="l1_stage")
+    sample=draw_sample(DemoScenario(l1_family,l1_contam,float(l1_rate),float(l1_scale),int(l1_n),L1_SEED))
     inlier_ids=np.flatnonzero(~sample.is_outlier); outlier_ids=np.flatnonzero(sample.is_outlier)
-    batch=max(20,int(np.ceil(l1_n/50)))
-    frames=list(range(0,l1_n+1,batch))
-    if frames[-1] != l1_n: frames.append(l1_n)
-    # `frames` is computed after the state reset above; bring a first visit to the
-    # completed state without changing an explicit Reset action.
-    if st.session_state.pop("l1_show_complete", False):
-        st.session_state.l1_scrubber=len(frames)-1
+    progress_levels=(.35,.55,.78,1.00)
+    progress=progress_levels[stage]
+    stage_names=("baseline forms", "outliers enter", "contamination grows", "full contaminated sample")
+    inlier_count=int(round(len(inlier_ids)*min(1,progress/.40)))
+    outlier_count=int(round(len(outlier_ids)*np.clip((progress-.40)/.40,0,1)))
+    visible_ids=np.r_[inlier_ids[:inlier_count],outlier_ids[:outlier_count]]
+    values=sample.values[visible_ids]; visible_outliers=sample.is_outlier[visible_ids]
+    full_estimates=location_estimates(sample.values)
     with visual:
-        play,pause,reset,speed_col=st.columns([1,1,1,1.4])
-        if play.button("▶ Play construction",use_container_width=True,key="l1_play"): st.session_state.l1_playing=True
-        if pause.button("❚❚ Pause",use_container_width=True,key="l1_pause"): st.session_state.l1_playing=False
-        if reset.button("↺ Reset",use_container_width=True,key="l1_reset"): st.session_state.l1_scrubber=0; st.session_state.l1_playing=False
-        l1_speed=speed_col.select_slider("Animation pace",["Slow","Normal","Fast"],value="Normal",key="l1_speed")
-        frame_index=st.slider("Construction progress",0,len(frames)-1,key="l1_scrubber")
-        progress=frames[frame_index]/l1_n
-        # The baseline forms during 0–40%; contamination then enters during 40–80%.
-        inlier_count=int(round(len(inlier_ids)*min(1,progress/.40)))
-        outlier_count=int(round(len(outlier_ids)*np.clip((progress-.40)/.40,0,1)))
-        visible_ids=np.r_[inlier_ids[:inlier_count],outlier_ids[:outlier_count]]
-        values=sample.values[visible_ids]; visible_outliers=sample.is_outlier[visible_ids]
-        phase="baseline forms" if progress < .40 else ("contamination grows" if progress < .80 else "full contaminated sample")
-        st.caption(f"Step {frame_index+1} / {len(frames)} · {len(values):,} of {l1_n:,} observations · phase: {phase}")
+        summary, *metric_cards = st.columns([2.1,1,1,1,1,1])
+        with summary:
+            st.markdown(f'''<div class="scenario-panel"><b>{l1_family.replace('exgaussian', 'Ex-Gaussian').title()}</b> · {l1_contam.replace('_', ' ').title()}<br>ε = {l1_rate:.0%} · scale = {l1_scale:g}× · n = {l1_n:,}<br>Expected outliers: {int(round(l1_rate*l1_n)):,}</div>''', unsafe_allow_html=True)
+        for card,(name,value) in zip(metric_cards,full_estimates.items()):
+            card.metric(name, f"{value:.3f}")
+        st.caption(f"Stage {stage + 1} of 4 · {len(values):,} visible observations · {stage_names[stage]}")
         fig=go.Figure()
         peak=1.0
         if len(values)>8:
@@ -102,42 +101,22 @@ with tabs[0]:
             current=location_estimates(values)
             for name,value in current.items(): fig.add_vline(x=value,line_width=1.5,line_dash='dot',annotation_text=name,annotation_position='top')
         fig.add_vline(x=sample.true_location,line_dash='dash',line_width=2,annotation_text='Synthetic target')
-        fig.update_layout(height=460,xaxis_title='Observed value',yaxis_title='Density',margin=dict(l=10,r=10,t=35,b=20),legend=dict(orientation='h',y=1.02),plot_bgcolor='#081525',paper_bgcolor='#081525',yaxis=dict(range=[-.14*peak,1.15*peak]))
+        fig.update_layout(height=500,xaxis_title='Observed value',yaxis_title='Density',margin=dict(l=10,r=10,t=35,b=20),legend=dict(orientation='h',y=1.02),plot_bgcolor='#081525',paper_bgcolor='#081525',yaxis=dict(range=[-.14*peak,1.15*peak]))
         st.plotly_chart(fig,use_container_width=True)
-    p1,p2=st.columns([1.45,1])
-    with p1:
         strip=go.Figure()
         strip.add_trace(go.Scatter(x=np.arange(len(values))[~visible_outliers],y=values[~visible_outliers],mode='markers',name='Inliers',marker=dict(size=5,color='#3576a8',opacity=.55)))
-        if visible_outliers.any(): strip.add_trace(go.Scatter(x=np.arange(len(values))[visible_outliers],y=values[visible_outliers],mode='markers',name='Contamination',marker=dict(size=6,color='#e6533f',opacity=.8)))
-        strip.update_layout(title='Observation stream used to build the displayed density',height=280,xaxis_title='Construction order',yaxis_title='Value',margin=dict(l=10,r=10,t=40,b=20),legend=dict(orientation='h',y=1.04))
+        if visible_outliers.any(): strip.add_trace(go.Scatter(x=np.arange(len(values))[visible_outliers],y=values[visible_outliers],mode='markers',name='Outliers',marker=dict(size=9,color='#ff5b49',symbol='x',opacity=.9)))
+        strip.update_layout(title='Observed sample stream: inliers first, then generated contamination',height=390,xaxis_title='Construction order',yaxis_title='Observed value',margin=dict(l=10,r=10,t=40,b=20),legend=dict(orientation='h',y=1.04),plot_bgcolor='#081525',paper_bgcolor='#081525')
         st.plotly_chart(strip,use_container_width=True)
-    with p2:
-        st.subheader("Scenario selected")
-        st.markdown(f'''<div class="scenario-panel"><b>{l1_family.replace('exgaussian', 'Ex-Gaussian').title()}</b><br>
-        {l1_contam.replace('_', ' ').title()} contamination · ε = {l1_rate:.0%}<br>
-        Outlier scale: {l1_scale:g}× · sample: {l1_n:,}<br>
-        Expected outliers: {int(round(l1_rate*l1_n)):,}</div>''', unsafe_allow_html=True)
-        st.caption("Blue observations establish the baseline; red observations then alter the location and tail behaviour.")
-        if len(values)>8:
-            current=location_estimates(values)
-            for name,value in current.items(): st.metric(name,f"{value:.3f}")
-    if len(values)>8:
-        estimates=location_estimates(values)
-        errors={name: abs(value-sample.true_location) for name,value in estimates.items()}
-        comparison=go.Figure(go.Bar(x=list(errors),y=list(errors.values()),marker_color=['#ff5b49','#73dc78','#ffa92f','#b879ff','#4fc3ff']))
-        comparison.add_hline(y=0,line_dash='dash',line_color='#dceaff')
-        comparison.update_layout(title='Absolute location error relative to the known synthetic target',height=270,yaxis_title='Absolute error',margin=dict(l=10,r=10,t=42,b=20),showlegend=False,plot_bgcolor='#081525',paper_bgcolor='#081525')
-        st.plotly_chart(comparison,use_container_width=True)
-        st.info("No single estimator is uniformly best. The useful comparison is the estimator’s error under this selected family and contamination regime.")
-    st.markdown('<div class="independent-note">This layer is a self-contained sample-construction demonstration. It does not start, tune, or report the genetic algorithm.</div>', unsafe_allow_html=True)
     if st.session_state.l1_playing:
-        if frame_index < len(frames)-1:
-            time.sleep({"Slow":.65,"Normal":.28,"Fast":.10}[l1_speed])
-            st.session_state.l1_next_frame=frame_index+1
+        if stage < 3:
+            # Only three safe transitions occur per run; this avoids flooding the
+            # Streamlit websocket with dozens of Plotly ForwardMsg updates.
+            time.sleep({"Slow":4.5,"Normal":2.5,"Fast":1.0}[l1_speed])
+            st.session_state.l1_next_stage=stage+1
             st.rerun()
         else:
             st.session_state.l1_playing=False
-            st.success("Construction complete. Layer 2 can now use this same kind of regime logic for its mini-GA demonstration.")
 
 with tabs[1]:
     if "l2_from_layer1" in st.session_state:
