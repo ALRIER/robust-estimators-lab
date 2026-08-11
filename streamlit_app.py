@@ -242,39 +242,15 @@ with tabs[1]:
             st.success("Demo run complete. Scrub the timeline or change the regime to compare a new search landscape.")
 
 with tabs[2]:
-    story_steps = (
-        ("01", "Scenario universe", "Define the regime before fitting", "The simulation engine spans 576 contamination conditions: 9 scales × 8 rates × 8 mechanisms. Discovery uses three non-overlapping folds and two search seeds.", "Performance is conditional on the data-generating regime. Cross validation limits dependence on scenarios used for fitting.", "SCENARIO ENGINE", "576-condition grid · 3 folds · seeds 101 and 202"),
-        ("02", "HPF1", "Broad, low-cost screening", "The first high-pass filter screens configurations and regimes using 60% scenario exposure, 8 generations per fold, 15 samples and 40 bootstrap resamples.", "HPF1 allocates further computation to promising combinations; passing it is not evidence of a benchmark improvement.", "DISCOVERY SCREEN", "HPF1: 60% exposure · 8 generations/fold"),
-        ("03", "HPF2 & halving", "Deepen then narrow discovery", "HPF2 reassesses survivors at 80% exposure in the initial search (90% in the expanded search), then specialist halving retains the strongest pairs; five candidates reach the held-out gate.", "More computation is concentrated where it is informative while preserving the distinction between discovery and confirmation.", "DISCOVERY SCREEN", "HPF2 → specialist halving → 5 gate candidates"),
-        ("04", "Held-out gate", "Apply the dual benchmark decision", "No further optimisation occurs. A candidate is nominated only if it beats the strongest admissible benchmark on both mean MSE and q95(MSE) using held-out scenarios.", "The dual gate prevents a local search advantage or a one-metric improvement from being reported as a discovery win.", "DISCOVERY DECISION", "Held-out evidence · mean MSE AND q95(MSE)"),
-        ("05", "Frozen confirmation", "Test the stored weights without retraining", "After nomination, crossover, mutation, specialist halving and candidate selection stop. Locked weights face new seeds, a broader benchmark registry, paired bootstrap uncertainty and unseen related regimes.", "Confirmation tests whether a discovery advantage persists once the search is no longer allowed to adapt.", "CONFIRMATION", "Fixed weights · new seeds · bootstrap · profile audits"),
-        ("06", "Expanded & final evidence", "Repeat, then calibrate externally", "The study repeats discovery with the 26-component library and a second fixed-weight evaluation; public-data calibration is performed without retraining.", "The final record separates discovery output, fixed-weight evidence and external calibration; benchmark retention remains valid when support is insufficient.", "EVIDENCE RECORD", "NEST26 rediscovery · second freeze · external calibration"),
-    )
-    if "story_next_stage" in st.session_state:
-        st.session_state.story_stage = st.session_state.pop("story_next_stage")
-    rail, stage_area = st.columns([.72, 5.28])
-    with rail:
-        st.markdown("**STUDY TOUR**")
-        start, pause, reset = st.columns(3)
-        if start.button("▶", use_container_width=True, key="story_play"):
-            st.session_state.story_playing = True
-        if pause.button("❚❚", use_container_width=True, key="story_pause"):
-            st.session_state.story_playing = False
-        if reset.button("↺", use_container_width=True, key="story_reset"):
-            st.session_state.story_stage = 0; st.session_state.story_playing = False
-        story_pace = st.select_slider("Quick tour pace", ["Slow", "Normal", "Fast"], value="Normal", key="story_pace")
-        story_stage = st.select_slider("Manual stage", options=list(range(len(PIPELINE_STAGES))), value=0, format_func=lambda item: f"{item + 1}. {PIPELINE_STAGES[item][0]}", key="story_stage")
-        st.caption("Quick Tour follows one candidate through the written-thesis protocol.")
-    with stage_area:
-        components.html(experiment_pipeline_svg(story_stage), height=790, scrolling=False)
-        st.caption("Animated protocol transcribed from Thesis-06Aug-V11: Genetic Algorithm Framework and Cross Validation and the Discovery Sequence. It is a narrative of the method, not a rerun of the thesis GA.")
-    if st.session_state.get("story_playing", False):
-        if story_stage < len(PIPELINE_STAGES) - 1:
-            time.sleep({"Slow": 4.5, "Normal": 3.5, "Fast": 1.7}[story_pace])
-            st.session_state.story_next_stage = story_stage + 1
-            st.rerun()
-        else:
-            st.session_state.story_playing = False
+    if "story_stage" not in st.session_state:
+        st.session_state.story_stage = 0
+    stage_buttons = st.columns(3)
+    for index, (title, _what, _why) in enumerate(PIPELINE_STAGES):
+        with stage_buttons[index % 3]:
+            if st.button(f"{index + 1}. {title}", key=f"story_stage_{index}", use_container_width=True, type="primary" if index == st.session_state.story_stage else "secondary"):
+                st.session_state.story_stage = index
+    components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
+    st.caption("Select a stage to inspect the written-thesis protocol manually. This visual narrative does not rerun the thesis GA or claim a new result.")
 
 with tabs[3]:
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
