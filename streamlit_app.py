@@ -196,7 +196,7 @@ with tabs[1]:
     with visual:
         # The generation map is the instructional focus: keep it first and tall
         # enough to be fully visible without the former summary-card row.
-        components.html(cluster_map_svg(run, frame, phase, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=545, scrolling=False)
+        components.html(cluster_map_svg(run, frame, phase, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=940, scrolling=False)
         observations, target_shift = st.columns(2)
         with observations:
             sample = draw_sample(DemoScenario(l2_family, l2_contam, active_rate, l2_scale, int(l2_sample_n), l2_seed))

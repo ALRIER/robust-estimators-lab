@@ -31,7 +31,9 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
     generations = list(range(first, generation + 1))
     if phase == 4 and generation < max_generation:
         generations.append(generation + 1)
-    width, height, top, bottom = 1120, 480, 95, 415
+    # The map is intentionally the dominant defense view.  Its expanded canvas
+    # leaves supporting charts below the fold rather than squeezing generations.
+    width, height, top, bottom = 1120, 920, 135, 790
     xs = np.linspace(145, 920, len(generations)); positions = {}
     clouds, labels, frames = [], [], []
     palette = ("#386ee8", "#36b6bd", "#72ce67", "#f7b733", "#ff634f")
@@ -42,7 +44,7 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
         labels.append(f'<text x="{cx:.0f}" y="42" text-anchor="middle" class="gen">GEN {gen}{" (current)" if gen == generation else ""}</text>')
         rng = np.random.default_rng(20260810 + gen)
         for index, weight in enumerate(pop):
-            px = cx + rng.normal(0, 47); py = bottom - 150 * (weight[2] - weight[0]) + rng.normal(0, 26)
+            px = cx + rng.normal(0, 47); py = bottom - 330 * (weight[2] - weight[0]) + rng.normal(0, 52)
             positions[(gen, index)] = (px, py)
             active = gen == generation
             color = "#64748b"; opacity = .65
@@ -68,6 +70,6 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
         for gen in generations:
             best = int(np.argmin(run["scores"][gen])); path.append(positions[(gen, best)])
     path_svg = "" if len(path) < 2 else '<path d="' + ' '.join(f'{"M" if i == 0 else "L"}{x:.1f},{y:.1f}' for i, (x, y) in enumerate(path)) + '" class="best"/>'
-    grid = ''.join(f'<line x1="45" y1="{y}" x2="1040" y2="{y}" class="grid"/>' for y in range(130, bottom, 70)) if show_grid else ""
+    grid = ''.join(f'<line x1="45" y1="{y}" x2="1040" y2="{y}" class="grid"/>' for y in range(170, bottom, 135)) if show_grid else ""
     phase_label = PHASES[phase]
-    return f'''<html><style>body{{margin:0;background:#081525;font-family:Arial,sans-serif}}svg{{width:100%;height:535px}}.grid{{stroke:#214664;stroke-dasharray:2 6}}.gen{{font-size:16px;font-weight:800;fill:#edf6ff}}.best{{fill:none;stroke:#b879ff;stroke-width:3;stroke-dasharray:5 4}}.phase{{font-size:15px;font-weight:700;fill:#f3c743}}.hint{{font-size:12px;fill:#aebed3}}</style><svg viewBox="0 0 {width} {height}"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3z" fill="#dceaff"/></marker></defs>{grid}{''.join(frames)}{path_svg}{''.join(links)}{''.join(clouds)}{''.join(labels)}<text x="50" y="470" class="phase">GEN {generation}: {phase_label}</text><text x="330" y="470" class="hint">columns are real populations; colours encode fitness</text></svg></html>'''
+    return f'''<html><style>body{{margin:0;background:#081525;font-family:Arial,sans-serif}}svg{{width:100%;height:920px}}.grid{{stroke:#214664;stroke-dasharray:2 6}}.gen{{font-size:16px;font-weight:800;fill:#edf6ff}}.best{{fill:none;stroke:#b879ff;stroke-width:3;stroke-dasharray:5 4}}.phase{{font-size:15px;font-weight:700;fill:#f3c743}}.hint{{font-size:12px;fill:#aebed3}}</style><svg viewBox="0 0 {width} {height}"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3z" fill="#dceaff"/></marker></defs>{grid}{''.join(frames)}{path_svg}{''.join(links)}{''.join(clouds)}{''.join(labels)}<text x="50" y="885" class="phase">GEN {generation}: {phase_label}</text><text x="330" y="885" class="hint">columns are real populations; colours encode fitness</text></svg></html>'''
