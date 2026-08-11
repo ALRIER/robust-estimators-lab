@@ -31,14 +31,12 @@ st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
 
 @st.cache_data(show_spinner="Building the pedagogical GA landscape…")
-def build_layer2_demo(family, contamination, mutation_rate, population_size, lens, seed, renderer_version):
+def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, mutation_rate, population_size, lens, seed, renderer_version):
     """The terrain and GA share one artificial objective, changed by UI controls."""
-    terrain = simplex_renderer.teaching_terrain(family, contamination, .10, 10., 0., lens)
+    terrain = simplex_renderer.teaching_terrain(family, contamination, contamination_rate, outlier_scale, 0., lens)
     objective = lambda weights: simplex_renderer.demo_objective(weights[:, 0], weights[:, 1], weights[:, 2], terrain)
     run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=150, mutation_rate=mutation_rate, seed=seed))
-    rng = np.random.default_rng(seed + 91)
-    contamination_schedule = np.clip(rng.normal(.16, .07, len(run["generations"])), .02, .35)
-    return {"run": run, "terrain": terrain, "contamination_schedule": contamination_schedule}
+    return {"run": run, "terrain": terrain}
 
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
 
@@ -63,9 +61,10 @@ with tabs[0]:
         # Start on the complete scenario so the independent teaching view is useful
         # immediately; Reset still exposes the inlier-to-outlier construction.
         st.session_state.l1_key=l1_key; st.session_state.l1_scrubber=0; st.session_state.l1_show_complete=True; st.session_state.l1_playing=False
+    if st.button("Use this regime in Layer 2", type="primary", use_container_width=False, key="l1_to_l2"):
+        st.session_state.l2_from_layer1 = {"family": l1_family, "contamination": l1_contam, "rate": float(l1_rate), "scale": float(l1_scale), "n": int(l1_n)}
     sample=draw_sample(DemoScenario(l1_family,l1_contam,float(l1_rate),float(l1_scale),int(l1_n),l1_seed))
-    # Pedagogical ordering: the baseline distribution forms first, contamination follows.
-    build_order=np.r_[np.flatnonzero(~sample.is_outlier),np.flatnonzero(sample.is_outlier)]
+    inlier_ids=np.flatnonzero(~sample.is_outlier); outlier_ids=np.flatnonzero(sample.is_outlier)
     batch=max(20,int(np.ceil(l1_n/50)))
     frames=list(range(0,l1_n+1,batch))
     if frames[-1] != l1_n: frames.append(l1_n)
@@ -80,18 +79,28 @@ with tabs[0]:
         if reset.button("↺ Reset",use_container_width=True,key="l1_reset"): st.session_state.l1_scrubber=0; st.session_state.l1_playing=False
         l1_speed=speed_col.select_slider("Animation pace",["Slow","Normal","Fast"],value="Normal",key="l1_speed")
         frame_index=st.slider("Construction progress",0,len(frames)-1,key="l1_scrubber")
-        visible_ids=build_order[:frames[frame_index]]
+        progress=frames[frame_index]/l1_n
+        # The baseline forms during 0–40%; contamination then enters during 40–80%.
+        inlier_count=int(round(len(inlier_ids)*min(1,progress/.40)))
+        outlier_count=int(round(len(outlier_ids)*np.clip((progress-.40)/.40,0,1)))
+        visible_ids=np.r_[inlier_ids[:inlier_count],outlier_ids[:outlier_count]]
         values=sample.values[visible_ids]; visible_outliers=sample.is_outlier[visible_ids]
-        phase="baseline inliers" if not visible_outliers.any() else ("contamination arriving" if (~visible_outliers).any() else "contamination segment")
+        phase="baseline forms" if progress < .40 else ("contamination grows" if progress < .80 else "full contaminated sample")
         st.caption(f"Step {frame_index+1} / {len(frames)} · {len(values):,} of {l1_n:,} observations · phase: {phase}")
         fig=go.Figure()
-        if (~visible_outliers).any(): fig.add_trace(go.Histogram(x=values[~visible_outliers],nbinsx=48,histnorm='probability density',name='Inliers',opacity=.62,marker_color='#3576a8'))
-        if visible_outliers.any(): fig.add_trace(go.Histogram(x=values[visible_outliers],nbinsx=48,histnorm='probability density',name='Contamination',opacity=.78,marker_color='#e6533f'))
+        peak=1.0
+        if len(values)>8:
+            density,edges=np.histogram(values,bins=48,density=True); centers=(edges[:-1]+edges[1:])/2; peak=max(float(density.max()),.01)
+            fig.add_trace(go.Scatter(x=centers,y=density,mode='lines',fill='tozeroy',name='Density',line=dict(color='#79b9e6',width=2.5),fillcolor='rgba(121,185,230,.24)'))
+        if (~visible_outliers).any():
+            fig.add_trace(go.Scatter(x=values[~visible_outliers],y=np.full((~visible_outliers).sum(),-.055*peak),mode='markers',name='Inliers',marker=dict(size=6,color='#6398d0',opacity=.78)))
+        if visible_outliers.any():
+            fig.add_trace(go.Scatter(x=values[visible_outliers],y=np.full(visible_outliers.sum(),-.055*peak),mode='markers',name='Outliers',marker=dict(size=10,color='#ff5b49',symbol='x',line=dict(width=1,color='#ffb0a7'))))
         if len(values)>8:
             current=location_estimates(values)
             for name,value in current.items(): fig.add_vline(x=value,line_width=1.5,line_dash='dot',annotation_text=name,annotation_position='top')
         fig.add_vline(x=sample.true_location,line_dash='dash',line_width=2,annotation_text='Synthetic target')
-        fig.update_layout(barmode='overlay',height=460,xaxis_title='Observed value',yaxis_title='Density',margin=dict(l=10,r=10,t=35,b=20),legend=dict(orientation='h',y=1.02))
+        fig.update_layout(height=460,xaxis_title='Observed value',yaxis_title='Density',margin=dict(l=10,r=10,t=35,b=20),legend=dict(orientation='h',y=1.02),plot_bgcolor='#081525',paper_bgcolor='#081525',yaxis=dict(range=[-.14*peak,1.15*peak]))
         st.plotly_chart(fig,use_container_width=True)
     p1,p2=st.columns([1.45,1])
     with p1:
@@ -132,11 +141,22 @@ with tabs[1]:
     st.markdown('<span class="badge demo">DEMO MODE — pedagogical genetic search</span>', unsafe_allow_html=True)
     st.markdown('<div class="layer-heading">LAYER 2 — CLUSTER EVOLUTION MAP</div>', unsafe_allow_html=True)
     st.markdown('<div class="layer-subheading">A deterministic mini-GA explains selection, recombination, mutation, and convergence on a three-estimator teaching slice.</div>', unsafe_allow_html=True)
+    if "l2_from_layer1" in st.session_state:
+        scenario_from_l1=st.session_state.pop("l2_from_layer1")
+        st.session_state.l2_family=scenario_from_l1["family"]
+        st.session_state.l2_contam=scenario_from_l1["contamination"]
+        st.session_state.l2_rate=scenario_from_l1["rate"]
+        st.session_state.l2_scale=scenario_from_l1["scale"]
+        st.session_state.l2_sample_n=scenario_from_l1["n"]
+        st.success("Layer 1 regime loaded. This mini-GA now optimizes the same pedagogical scenario.")
     controls, visual = st.columns([1.0, 4.2])
     with controls:
         st.markdown("**SEARCH CONTEXT**")
         l2_family = st.selectbox("Distribution family", ["normal", "lognormal", "weibull", "exgaussian"], key="l2_family")
         l2_contam = st.selectbox("Contamination structure", ["none", "upper_tail", "symmetric", "bimodal", "point_mass"], index=1, key="l2_contam")
+        l2_rate = st.slider("Contamination rate", 0.0, .30, .10, .01, key="l2_rate")
+        l2_scale = st.slider("Outlier scale", 1.5, 20.0, 10.0, .5, key="l2_scale")
+        l2_sample_n = st.select_slider("Teaching sample size", [100, 300, 500, 1000, 1500, 2500, 5000], value=500, key="l2_sample_n")
         l2_mutation = st.select_slider("Mutation level", options=[.05, .10, .18, .28], value=.18, format_func=lambda value: f"{value:.0%}", key="l2_mutation")
         l2_lens = st.radio("Target metric", ["MSE", "q95(MSE)"], index=1, horizontal=True, key="l2_lens", help="A pedagogical lens that changes only the synthetic terrain's shape.")
         l2_pop = st.select_slider("GA population", [36, 48, 60, 72], value=48, key="l2_pop")
@@ -154,24 +174,28 @@ with tabs[1]:
     # Apply queued animation progress before the generation widget is created.
     if "l2_next_frame" in st.session_state:
         st.session_state.l2_scrubber = st.session_state.pop("l2_next_frame")
-    key = (l2_family, l2_contam, l2_mutation, l2_pop, l2_lens, l2_seed)
+    if "l2_next_phase" in st.session_state:
+        st.session_state.l2_phase = st.session_state.pop("l2_next_phase")
+    key = (l2_family, l2_contam, l2_rate, l2_scale, l2_mutation, l2_pop, l2_lens, l2_seed)
     if "l2_key" not in st.session_state or st.session_state.l2_key != key or load:
         st.session_state.l2_key = key
         st.session_state.l2_scrubber = 0
+        st.session_state.l2_phase = 0
         st.session_state.l2_playing = False
-    demo = build_layer2_demo(*key, "cluster-map-v2")
+    demo = build_layer2_demo(*key, "generation-steps-v1")
     run, terrain = demo["run"], demo["terrain"]
     max_generation = int(run["generations"][-1])
     frame = int(st.session_state.get("l2_scrubber", 0))
     with controls:
         frame = st.slider("Generation", 0, max_generation, key="l2_scrubber")
+        phase = st.select_slider("Operation inside this generation", options=list(range(5)), value=0, format_func=lambda item: ("Evaluate", "Select", "Crossover", "Mutation", "Next generation")[item], key="l2_phase")
         st.markdown("**MAP VIEW**")
         show_population = st.toggle("Population", value=True, key="l2_show_population")
         show_path = st.toggle("Best path", value=True, key="l2_show_path")
         show_contours = st.toggle("Inheritance", value=True, key="l2_show_contours")
         show_grid = st.toggle("Grid", value=True, key="l2_show_grid")
         show_contamination = st.toggle("Eliminated", value=True, key="l2_show_contamination")
-    active_rate = float(demo["contamination_schedule"][frame])
+    active_rate = float(l2_rate)
     with visual:
         current_best=float(run["best_scores"][frame])
         summary_a,summary_b,summary_c=st.columns(3)
@@ -179,10 +203,10 @@ with tabs[1]:
         summary_b.metric("Best demo objective", f"{current_best:.4g}")
         summary_c.metric("Active contamination", f"{active_rate:.0%}")
         st.caption("Lower is better. These values belong only to the live pedagogical mini-GA, not to a thesis run.")
-        components.html(cluster_map_svg(run, frame, active_rate, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=450, scrolling=False)
+        components.html(cluster_map_svg(run, frame, phase, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=450, scrolling=False)
         observations, target_shift = st.columns(2)
         with observations:
-            sample = draw_sample(DemoScenario(l2_family, l2_contam, active_rate, 10.0, 360, l2_seed + frame))
+            sample = draw_sample(DemoScenario(l2_family, l2_contam, active_rate, l2_scale, int(l2_sample_n), l2_seed))
             obs = go.Figure()
             inliers = sample.values[~sample.is_outlier]
             outliers = sample.values[sample.is_outlier]
@@ -205,23 +229,34 @@ with tabs[1]:
         visible_scores = 100 * (all_scores[0] - all_scores[:frame + 1]) / score_span
         visible_scores = np.maximum.accumulate(visible_scores)
         progress = visible_generations / max_generation
-        visible_survivors = np.maximum(2, np.floor(l2_pop * (1 - .86 * progress)).astype(int))
+        # Count actual parent indices represented in recorded offspring events.
+        lineage_counts=[]
+        for gen in visible_generations:
+            if gen >= max_generation:
+                lineage_counts.append(0); continue
+            event_set=run["events"][int(gen)+1]
+            parents={event.get("parent_a_index") for event in event_set if event.get("event_type")=="offspring"}
+            parents|={event.get("parent_b_index") for event in event_set if event.get("event_type")=="offspring"}
+            lineage_counts.append(len(parents))
         soft_grid = dict(showgrid=True, gridcolor="#214664", griddash="dot", zeroline=False)
         with score_history:
             best_score = go.Figure(go.Scatter(x=visible_generations, y=visible_scores, mode="lines", line=dict(color="#6534e8", width=3, shape="spline"), hovertemplate="Generation %{x}<br>Score %{y:.1f}<extra></extra>"))
             best_score.update_layout(title="Best demo score by generation", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#081525", paper_bgcolor="#081525")
             st.plotly_chart(best_score, use_container_width=True)
         with survivor_history:
-            survivors = go.Figure(go.Scatter(x=visible_generations, y=visible_survivors, mode="lines", line=dict(color="#14b8a6", width=3, shape="spline"), fill="tozeroy", fillcolor="rgba(20,184,166,.12)", hovertemplate="Generation %{x}<br>Survivors %{y}<extra></extra>"))
-            survivors.update_layout(title="Survivor count per generation", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#081525", paper_bgcolor="#081525")
+            survivors = go.Figure(go.Bar(x=visible_generations, y=lineage_counts, marker_color="#59c977", hovertemplate="Generation %{x}<br>Parents contributing %{y}<extra></extra>"))
+            survivors.update_layout(title="Selected lineages by generation", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#081525", paper_bgcolor="#081525", yaxis_title="Parents")
             st.plotly_chart(survivors, use_container_width=True)
         st.caption("Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
     st.markdown('<div class="independent-note">This layer runs its own seeded mini-GA. It does not reuse the Layer 1 sample as evidence and never represents this animated path as a thesis trajectory.</div>', unsafe_allow_html=True)
     if st.session_state.l2_playing:
-        if frame < max_generation:
+        if frame < max_generation or phase < 4:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
-            # A widget value cannot be mutated after rendering; queue it for the next rerun.
-            st.session_state.l2_next_frame = frame + 1
+            if phase < 4:
+                st.session_state.l2_next_phase = phase + 1
+            else:
+                st.session_state.l2_next_phase = 0
+                st.session_state.l2_next_frame = frame + 1
             st.rerun()
         else:
             st.session_state.l2_playing = False

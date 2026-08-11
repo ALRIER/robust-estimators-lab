@@ -28,6 +28,16 @@ def test_explained_child_fitness_matches_displayed_terrain():
     assert event["fitness"] == demo_objective(*event["child"])
 
 
+def test_recorded_offspring_expose_real_parent_lineages():
+    run = demo_ga(MiniGAConfig(population_size=12, generations=2, seed=21))
+    events = run["events"][1]
+    offspring = [event for event in events if event["event_type"] == "offspring"]
+    parents = {event["parent_a_index"] for event in offspring} | {event["parent_b_index"] for event in offspring}
+    assert offspring
+    assert parents
+    assert all(0 <= index < 12 for index in parents)
+
+
 def test_terrain_figure_exposes_axes_and_search_visuals():
     population = random_simplex_population(12, 3, 22)
     terrain = teaching_terrain("normal", "upper_tail", .10, 10., 0., "q95(MSE)")
