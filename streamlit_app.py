@@ -14,6 +14,7 @@ from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
 from src.defense_mode import defense_scene_svg
+from src.research_logic import PANELS as RESEARCH_PANELS, research_logic_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
 
@@ -32,7 +33,12 @@ div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{bo
 [data-testid="stSidebar"]{min-width:215px!important;max-width:215px!important;background:#071525!important;border-right:1px solid #245f8e}[data-testid="stSidebar"] [data-testid="stRadio"] label{font-size:.78rem!important;line-height:1.15!important;padding:.18rem 0!important}
 </style>""", unsafe_allow_html=True)
 st.title("Robust Estimators Lab")
-st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
+st.caption("Defense Mode · a visual thesis narrative for robust estimator mixtures")
+
+# Deliberate guardrail from the defense redesign: these two live demonstrations
+# are approved teaching components. Do not change their visuals, data logic,
+# controls, or playback except for navigation and truly global styling.
+FROZEN_COMPONENTS = ("Layer 6 · Build the problem", "Layer 7 · GA search")
 
 @st.cache_data(show_spinner="Building the pedagogical GA landscape…")
 def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, mutation_rate, population_size, lens, seed, renderer_version):
@@ -45,15 +51,24 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
     return {"run": run, "terrain": terrain}
 
 DEFENSE_INDEX = (
-    "00 · Cover", "01 · Research framing", "02 · Target & simplex", "03 · Why a composite can win", "04 · Data-generating world", "05 · Monte Carlo engine",
-    "06 · Simulation lab", "07 · GA search", "08 · Experiment pipeline", "09 · Thesis results", "10 · Validation", "11 · External evidence", "12 · Conclusions",
+    "00 · Cover", "01 · Research logic", "02 · Data-generating world", "03 · Monte Carlo engine",
+    "04 · Simulation lab", "05 · GA search", "06 · Experiment pipeline", "07 · Results journey",
+    "08 · Technical drill-down", "09 · Conclusions",
 )
+
+def _navigate(index):
+    st.session_state.defense_section = DEFENSE_INDEX[max(0, min(index, len(DEFENSE_INDEX) - 1))]
+
 with st.sidebar:
     st.markdown("### DEFENSE MODE")
-    st.caption("Manual presentation index")
+    st.caption("Manual presentation index · live layers are preserved")
     active_section = st.radio("Defense section", DEFENSE_INDEX, label_visibility="collapsed", key="defense_section")
+    position = DEFENSE_INDEX.index(active_section)
+    previous, following = st.columns(2)
+    previous.button("← Previous", use_container_width=True, disabled=position == 0, on_click=_navigate, args=(position - 1,))
+    following.button("Next →", use_container_width=True, disabled=position == len(DEFENSE_INDEX) - 1, on_click=_navigate, args=(position + 1,))
 
-if active_section == "06 · Simulation lab":
+if active_section == "04 · Simulation lab":
     # Layer 1 is a real, deterministic sample construction, not an analogy.
     # A fixed internal seed makes parameter changes directly comparable without
     # exposing an unnecessary defense-time control.
@@ -130,7 +145,7 @@ if active_section == "06 · Simulation lab":
         else:
             st.session_state.l1_playing=False
 
-if active_section == "07 · GA search":
+if active_section == "05 · GA search":
     if "l2_from_layer1" in st.session_state:
         scenario_from_l1=st.session_state.pop("l2_from_layer1")
         st.session_state.l2_family=scenario_from_l1["family"]
@@ -250,7 +265,7 @@ if active_section == "07 · GA search":
             st.session_state.l2_playing = False
             st.success("Demo run complete. Scrub the timeline or change the regime to compare a new search landscape.")
 
-if active_section == "08 · Experiment pipeline":
+if active_section == "06 · Experiment pipeline":
     if "story_stage" not in st.session_state:
         st.session_state.story_stage = 0
     stage_buttons = st.columns(3)
@@ -259,9 +274,77 @@ if active_section == "08 · Experiment pipeline":
             if st.button(f"{index + 1}. {title}", key=f"story_stage_{index}", use_container_width=True, type="primary" if index == st.session_state.story_stage else "secondary"):
                 st.session_state.story_stage = index
     components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
-    st.caption("Select a stage to inspect the written-thesis protocol manually. This visual narrative does not rerun the thesis GA or claim a new result.")
+    st.caption(f"You are seeing Stage {st.session_state.story_stage + 1} of 5. Select a stage manually; this visual narrative never reruns the thesis GA.")
 
-if active_section == "09 · Thesis results":
+if active_section == "07 · Results journey":
+    st.markdown('<span class="badge thesis">RESULTS JOURNEY — precomputed thesis evidence</span>', unsafe_allow_html=True)
+    st.caption("Discovery finds opportunities; fixed-weight evidence decides what survives.")
+    result_stages = (
+        ("1–2 · Discovery + Frozen I", "OPPORTUNITY", "36 → 16 → 2", "Discovery creates opportunities; frozen confirmation narrows the claim."),
+        ("3 · Expanded rediscovery", "REDISCOVERY", "10 → 26", "Reopening the basis changes what the GA can discover."),
+        ("4 · Strict validation", "TRANSFER SPECIALIST", "2 Weibull specialists", "Harder pressure makes the evidence local, not universal."),
+        ("5A · Real-world battery", "EXTERNAL CALIBRATION", "26 / 43 parents", "Empirical transfer is calibration, not known-θ truth validation."),
+        ("5B · Dirichlet audit", "AUDIT", "23 / 34 no random pass", "Benchmark retention is often meaningful, not merely GA failure."),
+    )
+    if "results_stage" not in st.session_state:
+        st.session_state.results_stage = 0
+    buttons = st.columns(5)
+    for i, (label, _claim, _metric, _line) in enumerate(result_stages):
+        with buttons[i]:
+            if st.button(label, key=f"results_stage_{i}", use_container_width=True, type="primary" if i == st.session_state.results_stage else "secondary"):
+                st.session_state.results_stage = i
+                st.session_state.results_explanation = 0
+    stage = st.session_state.results_stage
+    label, claim, metric, interpretation = result_stages[stage]
+    colors = ("#e66d4f", "#a777e3", "#54c786", "#58aee8", "#4fc3ff")
+    hero, rail = st.columns([3.1, 1.05])
+    with hero:
+        fig = go.Figure()
+        if stage == 0:
+            fig.add_trace(go.Funnel(y=["Discovery regimes", "Discovery wins", "Locked confirmations"], x=[36,16,2], marker=dict(color=[colors[0],"#f3c743","#54c786"])))
+            fig.update_layout(title="Opportunity → fixed-weight confirmation", height=390)
+        elif stage == 1:
+            fig.add_trace(go.Bar(x=["Cycle I", "Cycle II"], y=[10,26], marker_color=["#7187a4",colors[1]], text=["10 components", "26 components"], textposition="outside"))
+            fig.add_annotation(x="Cycle II", y=26, text="HPF: 60% → 90%<br>CV-019 / CV-010 warm starts", showarrow=False, yshift=55)
+            fig.update_layout(title="Expanded component library", height=390, yaxis_title="Learnable components")
+        elif stage == 2:
+            evidence = load_evidence_taxonomy()
+            grades = evidence.evidence_grade.value_counts() if not evidence.empty else {}
+            fig.add_trace(go.Bar(x=list(grades.index), y=list(grades.values), marker_color=colors[2]))
+            fig.update_layout(title="Fixed-weight evidence taxonomy", height=390, xaxis_title="Evidence class", yaxis_title="Candidates")
+        elif stage == 3:
+            fig.add_trace(go.Bar(x=["Eligible parent datasets", "Parents with ≥1 corrected win"], y=[43,26], marker_color=["#7187a4",colors[3]], text=["43", "26"], textposition="outside"))
+            fig.add_annotation(x="Parents with ≥1 corrected win", y=26, text="255 profile-matched FDR 5% confirmations", showarrow=False, yshift=55)
+            fig.update_layout(title="Real-world external battery", height=390, yaxis_title="Parent datasets")
+        else:
+            audit = load_dirichlet_summary()
+            total = len(audit) if not audit.empty else 34
+            signals = int(audit["dirichlet_signal"].astype(str).str.lower().eq("true").sum()) if not audit.empty else 11
+            fig.add_trace(go.Bar(x=["No random pass", "Some random signal", "Strongest controls pass"], y=[23, signals, 8], marker_color=["#7187a4",colors[4],"#54c786"], text=["23 / 34", f"{signals} / {total}", "8 / 8"], textposition="outside"))
+            fig.update_layout(title="Dirichlet random-simplex abstain audit", height=390, yaxis_title="Regimes / controls")
+        fig.update_layout(plot_bgcolor="#081525", paper_bgcolor="#081525", font_color="#e9f4ff", margin=dict(l=25,r=25,t=52,b=40), showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+    with rail:
+        st.markdown(f'''<div class="story-panel"><div class="story-kicker">CLAIM STATUS</div><div class="story-title" style="font-size:21px;color:{colors[stage]}">{claim}</div><div class="story-label">KEY EVIDENCE</div><div class="story-body">{metric}</div><div class="story-label" style="margin-top:18px">INTERPRETATION</div><div class="story-body">{interpretation}</div></div>''', unsafe_allow_html=True)
+    if "results_explanation" not in st.session_state:
+        st.session_state.results_explanation = 0
+    explain_steps = ("Signal — what first appeared in this stage.", "Pressure — what stronger comparison or validation tested.", "Interpretation — the precise, bounded claim allowed by the evidence.")
+    left, right = st.columns([1,4])
+    with left:
+        if st.button("Advance explanation", key="advance_results"):
+            st.session_state.results_explanation = min(2, st.session_state.results_explanation + 1)
+    with right:
+        st.info(explain_steps[st.session_state.results_explanation])
+    show_detail = st.toggle("Show technical detail", value=False, key="results_technical_detail")
+    if show_detail:
+        st.caption("Technical backup: precomputed candidate-level tables remain available below; no result is recomputed here.")
+        winners = load_winners()
+        if not winners.empty:
+            top = winners.copy()
+            top["gain"] = top["ga_rel_improvement_q95"].astype(float)
+            st.dataframe(top[["distribution", "specialist_regime_id", "gate_pass", "final_selected_type", "gain"]].head(12), use_container_width=True, hide_index=True)
+
+if active_section == "08 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     winners=load_winners()
     if winners.empty: st.error('Not exported'); st.stop()
@@ -276,7 +359,7 @@ if active_section == "09 · Thesis results":
     st.plotly_chart(wf,use_container_width=True)
     st.info(f"Relative gain in q95(MSE): {row.get('ga_rel_improvement_q95','Not exported')} · Relative gain in mean MSE: {row.get('ga_rel_improvement_mean','Not exported')}. Discovery does not equal fixed-weight confirmation.")
 
-if active_section == "10 · Validation":
+if active_section == "08 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     st.caption('Discovery → locked / fixed weights → bootstrap CI → evidence taxonomy')
     decisions,ci,evidence,validated=load_final_decisions(),load_bootstrap_ci(),load_evidence_taxonomy(),load_validated_specialists()
@@ -294,7 +377,7 @@ if active_section == "10 · Validation":
     fig.add_vline(x=0,line_dash='dash');fig.update_layout(title='Mean gain with bootstrap CI',height=400,xaxis_title='Mean gain',yaxis_title='Validation seed')
     st.plotly_chart(fig,use_container_width=True);st.caption(f'Validated specialists in curated taxonomy: {len(validated)}')
 
-if active_section == "11 · External evidence":
+if active_section == "08 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — external evidence</span>', unsafe_allow_html=True)
     st.caption("These two audits answer different questions and neither retrains a discovered estimator.")
     real, audit = st.columns(2)
@@ -318,15 +401,43 @@ if active_section == "11 · External evidence":
     else:
         st.info("Dirichlet audit results were not exported to this dashboard bundle.")
 
+if active_section == "00 · Cover":
+    logo, opening = st.columns([1, 3.4])
+    with logo:
+        st.image("assets/university_of_hull_logo.jpeg", use_container_width=True)
+    with opening:
+        st.markdown("## Building Better Estimators")
+        st.markdown("### Benchmark-gated, regime-conditional composite mean estimation via genetic search")
+        st.caption("MSc Artificial Intelligence · Thesis Defense · Alvaro Rivera-Eraso · Supervisor · University of Hull")
+        st.markdown("<br>", unsafe_allow_html=True)
+        start, results, appendix = st.columns([1.45, 1, 1])
+        start.button("Start Defense →", type="primary", use_container_width=True, on_click=_navigate, args=(1,))
+        results.button("Jump to Results", use_container_width=True, on_click=_navigate, args=(7,))
+        appendix.button("Technical Appendix", use_container_width=True, on_click=_navigate, args=(8,))
+    st.info("Conditional estimator discovery — not universal GA superiority.")
+
+if active_section == "01 · Research logic":
+    st.markdown("<div class='layer-heading'>Research logic: why the experiment exists</div>", unsafe_allow_html=True)
+    if "research_panel" not in st.session_state:
+        st.session_state.research_panel = 0
+    panel_buttons = st.columns(5)
+    for i, (label, _what, _why, _say) in enumerate(RESEARCH_PANELS):
+        with panel_buttons[i]:
+            if st.button(label, key=f"research_panel_{i}", use_container_width=True, type="primary" if i == st.session_state.research_panel else "secondary"):
+                st.session_state.research_panel = i
+    components.html(research_logic_svg(st.session_state.research_panel), height=630, scrolling=False)
+    st.button("Continue to simulated world →", type="primary", on_click=_navigate, args=(2,))
+
 DEFENSE_SCENE_SECTION = {
-    "00 · Cover": 0,
-    "01 · Research framing": 1,
-    "02 · Target & simplex": 2,
-    "03 · Why a composite can win": 3,
-    "04 · Data-generating world": 4,
-    "05 · Monte Carlo engine": 5,
-    "12 · Conclusions": 6,
+    "02 · Data-generating world": 4,
+    "03 · Monte Carlo engine": 5,
+    "09 · Conclusions": 6,
 }
 if active_section in DEFENSE_SCENE_SECTION:
     components.html(defense_scene_svg(DEFENSE_SCENE_SECTION[active_section]), height=770, scrolling=False)
-    st.caption("Defense Mode follows the written thesis and current defense deck. Continue through the index to enter the live simulation, GA, evidence and external-audit layers.")
+    if active_section == "09 · Conclusions":
+        closing_a, closing_b = st.columns(2)
+        closing_a.button("Go to technical appendix", use_container_width=True, on_click=_navigate, args=(8,))
+        closing_b.button("Back to results", type="primary", use_container_width=True, on_click=_navigate, args=(7,))
+    else:
+        st.caption("This methodological scene prepares the live simulations; it does not present a result.")
