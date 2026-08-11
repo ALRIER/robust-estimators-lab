@@ -35,7 +35,9 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
     """The terrain and GA share one artificial objective, changed by UI controls."""
     terrain = simplex_renderer.teaching_terrain(family, contamination, contamination_rate, outlier_scale, 0., lens)
     objective = lambda weights: simplex_renderer.demo_objective(weights[:, 0], weights[:, 1], weights[:, 2], terrain)
-    run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=150, mutation_rate=mutation_rate, seed=seed))
+    # Eight real generations keep the defense animation concise while allowing
+    # every generation to dwell on its five recorded GA operations.
+    run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=8, mutation_rate=mutation_rate, seed=seed))
     return {"run": run, "terrain": terrain}
 
 tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
@@ -244,7 +246,9 @@ with tabs[1]:
     st.markdown('<div class="independent-note">This layer runs its own seeded mini-GA. It does not reuse the Layer 1 sample as evidence and never represents this animated path as a thesis trajectory.</div>', unsafe_allow_html=True)
     if st.session_state.l2_playing:
         if frame < max_generation or phase < 4:
-            time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
+            # A complete generation has five teaching scenes; normal playback
+            # deliberately leaves time to narrate each one during a defense.
+            time.sleep({"Slow": 1.5, "Normal": .85, "Fast": .35}[speed])
             if phase < 4:
                 st.session_state.l2_next_phase = phase + 1
             else:
