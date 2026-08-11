@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import time
 import importlib
 import plotly.graph_objects as go
+import plotly.io as pio
 import numpy as np
 from src.synthetic_data import DemoScenario, draw_sample
 from src.estimators import location_estimates
@@ -20,9 +21,11 @@ from src.constants import ESTIMATOR_NAMES
 simplex_renderer = importlib.reload(simplex_renderer)
 
 st.set_page_config(page_title="Robust Estimators Lab", page_icon="📊", layout="wide")
+pio.templates.default = "plotly_dark"
 st.markdown("""<style>
-.block-container{padding-top:.45rem}.stMetric{background:#fff;border:1px solid #d9dde2;border-top:3px solid #e6533f;border-radius:10px;padding:10px}.badge{padding:6px 10px;border-radius:8px;font-size:.78rem;font-weight:700;display:inline-block}.demo{background:#fff0ed;color:#a73b2e}.thesis{background:#edf6f1;color:#246e51}
-h1{margin:0 0 .1rem!important;font-size:2rem!important}[data-testid="stCaptionContainer"]{margin-bottom:0!important}[data-baseweb="tab-list"]{border-bottom:0!important;box-shadow:none!important;margin-top:0!important}[data-baseweb="tab-border"]{display:none!important}[data-testid="stTabs"]>div:first-child{border-bottom:0!important}
+.stApp{background:radial-gradient(circle at 48% -12%,#16365c 0,#08172a 35%,#040a14 76%)!important;color:#eef5ff}.block-container{padding-top:.45rem;max-width:1540px}.stMetric{background:linear-gradient(135deg,#0d2038,#081525)!important;border:1px solid #218dca!important;border-top:3px solid #9a5cff!important;border-radius:7px;padding:10px;box-shadow:inset 0 0 18px rgba(33,141,202,.08)}.stMetric label,.stMetric [data-testid="stMetricLabel"]{color:#b8c8de!important}.stMetric [data-testid="stMetricValue"]{color:#f5f8ff!important}.badge{padding:6px 10px;border-radius:6px;font-size:.78rem;font-weight:800;display:inline-block;letter-spacing:.03em}.demo{background:#28184c;color:#d7c3ff;border:1px solid #8759de}.thesis{background:#0b372d;color:#9df0b7;border:1px solid #3aaf6f}
+h1{color:#f5f8ff!important;margin:0 0 .1rem!important;font-size:2rem!important;text-shadow:0 0 18px rgba(71,169,255,.34)}h2,h3{color:#f2f7ff!important}[data-testid="stCaptionContainer"],.stCaption{color:#aebed3!important}[data-baseweb="tab-list"]{border-bottom:1px solid #2374b4!important;box-shadow:none!important;margin-top:.25rem!important;gap:.4rem}[data-baseweb="tab-border"]{display:none!important}[data-testid="stTabs"]>div:first-child{border-bottom:0!important}[data-baseweb="tab"]{color:#aebed3!important;background:#0a1930!important;border:1px solid #1d5688!important;border-bottom:0!important;border-radius:6px 6px 0 0!important;font-weight:700!important}[aria-selected="true"][data-baseweb="tab"]{color:#f6fbff!important;background:#102a49!important;box-shadow:inset 0 2px #4fc3ff!important}.layer-heading{font-size:1.3rem;font-weight:800;color:#f5f8ff;margin:.3rem 0 .1rem;text-shadow:0 0 14px rgba(79,195,255,.25)}.layer-subheading{color:#aebed3;margin:0 0 .75rem}.scenario-panel{border:1px solid #237fc0;border-left:4px solid #4fc3ff;border-radius:7px;background:linear-gradient(135deg,#0e2743,#081626);padding:.8rem 1rem;margin:.45rem 0 .8rem;color:#e8f3ff}.independent-note{color:#aebed3;font-size:.86rem;border-top:1px solid #20517e;padding-top:.65rem;margin-top:.35rem}.metric-caption{font-size:.78rem;color:#aebed3;margin-top:-.4rem}
+div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{border-color:#236b9e!important;background:#08182b!important}.stButton>button{background:linear-gradient(135deg,#5931bd,#2575bb)!important;color:#fff!important;border:1px solid #62c7ff!important;border-radius:6px!important;font-weight:700}.stSelectbox label,.stSlider label,.stNumberInput label,.stRadio label{color:#dceaff!important}.stAlert{background:#102a49!important;border:1px solid #287db5!important;color:#e7f4ff!important}.js-plotly-plot .plotly .modebar{background:#102541!important}
 </style>""", unsafe_allow_html=True)
 st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
@@ -41,7 +44,8 @@ tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis result
 
 with tabs[0]:
     st.markdown('<span class="badge demo">DEMO MODE — pedagogical sample construction</span>', unsafe_allow_html=True)
-    st.caption("Build a regime, then watch inliers accumulate before the selected contamination is added. For skewed families this shows a density profile, not a symmetric bell curve.")
+    st.markdown('<div class="layer-heading">LAYER 1 — SAMPLE AND OUTLIERS</div>', unsafe_allow_html=True)
+    st.markdown('<div class="layer-subheading">Build one synthetic regime and inspect how contamination shifts classical and robust locations.</div>', unsafe_allow_html=True)
     controls, visual = st.columns([1, 3])
     with controls:
         st.subheader("Build a data-generating regime")
@@ -56,13 +60,19 @@ with tabs[0]:
     if "l1_next_frame" in st.session_state:
         st.session_state.l1_scrubber=st.session_state.pop("l1_next_frame")
     if "l1_key" not in st.session_state or st.session_state.l1_key != l1_key or rebuild:
-        st.session_state.l1_key=l1_key; st.session_state.l1_scrubber=0; st.session_state.l1_playing=False
+        # Start on the complete scenario so the independent teaching view is useful
+        # immediately; Reset still exposes the inlier-to-outlier construction.
+        st.session_state.l1_key=l1_key; st.session_state.l1_scrubber=0; st.session_state.l1_show_complete=True; st.session_state.l1_playing=False
     sample=draw_sample(DemoScenario(l1_family,l1_contam,float(l1_rate),float(l1_scale),int(l1_n),l1_seed))
     # Pedagogical ordering: the baseline distribution forms first, contamination follows.
     build_order=np.r_[np.flatnonzero(~sample.is_outlier),np.flatnonzero(sample.is_outlier)]
     batch=max(20,int(np.ceil(l1_n/50)))
     frames=list(range(0,l1_n+1,batch))
     if frames[-1] != l1_n: frames.append(l1_n)
+    # `frames` is computed after the state reset above; bring a first visit to the
+    # completed state without changing an explicit Reset action.
+    if st.session_state.pop("l1_show_complete", False):
+        st.session_state.l1_scrubber=len(frames)-1
     with visual:
         play,pause,reset,speed_col=st.columns([1,1,1,1.4])
         if play.button("▶ Play construction",use_container_width=True,key="l1_play"): st.session_state.l1_playing=True
@@ -91,11 +101,24 @@ with tabs[0]:
         strip.update_layout(title='Observation stream used to build the displayed density',height=280,xaxis_title='Construction order',yaxis_title='Value',margin=dict(l=10,r=10,t=40,b=20),legend=dict(orientation='h',y=1.04))
         st.plotly_chart(strip,use_container_width=True)
     with p2:
-        st.subheader("Teaching cue")
-        st.info("The blue baseline establishes the family profile. Red observations then alter the location and tail behaviour. The estimator markers move as the evidence arrives.")
+        st.subheader("Scenario selected")
+        st.markdown(f'''<div class="scenario-panel"><b>{l1_family.replace('exgaussian', 'Ex-Gaussian').title()}</b><br>
+        {l1_contam.replace('_', ' ').title()} contamination · ε = {l1_rate:.0%}<br>
+        Outlier scale: {l1_scale:g}× · sample: {l1_n:,}<br>
+        Expected outliers: {int(round(l1_rate*l1_n)):,}</div>''', unsafe_allow_html=True)
+        st.caption("Blue observations establish the baseline; red observations then alter the location and tail behaviour.")
         if len(values)>8:
             current=location_estimates(values)
             for name,value in current.items(): st.metric(name,f"{value:.3f}")
+    if len(values)>8:
+        estimates=location_estimates(values)
+        errors={name: abs(value-sample.true_location) for name,value in estimates.items()}
+        comparison=go.Figure(go.Bar(x=list(errors),y=list(errors.values()),marker_color=['#ff5b49','#73dc78','#ffa92f','#b879ff','#4fc3ff']))
+        comparison.add_hline(y=0,line_dash='dash',line_color='#dceaff')
+        comparison.update_layout(title='Absolute location error relative to the known synthetic target',height=270,yaxis_title='Absolute error',margin=dict(l=10,r=10,t=42,b=20),showlegend=False,plot_bgcolor='#081525',paper_bgcolor='#081525')
+        st.plotly_chart(comparison,use_container_width=True)
+        st.info("No single estimator is uniformly best. The useful comparison is the estimator’s error under this selected family and contamination regime.")
+    st.markdown('<div class="independent-note">This layer is a self-contained sample-construction demonstration. It does not start, tune, or report the genetic algorithm.</div>', unsafe_allow_html=True)
     if st.session_state.l1_playing:
         if frame_index < len(frames)-1:
             time.sleep({"Slow":.65,"Normal":.28,"Fast":.10}[l1_speed])
@@ -106,6 +129,9 @@ with tabs[0]:
             st.success("Construction complete. Layer 2 can now use this same kind of regime logic for its mini-GA demonstration.")
 
 with tabs[1]:
+    st.markdown('<span class="badge demo">DEMO MODE — pedagogical genetic search</span>', unsafe_allow_html=True)
+    st.markdown('<div class="layer-heading">LAYER 2 — CLUSTER EVOLUTION MAP</div>', unsafe_allow_html=True)
+    st.markdown('<div class="layer-subheading">A deterministic mini-GA explains selection, recombination, mutation, and convergence on a three-estimator teaching slice.</div>', unsafe_allow_html=True)
     controls, visual = st.columns([1.0, 4.2])
     with controls:
         st.markdown("**SEARCH CONTEXT**")
@@ -147,6 +173,12 @@ with tabs[1]:
         show_contamination = st.toggle("Eliminated", value=True, key="l2_show_contamination")
     active_rate = float(demo["contamination_schedule"][frame])
     with visual:
+        current_best=float(run["best_scores"][frame])
+        summary_a,summary_b,summary_c=st.columns(3)
+        summary_a.metric("Current generation", f"{frame} / {max_generation}")
+        summary_b.metric("Best demo objective", f"{current_best:.4g}")
+        summary_c.metric("Active contamination", f"{active_rate:.0%}")
+        st.caption("Lower is better. These values belong only to the live pedagogical mini-GA, not to a thesis run.")
         components.html(cluster_map_svg(run, frame, active_rate, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=450, scrolling=False)
         observations, target_shift = st.columns(2)
         with observations:
@@ -162,7 +194,7 @@ with tabs[1]:
             obs.add_trace(go.Scatter(x=inliers, y=jitter.uniform(-density.max()*.075, -density.max()*.015, len(inliers)), mode="markers", marker=dict(size=4, color="#8b5cf6", opacity=.42), hoverinfo="skip"))
             if len(outliers):
                 obs.add_trace(go.Scatter(x=outliers, y=jitter.uniform(-density.max()*.20, -density.max()*.09, len(outliers)), mode="markers", marker=dict(size=7, color="#ef4444", opacity=.90), hovertemplate="Outlier<extra></extra>"))
-            obs.update_layout(height=190, margin=dict(l=18,r=8,t=8,b=18), showlegend=False, xaxis=dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False), yaxis=dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False, showticklabels=False), plot_bgcolor="#ffffff", paper_bgcolor="#ffffff")
+            obs.update_layout(height=190, margin=dict(l=18,r=8,t=8,b=18), showlegend=False, xaxis=dict(showgrid=True, gridcolor="#214664", griddash="dot", zeroline=False), yaxis=dict(showgrid=True, gridcolor="#214664", griddash="dot", zeroline=False, showticklabels=False), plot_bgcolor="#081525", paper_bgcolor="#081525")
             st.plotly_chart(obs, use_container_width=True)
         with target_shift:
             components.html(contamination_shift_svg(active_rate), height=190, scrolling=False)
@@ -174,15 +206,17 @@ with tabs[1]:
         visible_scores = np.maximum.accumulate(visible_scores)
         progress = visible_generations / max_generation
         visible_survivors = np.maximum(2, np.floor(l2_pop * (1 - .86 * progress)).astype(int))
-        soft_grid = dict(showgrid=True, gridcolor="#edf0f5", griddash="dot", zeroline=False)
+        soft_grid = dict(showgrid=True, gridcolor="#214664", griddash="dot", zeroline=False)
         with score_history:
             best_score = go.Figure(go.Scatter(x=visible_generations, y=visible_scores, mode="lines", line=dict(color="#6534e8", width=3, shape="spline"), hovertemplate="Generation %{x}<br>Score %{y:.1f}<extra></extra>"))
-            best_score.update_layout(title="Best robust score", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#ffffff", paper_bgcolor="#ffffff")
+            best_score.update_layout(title="Best demo score by generation", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#081525", paper_bgcolor="#081525")
             st.plotly_chart(best_score, use_container_width=True)
         with survivor_history:
             survivors = go.Figure(go.Scatter(x=visible_generations, y=visible_survivors, mode="lines", line=dict(color="#14b8a6", width=3, shape="spline"), fill="tozeroy", fillcolor="rgba(20,184,166,.12)", hovertemplate="Generation %{x}<br>Survivors %{y}<extra></extra>"))
-            survivors.update_layout(title="Survivor count per generation", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#ffffff", paper_bgcolor="#ffffff")
+            survivors.update_layout(title="Survivor count per generation", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#081525", paper_bgcolor="#081525")
             st.plotly_chart(survivors, use_container_width=True)
+        st.caption("Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
+    st.markdown('<div class="independent-note">This layer runs its own seeded mini-GA. It does not reuse the Layer 1 sample as evidence and never represents this animated path as a thesis trajectory.</div>', unsafe_allow_html=True)
     if st.session_state.l2_playing:
         if frame < max_generation:
             time.sleep({"Slow": .8, "Normal": .35, "Fast": .12}[speed])
