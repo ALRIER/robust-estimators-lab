@@ -44,7 +44,10 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
         labels.append(f'<text x="{cx:.0f}" y="42" text-anchor="middle" class="gen">GEN {gen}{" (current)" if gen == generation else ""}</text>')
         rng = np.random.default_rng(20260810 + gen)
         for index, weight in enumerate(pop):
-            px = cx + rng.normal(0, 47); py = bottom - 330 * (weight[2] - weight[0]) + rng.normal(0, 52)
+            # Centre the simplex projection in each generation panel.  Starting
+            # from ``bottom`` made all real populations appear clipped at the
+            # floor of an otherwise empty, tall canvas.
+            px = cx + rng.normal(0, 47); py = (top + bottom) / 2 - 430 * (weight[2] - weight[0]) + rng.normal(0, 48)
             positions[(gen, index)] = (px, py)
             active = gen == generation
             color = "#64748b"; opacity = .65
