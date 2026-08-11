@@ -13,7 +13,7 @@ from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
-from src.defense_mode import SCENES as DEFENSE_SCENES, defense_scene_svg
+from src.defense_mode import defense_scene_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
 
@@ -29,6 +29,7 @@ st.markdown("""<style>
 h1{color:#f5f8ff!important;margin:0 0 .1rem!important;font-size:2rem!important;text-shadow:0 0 18px rgba(71,169,255,.34)}h2,h3{color:#f2f7ff!important}[data-testid="stCaptionContainer"],.stCaption{color:#aebed3!important}[data-baseweb="tab-list"]{border-bottom:1px solid #2374b4!important;box-shadow:none!important;margin-top:.25rem!important;gap:.4rem}[data-baseweb="tab-border"]{display:none!important}[data-testid="stTabs"]>div:first-child{border-bottom:0!important}[data-baseweb="tab"]{color:#aebed3!important;background:#0a1930!important;border:1px solid #1d5688!important;border-bottom:0!important;border-radius:6px 6px 0 0!important;font-weight:700!important}[aria-selected="true"][data-baseweb="tab"]{color:#f6fbff!important;background:#102a49!important;box-shadow:inset 0 2px #4fc3ff!important}.layer-heading{font-size:1.3rem;font-weight:800;color:#f5f8ff;margin:.3rem 0 .1rem;text-shadow:0 0 14px rgba(79,195,255,.25)}.layer-subheading{color:#aebed3;margin:0 0 .75rem}.scenario-panel{border:1px solid #237fc0;border-left:4px solid #4fc3ff;border-radius:7px;background:linear-gradient(135deg,#0e2743,#081626);padding:.8rem 1rem;margin:.45rem 0 .8rem;color:#e8f3ff}.independent-note{color:#aebed3;font-size:.86rem;border-top:1px solid #20517e;padding-top:.65rem;margin-top:.35rem}.metric-caption{font-size:.78rem;color:#aebed3;margin-top:-.4rem}
 div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{border-color:#236b9e!important;background:#08182b!important}.stButton>button{background:linear-gradient(135deg,#5931bd,#2575bb)!important;color:#fff!important;border:1px solid #62c7ff!important;border-radius:6px!important;font-weight:700}.stSelectbox label,.stSlider label,.stNumberInput label,.stRadio label{color:#dceaff!important}.stAlert{background:#102a49!important;border:1px solid #287db5!important;color:#e7f4ff!important}.js-plotly-plot .plotly .modebar{background:#102541!important}
 .pipeline-stage{min-height:136px;padding:14px 12px;border:1px solid #2b668f;border-radius:9px;background:#0a1b30;color:#b9cae0}.pipeline-stage.active{background:linear-gradient(135deg,#203d67,#152b48);border:2px solid #f3c743;box-shadow:0 0 20px rgba(243,199,67,.22);color:#f6fbff}.pipeline-step{font-size:11px;font-weight:800;letter-spacing:.08em;color:#72cfff}.pipeline-title{font-size:16px;font-weight:800;margin:8px 0}.pipeline-mini{font-size:12px;line-height:1.35}.story-panel{min-height:245px;padding:24px;border:1px solid #367eaf;border-radius:10px;background:linear-gradient(135deg,#0d2642,#08182b)}.story-kicker{font-size:12px;font-weight:800;letter-spacing:.1em;color:#72cfff}.story-title{font-size:28px;font-weight:800;color:#f5f8ff;margin:8px 0 16px}.story-label{font-size:12px;font-weight:800;letter-spacing:.08em;color:#f3c743;margin-bottom:6px}.story-body{font-size:16px;line-height:1.48;color:#dbe9f7}.funnel-step{padding:10px 14px;margin:6px auto;border:1px solid #3c79a5;border-radius:6px;background:#0d2642;color:#dceaff;text-align:center;font-weight:700}.funnel-step.active{border-color:#4de080;color:#c8ffd7;background:#123d30}
+[data-testid="stSidebar"]{min-width:215px!important;max-width:215px!important;background:#071525!important;border-right:1px solid #245f8e}[data-testid="stSidebar"] [data-testid="stRadio"] label{font-size:.78rem!important;line-height:1.15!important;padding:.18rem 0!important}
 </style>""", unsafe_allow_html=True)
 st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
@@ -43,9 +44,16 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
     run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=8, mutation_rate=mutation_rate, seed=seed))
     return {"run": run, "terrain": terrain}
 
-tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Experiment pipeline", "04 · Thesis results", "05 · Validation pipeline", "06 · External evidence", "00 · Defense mode"])
+DEFENSE_INDEX = (
+    "00 · Cover", "01 · Research framing", "02 · Target & simplex", "03 · Why a composite can win", "04 · Data-generating world", "05 · Monte Carlo engine",
+    "06 · Simulation lab", "07 · GA search", "08 · Experiment pipeline", "09 · Thesis results", "10 · Validation", "11 · External evidence", "12 · Conclusions",
+)
+with st.sidebar:
+    st.markdown("### DEFENSE MODE")
+    st.caption("Manual presentation index")
+    active_section = st.radio("Defense section", DEFENSE_INDEX, label_visibility="collapsed", key="defense_section")
 
-with tabs[0]:
+if active_section == "06 · Simulation lab":
     # Layer 1 is a real, deterministic sample construction, not an analogy.
     # A fixed internal seed makes parameter changes directly comparable without
     # exposing an unnecessary defense-time control.
@@ -122,7 +130,7 @@ with tabs[0]:
         else:
             st.session_state.l1_playing=False
 
-with tabs[1]:
+if active_section == "07 · GA search":
     if "l2_from_layer1" in st.session_state:
         scenario_from_l1=st.session_state.pop("l2_from_layer1")
         st.session_state.l2_family=scenario_from_l1["family"]
@@ -242,7 +250,7 @@ with tabs[1]:
             st.session_state.l2_playing = False
             st.success("Demo run complete. Scrub the timeline or change the regime to compare a new search landscape.")
 
-with tabs[2]:
+if active_section == "08 · Experiment pipeline":
     if "story_stage" not in st.session_state:
         st.session_state.story_stage = 0
     stage_buttons = st.columns(3)
@@ -253,7 +261,7 @@ with tabs[2]:
     components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
     st.caption("Select a stage to inspect the written-thesis protocol manually. This visual narrative does not rerun the thesis GA or claim a new result.")
 
-with tabs[3]:
+if active_section == "09 · Thesis results":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     winners=load_winners()
     if winners.empty: st.error('Not exported'); st.stop()
@@ -268,7 +276,7 @@ with tabs[3]:
     st.plotly_chart(wf,use_container_width=True)
     st.info(f"Relative gain in q95(MSE): {row.get('ga_rel_improvement_q95','Not exported')} · Relative gain in mean MSE: {row.get('ga_rel_improvement_mean','Not exported')}. Discovery does not equal fixed-weight confirmation.")
 
-with tabs[4]:
+if active_section == "10 · Validation":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     st.caption('Discovery → locked / fixed weights → bootstrap CI → evidence taxonomy')
     decisions,ci,evidence,validated=load_final_decisions(),load_bootstrap_ci(),load_evidence_taxonomy(),load_validated_specialists()
@@ -286,7 +294,7 @@ with tabs[4]:
     fig.add_vline(x=0,line_dash='dash');fig.update_layout(title='Mean gain with bootstrap CI',height=400,xaxis_title='Mean gain',yaxis_title='Validation seed')
     st.plotly_chart(fig,use_container_width=True);st.caption(f'Validated specialists in curated taxonomy: {len(validated)}')
 
-with tabs[5]:
+if active_section == "11 · External evidence":
     st.markdown('<span class="badge thesis">THESIS RESULTS — external evidence</span>', unsafe_allow_html=True)
     st.caption("These two audits answer different questions and neither retrains a discovered estimator.")
     real, audit = st.columns(2)
@@ -310,13 +318,15 @@ with tabs[5]:
     else:
         st.info("Dirichlet audit results were not exported to this dashboard bundle.")
 
-with tabs[6]:
-    if "defense_scene" not in st.session_state:
-        st.session_state.defense_scene = 0
-    scene_buttons = st.columns(4)
-    for index, title in enumerate(DEFENSE_SCENES):
-        with scene_buttons[index % 4]:
-            if st.button(f"{index:02d} · {title}", key=f"defense_scene_{index}", use_container_width=True, type="primary" if index == st.session_state.defense_scene else "secondary"):
-                st.session_state.defense_scene = index
-    components.html(defense_scene_svg(st.session_state.defense_scene), height=770, scrolling=False)
-    st.caption("Defense Mode is a manual narrative layer derived from the thesis and current defense deck. Use the existing layers for the live demonstrations and result exploration.")
+DEFENSE_SCENE_SECTION = {
+    "00 · Cover": 0,
+    "01 · Research framing": 1,
+    "02 · Target & simplex": 2,
+    "03 · Why a composite can win": 3,
+    "04 · Data-generating world": 4,
+    "05 · Monte Carlo engine": 5,
+    "12 · Conclusions": 6,
+}
+if active_section in DEFENSE_SCENE_SECTION:
+    components.html(defense_scene_svg(DEFENSE_SCENE_SECTION[active_section]), height=770, scrolling=False)
+    st.caption("Defense Mode follows the written thesis and current defense deck. Continue through the index to enter the live simulation, GA, evidence and external-audit layers.")
