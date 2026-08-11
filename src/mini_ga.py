@@ -79,7 +79,12 @@ def run_pedagogical_ga(objective, config=MiniGAConfig()):
         for event, score in zip(child_events, next_scores): event["fitness"] = float(score)
         events.append(child_events)
         offspring_indices = [i for i, event in enumerate(child_events) if event["event_type"] == "offspring"]
-        explained_event_indices.append(min(offspring_indices, key=lambda i: next_scores[i]))
+        # Prefer a genuinely mutated child for the narrated crossover/mutation
+        # sequence.  It remains a real recorded event, but guarantees that the
+        # mutation scene has a visible before → after transformation.
+        mutated_indices = [i for i in offspring_indices if child_events[i]["mutated"]]
+        narration_pool = mutated_indices or offspring_indices
+        explained_event_indices.append(min(narration_pool, key=lambda i: next_scores[i]))
         mutation_rates.append(float(mutation_rate))
     return {"generations": np.arange(config.generations + 1), "populations": populations, "scores": scores_by_generation, "best_path": np.asarray(best_path), "generation_best_path": np.asarray(generation_best_path), "best_scores": np.asarray(best_scores), "generation_best_scores": np.asarray(generation_best_scores), "diversity": np.asarray(diversity), "events": events, "explained_event_indices": explained_event_indices, "mutation_rates": np.asarray(mutation_rates)}
 

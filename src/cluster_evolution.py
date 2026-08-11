@@ -33,7 +33,7 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
         generations.append(generation + 1)
     width, height, top, bottom = 1120, 920, 165, 790
     xs = np.linspace(190, 900, len(generations)); positions = {}
-    clouds, labels, frames, links = [], [], [], []
+    clouds, labels, frames, links, annotations = [], [], [], [], []
     scores = run["scores"][generation]; order = np.argsort(scores)
     event_set = run["events"][generation + 1] if generation < max_generation else []
     parents = {event.get("parent_a_index") for event in event_set if event.get("event_type") == "offspring"}
@@ -43,8 +43,10 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
     palette = ("#35c76c", "#68d678", "#f3c743", "#ff9538", "#ff5b49")
     for gen, cx in zip(generations, xs):
         active = gen == generation; is_next = gen == generation + 1
-        frames.append(f'<rect x="{cx-145:.0f}" y="{top-20}" width="290" height="{bottom-top+35}" rx="10" fill="{"#153c5f" if active else "#091a2e"}" stroke="{"#f3c743" if active else "#326188"}" stroke-width="{"3" if active else "1.2"}"/>')
-        labels.append(f'<text x="{cx:.0f}" y="135" text-anchor="middle" class="gen">GEN {gen}{" — ACTIVE" if active else ""}</text>')
+        frame_fill = "#153c5f" if active else ("#123d30" if is_next and phase == 4 else "#091a2e")
+        frame_stroke = "#f3c743" if active else ("#4de080" if is_next and phase == 4 else "#326188")
+        frames.append(f'<rect x="{cx-145:.0f}" y="{top-20}" width="290" height="{bottom-top+35}" rx="10" fill="{frame_fill}" stroke="{frame_stroke}" stroke-width="{"3" if active else "1.2"}"/>')
+        labels.append(f'<text x="{cx:.0f}" y="135" text-anchor="middle" class="gen">GEN {gen}{" — ACTIVE" if active else (" — NEW POPULATION" if is_next and phase == 4 else "")}</text>')
         pop = run["populations"][gen]; local_scores = run["scores"][gen]
         local_order = np.argsort(local_scores); local_rank = np.empty(len(pop), dtype=int); local_rank[local_order] = np.arange(len(pop))
         rng = np.random.default_rng(20260810 + gen)
@@ -54,6 +56,8 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
             if is_next and phase < 4:
                 continue  # crossover/mutation show the single explained child first
             colour, opacity, ring, radius = "#64748b", .38, False, 4
+            if is_next and phase == 4:
+                colour, opacity, radius = ("#4de080" if local_rank[index] < len(pop) // 2 else "#44a6e9"), .92, 5
             if active:
                 colour = palette[min(4, int(5 * local_rank[index] / max(1, len(pop))))]
                 opacity, radius = .9, 5
@@ -72,11 +76,17 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
         if show_inheritance:
             links += [f'<path d="M{pa[0]:.1f},{pa[1]:.1f} L{child[0]:.1f},{child[1]:.1f}" stroke="#f3c743" class="inherit" marker-end="url(#arrow)"/>', f'<path d="M{pb[0]:.1f},{pb[1]:.1f} L{child[0]:.1f},{child[1]:.1f}" stroke="#b879ff" class="inherit" marker-end="url(#arrow)"/>']
         clouds.append(_point(*child, "#dceaff", 11, 1, True))
+        annotations += [f'<text x="{pa[0]:.0f}" y="{pa[1]-18:.0f}" text-anchor="middle" class="tag yellow">PARENT A</text>', f'<text x="{pb[0]:.0f}" y="{pb[1]-18:.0f}" text-anchor="middle" class="tag purple">PARENT B</text>', f'<text x="{child[0]:.0f}" y="{child[1]-22:.0f}" text-anchor="middle" class="tag child">CHILD</text>']
         if phase == 3:
             delta = explained.get("mutation_vector", np.zeros(3))
-            before = (child[0] - 36, child[1] + 440 * (delta[2] - delta[0]))
+            before = (child[0] - 100, child[1] + 760 * (delta[2] - delta[0]))
             links.append(f'<path d="M{before[0]:.1f},{before[1]:.1f} L{child[0]:.1f},{child[1]:.1f}" stroke="#4de080" class="mutation" marker-end="url(#arrow)"/>')
-            clouds.append(_point(*before, "#4de080", 7, .7, True))
+            clouds.append(_point(*before, "#4de080", 12, .85, True))
+            annotations += [f'<text x="{before[0]:.0f}" y="{before[1]-25:.0f}" text-anchor="middle" class="tag mutate">BEFORE</text>', f'<text x="{child[0]:.0f}" y="{child[1]+30:.0f}" text-anchor="middle" class="tag mutate">MUTATED CHILD</text>']
+    if phase == 4 and generation < max_generation:
+        current_x = xs[generations.index(generation)]; next_x = xs[generations.index(generation + 1)]
+        links.append(f'<path d="M{current_x+145:.0f},475 L{next_x-145:.0f},475" stroke="#4de080" class="handoff" marker-end="url(#arrow)"/>')
+        annotations.append(f'<text x="{(current_x+next_x)/2:.0f}" y="455" text-anchor="middle" class="handofftext">ALL CHILDREN REPLACE THE POPULATION</text>')
     path_svg = ""
     if show_path and len(generations) > 1:
         path = [positions[(gen, int(np.argmin(run["scores"][gen])))] for gen in generations]
@@ -87,4 +97,4 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
         x = 52 + index * 205; active = index == phase
         step_cards.append(f'<rect x="{x}" y="28" width="185" height="65" rx="7" fill="{"#432f76" if active else "#0d223a"}" stroke="{"#b879ff" if active else "#326188"}" stroke-width="{"2.5" if active else "1"}"/><text x="{x+92}" y="67" text-anchor="middle" class="step">{label}</text>')
     instruction = ("Fitness colours reveal error: green is lower." if phase == 0 else "Only recorded parents remain highlighted." if phase == 1 else "Two recorded parents blend into this real child." if phase == 2 else "The child moves from pre-mutation to final weights." if phase == 3 else "The complete child population becomes the next generation.")
-    return f'''<html><style>body{{margin:0;background:#081525;font-family:Arial,sans-serif}}svg{{width:100%;height:920px}}.grid{{stroke:#214664;stroke-dasharray:2 6}}.gen{{font-size:17px;font-weight:800;fill:#edf6ff}}.step{{font-size:13px;font-weight:800;fill:#edf6ff}}.best{{fill:none;stroke:#b879ff;stroke-width:3;stroke-dasharray:5 4}}.inherit{{fill:none;stroke-width:3}}.mutation{{fill:none;stroke-width:4;stroke-dasharray:5 3}}.phase{{font-size:17px;font-weight:800;fill:#f3c743}}.hint{{font-size:14px;fill:#c4d5e9}}</style><svg viewBox="0 0 {width} {height}"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3z" fill="#dceaff"/></marker></defs>{''.join(step_cards)}{grid}{''.join(frames)}{path_svg}{''.join(links)}{''.join(clouds)}{''.join(labels)}<text x="52" y="875" class="phase">GEN {generation}: {PHASES[phase]}</text><text x="345" y="875" class="hint">{instruction}</text></svg></html>'''
+    return f'''<html><style>body{{margin:0;background:#081525;font-family:Arial,sans-serif}}svg{{width:100%;height:920px}}.grid{{stroke:#214664;stroke-dasharray:2 6}}.gen{{font-size:17px;font-weight:800;fill:#edf6ff}}.step{{font-size:13px;font-weight:800;fill:#edf6ff}}.best{{fill:none;stroke:#b879ff;stroke-width:3;stroke-dasharray:5 4}}.inherit{{fill:none;stroke-width:3}}.mutation{{fill:none;stroke-width:5;stroke-dasharray:7 4}}.handoff{{fill:none;stroke-width:8;stroke-dasharray:12 6}}.handofftext{{font-size:13px;font-weight:800;fill:#4de080}}.tag{{font-size:12px;font-weight:800}}.yellow{{fill:#f3c743}}.purple{{fill:#cda4ff}}.child{{fill:#edf6ff}}.mutate{{fill:#4de080}}.phase{{font-size:17px;font-weight:800;fill:#f3c743}}.hint{{font-size:14px;fill:#c4d5e9}}</style><svg viewBox="0 0 {width} {height}"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3z" fill="#dceaff"/></marker></defs>{''.join(step_cards)}{grid}{''.join(frames)}{path_svg}{''.join(links)}{''.join(clouds)}{''.join(labels)}{''.join(annotations)}<text x="52" y="875" class="phase">GEN {generation}: {PHASES[phase]}</text><text x="345" y="875" class="hint">{instruction}</text></svg></html>'''

@@ -248,7 +248,7 @@ with tabs[1]:
         if frame < max_generation or phase < 4:
             # A complete generation has five teaching scenes; normal playback
             # deliberately leaves time to narrate each one during a defense.
-            time.sleep({"Slow": 1.5, "Normal": .85, "Fast": .35}[speed])
+            time.sleep({"Slow": 4.5, "Normal": 2.0, "Fast": .75}[speed])
             if phase < 4:
                 st.session_state.l2_next_phase = phase + 1
             else:
