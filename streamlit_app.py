@@ -138,9 +138,6 @@ with tabs[0]:
             st.success("Construction complete. Layer 2 can now use this same kind of regime logic for its mini-GA demonstration.")
 
 with tabs[1]:
-    st.markdown('<span class="badge demo">DEMO MODE — pedagogical genetic search</span>', unsafe_allow_html=True)
-    st.markdown('<div class="layer-heading">LAYER 2 — CLUSTER EVOLUTION MAP</div>', unsafe_allow_html=True)
-    st.markdown('<div class="layer-subheading">A deterministic mini-GA explains selection, recombination, mutation, and convergence on a three-estimator teaching slice.</div>', unsafe_allow_html=True)
     if "l2_from_layer1" in st.session_state:
         scenario_from_l1=st.session_state.pop("l2_from_layer1")
         st.session_state.l2_family=scenario_from_l1["family"]
@@ -197,13 +194,9 @@ with tabs[1]:
         show_contamination = st.toggle("Eliminated", value=True, key="l2_show_contamination")
     active_rate = float(l2_rate)
     with visual:
-        current_best=float(run["best_scores"][frame])
-        summary_a,summary_b,summary_c=st.columns(3)
-        summary_a.metric("Current generation", f"{frame} / {max_generation}")
-        summary_b.metric("Best demo objective", f"{current_best:.4g}")
-        summary_c.metric("Active contamination", f"{active_rate:.0%}")
-        st.caption("Lower is better. These values belong only to the live pedagogical mini-GA, not to a thesis run.")
-        components.html(cluster_map_svg(run, frame, phase, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=450, scrolling=False)
+        # The generation map is the instructional focus: keep it first and tall
+        # enough to be fully visible without the former summary-card row.
+        components.html(cluster_map_svg(run, frame, phase, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=545, scrolling=False)
         observations, target_shift = st.columns(2)
         with observations:
             sample = draw_sample(DemoScenario(l2_family, l2_contam, active_rate, l2_scale, int(l2_sample_n), l2_seed))
