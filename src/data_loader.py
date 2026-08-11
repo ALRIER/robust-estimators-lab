@@ -28,3 +28,11 @@ def load_evidence_taxonomy():
 @lru_cache(maxsize=8)
 def load_validated_specialists():
     return _read("data/raw/evidence/validated_specialists.csv")
+
+@lru_cache(maxsize=8)
+def load_dirichlet_summary():
+    return _read("data/raw/dirichlet/abstain_audit_summary_by_regime.csv")
+
+@lru_cache(maxsize=8)
+def load_dirichlet_signals():
+    return _read("data/raw/dirichlet/dirichlet_signal_regime_modes.csv")

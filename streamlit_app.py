@@ -12,6 +12,7 @@ from src import simplex as simplex_renderer
 from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
+from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
 from src.constants import ESTIMATOR_NAMES
 
@@ -41,7 +42,7 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
     run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=8, mutation_rate=mutation_rate, seed=seed))
     return {"run": run, "terrain": terrain}
 
-tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Experiment pipeline", "04 · Thesis results", "05 · Validation pipeline"])
+tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Experiment pipeline", "04 · Thesis results", "05 · Validation pipeline", "06 · External evidence"])
 
 with tabs[0]:
     # Layer 1 is a real, deterministic sample construction, not an analogy.
@@ -262,28 +263,14 @@ with tabs[2]:
         if reset.button("↺", use_container_width=True, key="story_reset"):
             st.session_state.story_stage = 0; st.session_state.story_playing = False
         story_pace = st.select_slider("Quick tour pace", ["Slow", "Normal", "Fast"], value="Normal", key="story_pace")
-        story_stage = st.select_slider("Explain stage", options=list(range(6)), value=0, format_func=lambda item: f"{item + 1}. {story_steps[item][1]}", key="story_stage")
-        st.caption("Quick Tour moves through the protocol. Manual Explain mode uses the stage selector.")
+        story_stage = st.select_slider("Manual stage", options=list(range(len(PIPELINE_STAGES))), value=0, format_func=lambda item: f"{item + 1}. {PIPELINE_STAGES[item][0]}", key="story_stage")
+        st.caption("Quick Tour follows one candidate through the written-thesis protocol.")
     with stage_area:
-        cards = st.columns(6)
-        for card, (number, title, mini, *_rest) in zip(cards, story_steps):
-            active = int(number) - 1 == story_stage
-            card.markdown(f'<div class="pipeline-stage{" active" if active else ""}"><div class="pipeline-step">{number}</div><div class="pipeline-title">{title}</div><div class="pipeline-mini">{mini}</div></div>', unsafe_allow_html=True)
-        step = story_steps[story_stage]
-        main, why = st.columns([1.45, 1])
-        with main:
-            st.markdown(f'''<div class="story-panel"><div class="story-kicker">{step[5]}</div><div class="story-title">{step[1]}</div><div class="story-label">WHAT HAPPENS</div><div class="story-body">{step[3]}</div><div class="story-label" style="margin-top:22px">VISUAL CUE</div><div class="story-body">{step[6]}</div></div>''', unsafe_allow_html=True)
-        with why:
-            st.markdown(f'''<div class="story-panel"><div class="story-kicker">WHY THIS STAGE MATTERS</div><div class="story-title">{step[2]}</div><div class="story-body">{step[4]}</div><div class="story-label" style="margin-top:25px">THESIS PRINCIPLE</div><div class="story-body">GA proposes; evidence decides.</div></div>''', unsafe_allow_html=True)
-        st.markdown("<div class='story-kicker' style='margin:20px 0 8px'>EVIDENCE FUNNEL</div>", unsafe_allow_html=True)
-        funnel = ("576 scenario conditions", "HPF1 survivors", "HPF2 + specialist halving", "Dual held-out gate", "Frozen confirmation", "NEST26 & final evidence")
-        widths = (96, 84, 72, 60, 48, 36)
-        for index, (label, width) in enumerate(zip(funnel, widths)):
-            st.markdown(f'<div class="funnel-step{" active" if index == story_stage else ""}" style="width:{width}%">{label}</div>', unsafe_allow_html=True)
-        st.caption("Method sequence transcribed from Thesis-06Aug-V11: Genetic Algorithm Framework and Cross Validation and the Discovery Sequence. This narrative does not rerun the thesis GA or claim a new result.")
+        components.html(experiment_pipeline_svg(story_stage), height=790, scrolling=False)
+        st.caption("Animated protocol transcribed from Thesis-06Aug-V11: Genetic Algorithm Framework and Cross Validation and the Discovery Sequence. It is a narrative of the method, not a rerun of the thesis GA.")
     if st.session_state.get("story_playing", False):
-        if story_stage < 5:
-            time.sleep({"Slow": 4.5, "Normal": 3.2, "Fast": 1.6}[story_pace])
+        if story_stage < len(PIPELINE_STAGES) - 1:
+            time.sleep({"Slow": 4.5, "Normal": 3.5, "Fast": 1.7}[story_pace])
             st.session_state.story_next_stage = story_stage + 1
             st.rerun()
         else:
@@ -321,3 +308,27 @@ with tabs[4]:
         fig.add_trace(go.Scatter(x=x.mean_gain,y=x.validation_seed,error_x=dict(type='data',symmetric=False,array=x.mean_gain_ci_high-x.mean_gain,arrayminus=x.mean_gain-x.mean_gain_ci_low),mode='markers',name=mode,marker=dict(color=color)))
     fig.add_vline(x=0,line_dash='dash');fig.update_layout(title='Mean gain with bootstrap CI',height=400,xaxis_title='Mean gain',yaxis_title='Validation seed')
     st.plotly_chart(fig,use_container_width=True);st.caption(f'Validated specialists in curated taxonomy: {len(validated)}')
+
+with tabs[5]:
+    st.markdown('<span class="badge thesis">THESIS RESULTS — external evidence</span>', unsafe_allow_html=True)
+    st.caption("These two audits answer different questions and neither retrains a discovered estimator.")
+    real, audit = st.columns(2)
+    with real:
+        st.markdown('''<div class="story-panel"><div class="story-kicker">REAL-WORLD EXTERNAL BATTERY</div><div class="story-title">Empirical calibration</div><div class="story-label">WHAT IT TESTS</div><div class="story-body">Frozen specialists are applied to public datasets without retraining. Repeated subsamples are assessed against the empirical full-sample mean.</div><div class="story-label" style="margin-top:20px">THESIS RESULT</div><div class="story-body">At least one corrected win occurred in 26 of 43 eligible parent datasets; 255 profile-matched comparisons survived false-discovery-rate control.</div><div class="story-label" style="margin-top:20px">QUESTION</div><div class="story-body">Does the supported signal transfer to empirical data?</div></div>''', unsafe_allow_html=True)
+    with audit:
+        st.markdown('''<div class="story-panel"><div class="story-kicker">RANDOM DIRICHLET ABSTAIN AUDIT</div><div class="story-title">Simplex sanity check</div><div class="story-label">WHAT IT TESTS</div><div class="story-body">Random Dirichlet composites are evaluated in benchmark-retained regimes under the original dual gate. This audit does not rerun the GA.</div><div class="story-label" style="margin-top:20px">QUESTION</div><div class="story-body">Could arbitrary weight vectors reveal composite signal where the selected GA candidate was retained by the benchmark?</div></div>''', unsafe_allow_html=True)
+    dirichlet_summary, dirichlet_signals = load_dirichlet_summary(), load_dirichlet_signals()
+    if not dirichlet_summary.empty:
+        signal_count=int(dirichlet_summary["dirichlet_signal"].astype(str).str.lower().eq("true").sum())
+        total=len(dirichlet_summary)
+        metric_a, metric_b, metric_c = st.columns(3)
+        metric_a.metric("Audited regimes", total)
+        metric_b.metric("Regimes with Dirichlet signal", signal_count)
+        metric_c.metric("Audit rule", "4,000 draws · 8 seeds")
+        plot_data=dirichlet_summary.sort_values("total_seed_stable_passes", ascending=False).head(12)
+        audit_fig=go.Figure(go.Bar(x=plot_data["validation_id"], y=plot_data["total_seed_stable_passes"], marker_color=["#f3c743" if str(v).lower()=="true" else "#526a85" for v in plot_data["dirichlet_signal"]], hovertemplate="%{x}<br>Seed-stable passes: %{y}<extra></extra>"))
+        audit_fig.update_layout(title="Dirichlet audit: seed-stable random-search passes by regime", height=350, yaxis_title="Passes across audit seeds", plot_bgcolor="#081525", paper_bgcolor="#081525")
+        st.plotly_chart(audit_fig, use_container_width=True)
+        st.caption("Gold bars indicate a reported Dirichlet signal. A signal calls for the abstention to be revisited; it is not a replacement for fixed-weight confirmation.")
+    else:
+        st.info("Dirichlet audit results were not exported to this dashboard bundle.")
