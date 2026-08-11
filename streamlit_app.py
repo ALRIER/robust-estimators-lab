@@ -13,6 +13,7 @@ from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
+from src.defense_mode import SCENES as DEFENSE_SCENES, defense_scene_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
 
@@ -42,7 +43,7 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
     run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=8, mutation_rate=mutation_rate, seed=seed))
     return {"run": run, "terrain": terrain}
 
-tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Experiment pipeline", "04 · Thesis results", "05 · Validation pipeline", "06 · External evidence"])
+tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Experiment pipeline", "04 · Thesis results", "05 · Validation pipeline", "06 · External evidence", "00 · Defense mode"])
 
 with tabs[0]:
     # Layer 1 is a real, deterministic sample construction, not an analogy.
@@ -308,3 +309,14 @@ with tabs[5]:
         st.caption("Gold bars indicate a reported Dirichlet signal. A signal calls for the abstention to be revisited; it is not a replacement for fixed-weight confirmation.")
     else:
         st.info("Dirichlet audit results were not exported to this dashboard bundle.")
+
+with tabs[6]:
+    if "defense_scene" not in st.session_state:
+        st.session_state.defense_scene = 0
+    scene_buttons = st.columns(4)
+    for index, title in enumerate(DEFENSE_SCENES):
+        with scene_buttons[index % 4]:
+            if st.button(f"{index:02d} · {title}", key=f"defense_scene_{index}", use_container_width=True, type="primary" if index == st.session_state.defense_scene else "secondary"):
+                st.session_state.defense_scene = index
+    components.html(defense_scene_svg(st.session_state.defense_scene), height=770, scrolling=False)
+    st.caption("Defense Mode is a manual narrative layer derived from the thesis and current defense deck. Use the existing layers for the live demonstrations and result exploration.")
