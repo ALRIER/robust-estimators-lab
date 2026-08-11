@@ -59,7 +59,7 @@ with tabs[0]:
         l1_n = st.select_slider("Population / sample size", [100, 300, 500, 1000, 1500, 2500, 5000], value=1500, key="l1_n")
     l1_key=(l1_family,l1_contam,l1_rate,l1_scale,l1_n)
     if "l1_key" not in st.session_state or st.session_state.l1_key != l1_key:
-        st.session_state.l1_key=l1_key; st.session_state.l1_stage=3; st.session_state.l1_playing=False
+        st.session_state.l1_key=l1_key; st.session_state.l1_stage=9; st.session_state.l1_playing=False
     with controls:
         st.markdown("**CONSTRUCTION PLAYBACK**")
         play, pause, reset = st.columns(3)
@@ -70,15 +70,14 @@ with tabs[0]:
         if reset.button("↺", use_container_width=True, key="l1_reset"):
             st.session_state.l1_stage=0; st.session_state.l1_playing=False
         l1_speed=st.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l1_speed")
-        stage=st.select_slider("Construction stage", options=[0,1,2,3], value=3, format_func=lambda item: ("Baseline", "Outliers enter", "Contamination grows", "Complete")[item], key="l1_stage")
+        stage=st.select_slider("Construction stage", options=list(range(10)), value=9, format_func=lambda item: f"Step {item + 1} / 10", key="l1_stage")
     sample=draw_sample(DemoScenario(l1_family,l1_contam,float(l1_rate),float(l1_scale),int(l1_n),L1_SEED))
-    inlier_ids=np.flatnonzero(~sample.is_outlier); outlier_ids=np.flatnonzero(sample.is_outlier)
-    progress_levels=(.35,.55,.78,1.00)
-    progress=progress_levels[stage]
-    stage_names=("baseline forms", "outliers enter", "contamination grows", "full contaminated sample")
-    inlier_count=int(round(len(inlier_ids)*min(1,progress/.40)))
-    outlier_count=int(round(len(outlier_ids)*np.clip((progress-.40)/.40,0,1)))
-    visible_ids=np.r_[inlier_ids[:inlier_count],outlier_ids[:outlier_count]]
+    # A real contaminated sample arrives as one mixed random sequence; the
+    # original baseline-then-outliers ordering was only a teaching convention.
+    construction_order=np.random.default_rng(L1_SEED + 77).permutation(l1_n)
+    progress=(stage + 1) / 10
+    stage_names=("mixed sample begins", "early mixed draw", "mixed draw grows", "mixed draw grows", "half the sample visible", "mixed draw grows", "contamination becomes clearer", "near-complete mixed sample", "near-complete mixed sample", "full contaminated sample")
+    visible_ids=construction_order[:int(round(l1_n * progress))]
     values=sample.values[visible_ids]; visible_outliers=sample.is_outlier[visible_ids]
     full_estimates=location_estimates(sample.values)
     with visual:
@@ -87,7 +86,7 @@ with tabs[0]:
             st.markdown(f'''<div class="scenario-panel"><b>{l1_family.replace('exgaussian', 'Ex-Gaussian').title()}</b> · {l1_contam.replace('_', ' ').title()}<br>ε = {l1_rate:.0%} · scale = {l1_scale:g}× · n = {l1_n:,}<br>Expected outliers: {int(round(l1_rate*l1_n)):,}</div>''', unsafe_allow_html=True)
         for card,(name,value) in zip(metric_cards,full_estimates.items()):
             card.metric(name, f"{value:.3f}")
-        st.caption(f"Stage {stage + 1} of 4 · {len(values):,} visible observations · {stage_names[stage]}")
+        st.caption(f"Step {stage + 1} of 10 · {len(values):,} visible observations: {(~visible_outliers).sum():,} inliers and {visible_outliers.sum():,} generated outliers · {stage_names[stage]}")
         fig=go.Figure()
         peak=1.0
         if len(values)>8:
@@ -101,18 +100,20 @@ with tabs[0]:
             current=location_estimates(values)
             for name,value in current.items(): fig.add_vline(x=value,line_width=1.5,line_dash='dot',annotation_text=name,annotation_position='top')
         fig.add_vline(x=sample.true_location,line_dash='dash',line_width=2,annotation_text='Synthetic target')
+        fig.add_annotation(xref='paper',yref='paper',x=.01,y=.98,xanchor='left',yanchor='top',align='left',showarrow=False,bgcolor='rgba(8,21,37,.82)',bordercolor='#326188',borderwidth=1,text=f"<b>Mixed generated draw</b><br>Blue = inlier · Red × = generated outlier<br>{visible_outliers.sum():,} of {len(values):,} visible observations are contamination")
         fig.update_layout(height=500,xaxis_title='Observed value',yaxis_title='Density',margin=dict(l=10,r=10,t=35,b=20),legend=dict(orientation='h',y=1.02),plot_bgcolor='#081525',paper_bgcolor='#081525',yaxis=dict(range=[-.14*peak,1.15*peak]))
         st.plotly_chart(fig,use_container_width=True)
         strip=go.Figure()
         strip.add_trace(go.Scatter(x=np.arange(len(values))[~visible_outliers],y=values[~visible_outliers],mode='markers',name='Inliers',marker=dict(size=5,color='#3576a8',opacity=.55)))
         if visible_outliers.any(): strip.add_trace(go.Scatter(x=np.arange(len(values))[visible_outliers],y=values[visible_outliers],mode='markers',name='Outliers',marker=dict(size=9,color='#ff5b49',symbol='x',opacity=.9)))
-        strip.update_layout(title='Observed sample stream: inliers first, then generated contamination',height=390,xaxis_title='Construction order',yaxis_title='Observed value',margin=dict(l=10,r=10,t=40,b=20),legend=dict(orientation='h',y=1.04),plot_bgcolor='#081525',paper_bgcolor='#081525')
+        strip.add_annotation(xref='paper',yref='paper',x=.01,y=.98,xanchor='left',yanchor='top',showarrow=False,bgcolor='rgba(8,21,37,.82)',bordercolor='#326188',borderwidth=1,text='Random observation order: contamination is interleaved with inliers.')
+        strip.update_layout(title='Actual generated observation order',height=390,xaxis_title='Random draw order',yaxis_title='Observed value',margin=dict(l=10,r=10,t=40,b=20),legend=dict(orientation='h',y=1.04),plot_bgcolor='#081525',paper_bgcolor='#081525')
         st.plotly_chart(strip,use_container_width=True)
     if st.session_state.l1_playing:
-        if stage < 3:
-            # Only three safe transitions occur per run; this avoids flooding the
-            # Streamlit websocket with dozens of Plotly ForwardMsg updates.
-            time.sleep({"Slow":4.5,"Normal":2.5,"Fast":1.0}[l1_speed])
+        if stage < 9:
+            # Nine well-spaced transitions make the real mixed draw observable
+            # without the 50-update websocket flood of the original animation.
+            time.sleep({"Slow":3.5,"Normal":1.8,"Fast":.8}[l1_speed])
             st.session_state.l1_next_stage=stage+1
             st.rerun()
         else:
