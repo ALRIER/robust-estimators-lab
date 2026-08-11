@@ -89,7 +89,7 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
     if phase == 4 and generation < max_generation:
         current_x = xs[generations.index(generation)]; next_x = xs[generations.index(generation + 1)]
         links.append(f'<path d="M{current_x+145:.0f},475 L{next_x-145:.0f},475" stroke="#4de080" class="handoff" marker-end="url(#arrow)"/>')
-        annotations.append(f'<text x="{(current_x+next_x)/2:.0f}" y="455" text-anchor="middle" class="handofftext">ALL CHILDREN REPLACE THE POPULATION</text>')
+        annotations.append(f'<text x="{(current_x+next_x)/2:.0f}" y="455" text-anchor="middle" class="handofftext">ELITES + OFFSPRING FORM THE NEXT POPULATION</text>')
     path_svg = ""
     if show_path and len(generations) > 1:
         path = [positions[(gen, int(np.argmin(run["scores"][gen])))] for gen in generations]
@@ -100,12 +100,14 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
         x = 52 + index * 205; active = index == phase
         step_cards.append(f'<rect x="{x}" y="28" width="185" height="65" rx="7" fill="{"#432f76" if active else "#0d223a"}" stroke="{"#b879ff" if active else "#326188"}" stroke-width="{"2.5" if active else "1"}"/><text x="{x+92}" y="67" text-anchor="middle" class="step">{label}</text>')
     instruction = ("Fitness colours reveal error: green is lower." if phase == 0 else "Only recorded parents remain highlighted." if phase == 1 else "Two recorded parents blend into this real child." if phase == 2 else "The child moves from pre-mutation to final weights." if phase == 3 else "The complete child population becomes the next generation.")
+    # Symbols and operators below are transcribed from Thesis-06Aug-V11,
+    # §Genetic Algorithm Framework / §Selection, Crossover, and Mutation.
     notation = (
-        ("EVALUATE", "wᵢ⁽ᵍ⁾ ∈ Δ²", "sᵢ⁽ᵍ⁾ = L(wᵢ⁽ᵍ⁾)", "Each candidate mixture receives a loss.", "Lower loss → greener candidate."),
-        ("SELECT", "Pᵍ = Select({wᵢ⁽ᵍ⁾, sᵢ⁽ᵍ⁾})", "Pᵍ ⊂ population", "Low-loss candidates are more likely", "to contribute genetic material."),
-        ("CROSSOVER", "c = αpᴬ + (1 − α)pᴮ", "0 ≤ α ≤ 1", "A child blends two parent weight vectors", "and remains inside the simplex."),
-        ("MUTATION", "c′ = 0.5c + 0.5z", "z ∼ Dirichlet(1, 1, 1)", "A small random perturbation preserves", "non-negative weights summing to one."),
-        ("NEXT GENERATION", "X⁽ᵍ⁺¹⁾ = elites ∪ offspring", "|X⁽ᵍ⁺¹⁾| = N", "Recorded children form the next", "constant-size population."),
+        ("CANDIDATE POPULATION", "P⁽ᵍ⁾ = {w₁⁽ᵍ⁾, …, wᴺ⁽ᵍ⁾}", "wᵢ⁽ᵍ⁾ ∈ Δᴸ", "The thesis searches weight vectors on the", "probability simplex; this is a 3-weight slice."),
+        ("TOURNAMENT SELECTION", "p₁, p₂ ∈ Δᴸ", "t_size ∈ {2, 3}", "Tournament selection chooses parents from", "the candidate population."),
+        ("CONVEX CROSSOVER", "c = αp₁ + (1 − α)p₂", "α ∼ U(0, 1)", "The convex child respects the compositional", "geometry of the probability simplex."),
+        ("DIRICHLET MUTATION", "η ∼ Dirichlet(α_mut 1ᴸ)", "w̃ = (w + η) / 2; renormalise", "Mutation probability follows a logarithmic", "decay schedule in the thesis."),
+        ("DIVERSITY & REPLACEMENT", "Top e individuals are preserved", "ρ worst → fresh Dirichlet draws", "Elitism preserves strong candidates; periodic", "immigration maintains diversity."),
     )[phase]
     note_x, note_y = 1120, 180
     notation_svg = f'''<rect x="{note_x}" y="{note_y}" width="365" height="530" rx="12" class="notecard"/>
@@ -117,5 +119,5 @@ def cluster_map_svg(run, generation, phase, show_inheritance=True, show_eliminat
     <line x1="{note_x+28}" y1="{note_y+238}" x2="{note_x+337}" y2="{note_y+238}" class="noteline"/>
     <text x="{note_x+28}" y="{note_y+290}" class="notebody">{notation[3]}</text>
     <text x="{note_x+28}" y="{note_y+325}" class="notebody">{notation[4]}</text>
-    <text x="{note_x+28}" y="{note_y+460}" class="notefoot">Pedagogical mini-GA · 3-weight slice</text>'''
+    <text x="{note_x+28}" y="{note_y+460}" class="notefoot">Thesis notation · pedagogical 3-weight slice</text>'''
     return f'''<html><style>body{{margin:0;background:#081525;font-family:Arial,sans-serif}}svg{{width:100%;height:920px}}.grid{{stroke:#214664;stroke-dasharray:2 6}}.gen{{font-size:17px;font-weight:800;fill:#edf6ff}}.step{{font-size:13px;font-weight:800;fill:#edf6ff}}.best{{fill:none;stroke:#b879ff;stroke-width:3;stroke-dasharray:5 4}}.inherit{{fill:none;stroke-width:3}}.mutation{{fill:none;stroke-width:5;stroke-dasharray:7 4}}.handoff{{fill:none;stroke-width:8;stroke-dasharray:12 6}}.handofftext{{font-size:13px;font-weight:800;fill:#4de080}}.selectednote{{font-size:14px;font-weight:800;fill:#4de080;letter-spacing:1px}}.tag{{font-size:12px;font-weight:800}}.yellow{{fill:#f3c743}}.purple{{fill:#cda4ff}}.child{{fill:#edf6ff}}.mutate{{fill:#4de080}}.phase{{font-size:17px;font-weight:800;fill:#f3c743}}.hint{{font-size:14px;fill:#c4d5e9}}.notecard{{fill:#0c2036;stroke:#3a78a8;stroke-width:1.5}}.notekicker{{font-size:13px;font-weight:800;letter-spacing:2px;fill:#72cfff}}.notetitle{{font-size:22px;font-weight:800;fill:#f3c743}}.noteline{{stroke:#2f5b7e;stroke-width:1}}.formula{{font-size:18px;font-family:Georgia,serif;fill:#e7f3ff}}.notebody{{font-size:15px;fill:#c4d5e9}}.notefoot{{font-size:12px;fill:#7695b2}}</style><svg viewBox="0 0 {width} {height}"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3z" fill="#dceaff"/></marker></defs>{''.join(step_cards)}{grid}{''.join(frames)}{path_svg}{''.join(links)}{''.join(clouds)}{''.join(labels)}{''.join(annotations)}{notation_svg}<text x="52" y="875" class="phase">GEN {generation}: {PHASES[phase]}</text><text x="345" y="875" class="hint">{instruction}</text></svg></html>'''
