@@ -26,6 +26,7 @@ st.markdown("""<style>
 .stApp{background:radial-gradient(circle at 48% -12%,#16365c 0,#08172a 35%,#040a14 76%)!important;color:#eef5ff}.block-container{padding:.45rem 2rem 3rem!important;max-width:none!important}.stMetric{background:linear-gradient(135deg,#0d2038,#081525)!important;border:1px solid #218dca!important;border-top:3px solid #9a5cff!important;border-radius:7px;padding:10px;box-shadow:inset 0 0 18px rgba(33,141,202,.08)}.stMetric label,.stMetric [data-testid="stMetricLabel"]{color:#b8c8de!important}.stMetric [data-testid="stMetricValue"]{color:#f5f8ff!important}.badge{padding:6px 10px;border-radius:6px;font-size:.78rem;font-weight:800;display:inline-block;letter-spacing:.03em}.demo{background:#28184c;color:#d7c3ff;border:1px solid #8759de}.thesis{background:#0b372d;color:#9df0b7;border:1px solid #3aaf6f}
 h1{color:#f5f8ff!important;margin:0 0 .1rem!important;font-size:2rem!important;text-shadow:0 0 18px rgba(71,169,255,.34)}h2,h3{color:#f2f7ff!important}[data-testid="stCaptionContainer"],.stCaption{color:#aebed3!important}[data-baseweb="tab-list"]{border-bottom:1px solid #2374b4!important;box-shadow:none!important;margin-top:.25rem!important;gap:.4rem}[data-baseweb="tab-border"]{display:none!important}[data-testid="stTabs"]>div:first-child{border-bottom:0!important}[data-baseweb="tab"]{color:#aebed3!important;background:#0a1930!important;border:1px solid #1d5688!important;border-bottom:0!important;border-radius:6px 6px 0 0!important;font-weight:700!important}[aria-selected="true"][data-baseweb="tab"]{color:#f6fbff!important;background:#102a49!important;box-shadow:inset 0 2px #4fc3ff!important}.layer-heading{font-size:1.3rem;font-weight:800;color:#f5f8ff;margin:.3rem 0 .1rem;text-shadow:0 0 14px rgba(79,195,255,.25)}.layer-subheading{color:#aebed3;margin:0 0 .75rem}.scenario-panel{border:1px solid #237fc0;border-left:4px solid #4fc3ff;border-radius:7px;background:linear-gradient(135deg,#0e2743,#081626);padding:.8rem 1rem;margin:.45rem 0 .8rem;color:#e8f3ff}.independent-note{color:#aebed3;font-size:.86rem;border-top:1px solid #20517e;padding-top:.65rem;margin-top:.35rem}.metric-caption{font-size:.78rem;color:#aebed3;margin-top:-.4rem}
 div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{border-color:#236b9e!important;background:#08182b!important}.stButton>button{background:linear-gradient(135deg,#5931bd,#2575bb)!important;color:#fff!important;border:1px solid #62c7ff!important;border-radius:6px!important;font-weight:700}.stSelectbox label,.stSlider label,.stNumberInput label,.stRadio label{color:#dceaff!important}.stAlert{background:#102a49!important;border:1px solid #287db5!important;color:#e7f4ff!important}.js-plotly-plot .plotly .modebar{background:#102541!important}
+.pipeline-stage{min-height:136px;padding:14px 12px;border:1px solid #2b668f;border-radius:9px;background:#0a1b30;color:#b9cae0}.pipeline-stage.active{background:linear-gradient(135deg,#203d67,#152b48);border:2px solid #f3c743;box-shadow:0 0 20px rgba(243,199,67,.22);color:#f6fbff}.pipeline-step{font-size:11px;font-weight:800;letter-spacing:.08em;color:#72cfff}.pipeline-title{font-size:16px;font-weight:800;margin:8px 0}.pipeline-mini{font-size:12px;line-height:1.35}.story-panel{min-height:245px;padding:24px;border:1px solid #367eaf;border-radius:10px;background:linear-gradient(135deg,#0d2642,#08182b)}.story-kicker{font-size:12px;font-weight:800;letter-spacing:.1em;color:#72cfff}.story-title{font-size:28px;font-weight:800;color:#f5f8ff;margin:8px 0 16px}.story-label{font-size:12px;font-weight:800;letter-spacing:.08em;color:#f3c743;margin-bottom:6px}.story-body{font-size:16px;line-height:1.48;color:#dbe9f7}.funnel-step{padding:10px 14px;margin:6px auto;border:1px solid #3c79a5;border-radius:6px;background:#0d2642;color:#dceaff;text-align:center;font-weight:700}.funnel-step.active{border-color:#4de080;color:#c8ffd7;background:#123d30}
 </style>""", unsafe_allow_html=True)
 st.title("Robust Estimators Lab")
 st.caption("Interactive teaching and evidence interface for robust estimator mixtures")
@@ -40,7 +41,7 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
     run = run_pedagogical_ga(objective, MiniGAConfig(population_size=population_size, generations=8, mutation_rate=mutation_rate, seed=seed))
     return {"run": run, "terrain": terrain}
 
-tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Thesis results", "04 · Validation pipeline"])
+tabs=st.tabs(["01 · Build the problem", "02 · GA search", "03 · Experiment pipeline", "04 · Thesis results", "05 · Validation pipeline"])
 
 with tabs[0]:
     # Layer 1 is a real, deterministic sample construction, not an analogy.
@@ -240,6 +241,55 @@ with tabs[1]:
             st.success("Demo run complete. Scrub the timeline or change the regime to compare a new search landscape.")
 
 with tabs[2]:
+    story_steps = (
+        ("01", "Scenario universe", "Define the regime before fitting", "The simulation engine spans 576 contamination conditions: 9 scales × 8 rates × 8 mechanisms. Discovery uses three non-overlapping folds and two search seeds.", "Performance is conditional on the data-generating regime. Cross validation limits dependence on scenarios used for fitting.", "SCENARIO ENGINE", "576-condition grid · 3 folds · seeds 101 and 202"),
+        ("02", "HPF1", "Broad, low-cost screening", "The first high-pass filter screens configurations and regimes using 60% scenario exposure, 8 generations per fold, 15 samples and 40 bootstrap resamples.", "HPF1 allocates further computation to promising combinations; passing it is not evidence of a benchmark improvement.", "DISCOVERY SCREEN", "HPF1: 60% exposure · 8 generations/fold"),
+        ("03", "HPF2 & halving", "Deepen then narrow discovery", "HPF2 reassesses survivors at 80% exposure in the initial search (90% in the expanded search), then specialist halving retains the strongest pairs; five candidates reach the held-out gate.", "More computation is concentrated where it is informative while preserving the distinction between discovery and confirmation.", "DISCOVERY SCREEN", "HPF2 → specialist halving → 5 gate candidates"),
+        ("04", "Held-out gate", "Apply the dual benchmark decision", "No further optimisation occurs. A candidate is nominated only if it beats the strongest admissible benchmark on both mean MSE and q95(MSE) using held-out scenarios.", "The dual gate prevents a local search advantage or a one-metric improvement from being reported as a discovery win.", "DISCOVERY DECISION", "Held-out evidence · mean MSE AND q95(MSE)"),
+        ("05", "Frozen confirmation", "Test the stored weights without retraining", "After nomination, crossover, mutation, specialist halving and candidate selection stop. Locked weights face new seeds, a broader benchmark registry, paired bootstrap uncertainty and unseen related regimes.", "Confirmation tests whether a discovery advantage persists once the search is no longer allowed to adapt.", "CONFIRMATION", "Fixed weights · new seeds · bootstrap · profile audits"),
+        ("06", "Expanded & final evidence", "Repeat, then calibrate externally", "The study repeats discovery with the 26-component library and a second fixed-weight evaluation; public-data calibration is performed without retraining.", "The final record separates discovery output, fixed-weight evidence and external calibration; benchmark retention remains valid when support is insufficient.", "EVIDENCE RECORD", "NEST26 rediscovery · second freeze · external calibration"),
+    )
+    if "story_next_stage" in st.session_state:
+        st.session_state.story_stage = st.session_state.pop("story_next_stage")
+    rail, stage_area = st.columns([.72, 5.28])
+    with rail:
+        st.markdown("**STUDY TOUR**")
+        start, pause, reset = st.columns(3)
+        if start.button("▶", use_container_width=True, key="story_play"):
+            st.session_state.story_playing = True
+        if pause.button("❚❚", use_container_width=True, key="story_pause"):
+            st.session_state.story_playing = False
+        if reset.button("↺", use_container_width=True, key="story_reset"):
+            st.session_state.story_stage = 0; st.session_state.story_playing = False
+        story_pace = st.select_slider("Quick tour pace", ["Slow", "Normal", "Fast"], value="Normal", key="story_pace")
+        story_stage = st.select_slider("Explain stage", options=list(range(6)), value=0, format_func=lambda item: f"{item + 1}. {story_steps[item][1]}", key="story_stage")
+        st.caption("Quick Tour moves through the protocol. Manual Explain mode uses the stage selector.")
+    with stage_area:
+        cards = st.columns(6)
+        for card, (number, title, mini, *_rest) in zip(cards, story_steps):
+            active = int(number) - 1 == story_stage
+            card.markdown(f'<div class="pipeline-stage{" active" if active else ""}"><div class="pipeline-step">{number}</div><div class="pipeline-title">{title}</div><div class="pipeline-mini">{mini}</div></div>', unsafe_allow_html=True)
+        step = story_steps[story_stage]
+        main, why = st.columns([1.45, 1])
+        with main:
+            st.markdown(f'''<div class="story-panel"><div class="story-kicker">{step[5]}</div><div class="story-title">{step[1]}</div><div class="story-label">WHAT HAPPENS</div><div class="story-body">{step[3]}</div><div class="story-label" style="margin-top:22px">VISUAL CUE</div><div class="story-body">{step[6]}</div></div>''', unsafe_allow_html=True)
+        with why:
+            st.markdown(f'''<div class="story-panel"><div class="story-kicker">WHY THIS STAGE MATTERS</div><div class="story-title">{step[2]}</div><div class="story-body">{step[4]}</div><div class="story-label" style="margin-top:25px">THESIS PRINCIPLE</div><div class="story-body">GA proposes; evidence decides.</div></div>''', unsafe_allow_html=True)
+        st.markdown("<div class='story-kicker' style='margin:20px 0 8px'>EVIDENCE FUNNEL</div>", unsafe_allow_html=True)
+        funnel = ("576 scenario conditions", "HPF1 survivors", "HPF2 + specialist halving", "Dual held-out gate", "Frozen confirmation", "NEST26 & final evidence")
+        widths = (96, 84, 72, 60, 48, 36)
+        for index, (label, width) in enumerate(zip(funnel, widths)):
+            st.markdown(f'<div class="funnel-step{" active" if index == story_stage else ""}" style="width:{width}%">{label}</div>', unsafe_allow_html=True)
+        st.caption("Method sequence transcribed from Thesis-06Aug-V11: Genetic Algorithm Framework and Cross Validation and the Discovery Sequence. This narrative does not rerun the thesis GA or claim a new result.")
+    if st.session_state.get("story_playing", False):
+        if story_stage < 5:
+            time.sleep({"Slow": 4.5, "Normal": 3.2, "Fast": 1.6}[story_pace])
+            st.session_state.story_next_stage = story_stage + 1
+            st.rerun()
+        else:
+            st.session_state.story_playing = False
+
+with tabs[3]:
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     winners=load_winners()
     if winners.empty: st.error('Not exported'); st.stop()
@@ -254,7 +304,7 @@ with tabs[2]:
     st.plotly_chart(wf,use_container_width=True)
     st.info(f"Relative gain in q95(MSE): {row.get('ga_rel_improvement_q95','Not exported')} · Relative gain in mean MSE: {row.get('ga_rel_improvement_mean','Not exported')}. Discovery does not equal fixed-weight confirmation.")
 
-with tabs[3]:
+with tabs[4]:
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     st.caption('Discovery → locked / fixed weights → bootstrap CI → evidence taxonomy')
     decisions,ci,evidence,validated=load_final_decisions(),load_bootstrap_ci(),load_evidence_taxonomy(),load_validated_specialists()
