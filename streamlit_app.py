@@ -13,7 +13,7 @@ from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
-from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists
+from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
 
 # Streamlit reliably reruns the page module, but its long-lived worker can keep
