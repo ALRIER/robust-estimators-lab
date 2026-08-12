@@ -105,12 +105,25 @@ def research_logic_svg(panel: int) -> str:
         card(850,350,325,165,"LITTLE ROOM",["Bias² + Variance  ≥  Var(X̄)","GA searches; Monte Carlo measures;","the benchmark gate decides."],"scene")
         rail(["MSE = bias² + variance.","A composite is never guaranteed."],"Theory predicts conditional opportunity.","Simulation must measure true error.")
     technical = (
-        ("STATISTICAL SUPPORT", "Regime: R = {family, n, ε, mechanism}     ·     sample: x ∼ R     ·     compare risk: R(T̄, R) vs R(Trobust, R)"),
-        ("STATISTICAL SUPPORT", "Experiment logic: R → x → {T₁(x), …, Tᴸ(x)} → w → benchmark gate     ·     target: θ = E[X]"),
-        ("STATISTICAL SUPPORT", "Risk is conditional: R(T, R) = E[(T(x) − θ)² | R]     ·     evidence uses MSE, q95 and benchmark retention"),
-        ("STATISTICAL SUPPORT", "θ̂w,n = Σⱼ₌₁ᴸ wⱼTⱼ,n(x)     ·     wⱼ ≥ 0     ·     Σⱼ wⱼ = 1     ·     interpretable convex mixture"),
-        ("STATISTICAL SUPPORT", "MSE(θ̂) = Bias(θ̂)² + Var(θ̂)     ·     improvement only if MSE(θ̂w) < MSE(best admissible benchmark)"),
+        (("REGIME", "R = {family, n, γ, scale, mechanism}", "The complete data-generating setting."),
+         ("SAMPLE", "x ∼ R", "The observations drawn from that regime."),
+         ("CONDITIONAL RISK", "R(T,R) = E[(T(x) − θ)² | R]", "The ranking is evaluated within a regime.")),
+        (("PROGRAMME", "R → x → {T₁(x), …, Tᴸ(x)} → w → gate", "World, sample, estimator bank, weights, decision."),
+         ("FIXED TARGET", "θ = E[X]", "Every candidate estimates the same population mean."),
+         ("CREDIBILITY", "freeze(w) → new seeds → gate", "Discovery alone is not a final claim.")),
+        (("REPLICATE ERROR", "e² = (θ̂(x) − θ)²", "One simulated sample's squared error."),
+         ("AVERAGE RISK", "MSE = E[e²]", "Typical error across repeated samples."),
+         ("DIFFICULT-CASE RISK", "q95(MSE)", "The upper-tail error boundary, not just the average.")),
+        (("COMPOSITE", "θ̂w,n = Σⱼ₌₁ᴸ wⱼTⱼ,n(x)", "A weighted recipe of named estimators."),
+         ("SIMPLEX", "wⱼ ≥ 0   ·   Σⱼwⱼ = 1", "Non-negative proportions that sum to 100%."),
+         ("VALIDITY", "admissible support · target fit", "Defined components must still be judged against E[X].")),
+        (("RISK DECOMPOSITION", "MSE(θ̂) = Bias(θ̂)² + Var(θ̂)", "A composite pays bias only if variance reduction compensates."),
+         ("DOMINANCE", "Bias² + Variance < Var(X̄)", "The condition for beating the sample mean."),
+         ("BIAS ENVELOPE", "|B| ≤ (1 − wmean) · max|bⱼ|", "Moving weight away from the mean bounds the bias cost.")),
     )[panel]
-    p += ['<rect x="48" y="720" width="1150" height="140" rx="14" class="technical"/>', _t(72, 755, technical[0], "kicker"), _t(72, 795, technical[1], "techtext"), _t(72, 832, "Technical notation supports the speech; the visual argument above remains the main reading path.", "small")]
-    css='''body{margin:0;background:#081525;font-family:Arial,sans-serif}svg{width:100%;height:920px}.canvas{fill:#091a2e;stroke:#2d6d9c;stroke-width:1.5}.kicker{font-size:12px;font-weight:800;letter-spacing:1.5px;fill:#72cfff}.title{font-size:28px;font-weight:800;fill:#f5f9ff}.claim{font-size:17px;font-weight:700;fill:#dceaff}.body{font-size:14px;fill:#dce9f8}.small{font-size:12px;fill:#bdd0e2}.gold{font-size:14px;font-weight:800;fill:#f3c743}.head{font-size:15px;font-weight:800;fill:#f5f9ff}.card,.scene,.step,.hyp{fill:#0d2741;stroke:#397daa;stroke-width:1.4}.warn{fill:#382335;stroke:#ff825f;stroke-width:1.8}.hero,.rqactive{fill:#102d4b;stroke:#f3c743;stroke-width:1.8}.rail{fill:#0b2138;stroke:#4b84ad;stroke-width:1.3}.technical{fill:#0a1c31;stroke:#2d6d9c;stroke-width:1.3}.railtext{font-size:13px;fill:#dce9f8}.techtext{font-family:Georgia,serif;font-size:16px;fill:#f3c743}.curve{stroke:#58aee8;stroke-width:4;fill:none}.curvewarn{stroke:#ff825f;stroke-width:4;fill:none}.target{stroke:#f3c743;stroke-width:3;stroke-dasharray:7 5}.mean{fill:#ff825f}.robust{fill:#63dfa2}.arrow,.bigarrow{stroke:#72cfff;stroke-width:3;fill:none}.bigarrow{stroke-width:5}.chain{font-size:24px;font-weight:800;fill:#f3c743}.weight{fill:#58aee8}'''
+    p += ['<rect x="48" y="720" width="1150" height="140" rx="14" class="technical"/>', _t(72, 752, "STATISTICAL SUPPORT — notation for the speaker", "kicker")]
+    for i, (label, formula, note) in enumerate(technical):
+        x = 72 + i * 370
+        p += [_t(x, 783, label, "techlabel"), _t(x, 812, formula, "techtext"), _t(x, 840, note, "technote")]
+    css='''body{margin:0;background:#081525;font-family:Arial,sans-serif}svg{width:100%;height:920px}.canvas{fill:#091a2e;stroke:#2d6d9c;stroke-width:1.5}.kicker{font-size:12px;font-weight:800;letter-spacing:1.5px;fill:#72cfff}.title{font-size:28px;font-weight:800;fill:#f5f9ff}.claim{font-size:17px;font-weight:700;fill:#dceaff}.body{font-size:14px;fill:#dce9f8}.small{font-size:12px;fill:#bdd0e2}.gold{font-size:14px;font-weight:800;fill:#f3c743}.head{font-size:15px;font-weight:800;fill:#f5f9ff}.card,.scene,.step,.hyp{fill:#0d2741;stroke:#397daa;stroke-width:1.4}.warn{fill:#382335;stroke:#ff825f;stroke-width:1.8}.hero,.rqactive{fill:#102d4b;stroke:#f3c743;stroke-width:1.8}.rail{fill:#0b2138;stroke:#4b84ad;stroke-width:1.3}.technical{fill:#0a1c31;stroke:#2d6d9c;stroke-width:1.3}.railtext{font-size:13px;fill:#dce9f8}.techlabel{font-size:10px;font-weight:800;letter-spacing:1px;fill:#72cfff}.techtext{font-family:Georgia,serif;font-size:14px;fill:#f3c743}.technote{font-size:11px;fill:#bdd0e2}.curve{stroke:#58aee8;stroke-width:4;fill:none}.curvewarn{stroke:#ff825f;stroke-width:4;fill:none}.target{stroke:#f3c743;stroke-width:3;stroke-dasharray:7 5}.mean{fill:#ff825f}.robust{fill:#63dfa2}.arrow,.bigarrow{stroke:#72cfff;stroke-width:3;fill:none}.bigarrow{stroke-width:5}.chain{font-size:24px;font-weight:800;fill:#f3c743}.weight{fill:#58aee8}'''
     return f'<html><style>{css}</style><svg viewBox="0 0 1600 940"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L9,4z" fill="#dceaff"/></marker></defs>{"".join(p)}</svg></html>'
