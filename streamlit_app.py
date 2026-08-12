@@ -13,7 +13,7 @@ from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
-from src.defense_mode import defense_scene_svg
+from src.defense_mode import VALIDATION_STAGES, defense_scene_svg, validation_scene_svg
 from src.research_logic import PANELS as RESEARCH_PANELS, research_logic_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
@@ -430,9 +430,30 @@ if active_section == "01 · Research logic":
     components.html(research_logic_svg(st.session_state.research_panel), height=940, scrolling=False)
     st.button("Continue to simulated world →", type="primary", on_click=_navigate, args=(2,))
 
+if active_section == "03 · Monte Carlo engine":
+    if "monte_carlo_view" not in st.session_state:
+        st.session_state.monte_carlo_view = "engine"
+    engine_tab, validation_tab = st.columns(2)
+    with engine_tab:
+        if st.button("Monte Carlo measurement engine", key="monte_carlo_engine", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "engine" else "secondary"):
+            st.session_state.monte_carlo_view = "engine"
+    with validation_tab:
+        if st.button("Data-generating world validation", key="monte_carlo_validation", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "validation" else "secondary"):
+            st.session_state.monte_carlo_view = "validation"
+    if st.session_state.monte_carlo_view == "engine":
+        components.html(defense_scene_svg(5), height=770, scrolling=False)
+    else:
+        if "validation_stage" not in st.session_state:
+            st.session_state.validation_stage = 0
+        validation_buttons = st.columns(4)
+        for index, (title, *_detail) in enumerate(VALIDATION_STAGES):
+            with validation_buttons[index]:
+                if st.button(title, key=f"validation_stage_{index}", use_container_width=True, type="primary" if index == st.session_state.validation_stage else "secondary"):
+                    st.session_state.validation_stage = index
+        components.html(validation_scene_svg(st.session_state.validation_stage), height=770, scrolling=False)
+
 DEFENSE_SCENE_SECTION = {
     "02 · Data-generating world": 4,
-    "03 · Monte Carlo engine": 5,
     "09 · Conclusions": 6,
 }
 if active_section in DEFENSE_SCENE_SECTION:
