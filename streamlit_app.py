@@ -425,7 +425,9 @@ if active_section == "01 · Research logic":
         with panel_buttons[i]:
             if st.button(label, key=f"research_panel_{i}", use_container_width=True, type="primary" if i == st.session_state.research_panel else "secondary"):
                 st.session_state.research_panel = i
-    components.html(research_logic_svg(st.session_state.research_panel), height=630, scrolling=False)
+    # Match the full defense-canvas scale used by Layer 5, leaving room for the
+    # primary story plus the technical notation support band below it.
+    components.html(research_logic_svg(st.session_state.research_panel), height=940, scrolling=False)
     st.button("Continue to simulated world →", type="primary", on_click=_navigate, args=(2,))
 
 DEFENSE_SCENE_SECTION = {
