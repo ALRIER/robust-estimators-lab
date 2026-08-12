@@ -269,7 +269,7 @@ if active_section == "06 · Experiment pipeline":
     if "story_stage" not in st.session_state:
         st.session_state.story_stage = 0
     stage_buttons = st.columns(3)
-    for index, (title, _what, _why) in enumerate(PIPELINE_STAGES):
+    for index, (title, _claim, _what, _why) in enumerate(PIPELINE_STAGES):
         with stage_buttons[index % 3]:
             if st.button(f"{index + 1}. {title}", key=f"story_stage_{index}", use_container_width=True, type="primary" if index == st.session_state.story_stage else "secondary"):
                 st.session_state.story_stage = index
