@@ -14,7 +14,7 @@ from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
 from src.defense_mode import defense_scene_svg
-from src.research_logic import PANELS as RESEARCH_PANELS, research_logic_svg
+from src.research_logic import PANELS as RESEARCH_PANELS, PRESENTER_GUIDES, research_logic_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
 
@@ -417,16 +417,42 @@ if active_section == "00 · Cover":
     st.info("Conditional estimator discovery — not universal GA superiority.")
 
 if active_section == "01 · Research logic":
-    st.markdown("<div class='layer-heading'>Research logic: why the experiment exists</div>", unsafe_allow_html=True)
+    st.markdown("<div class='layer-heading'>Research logic: one argument before the experiment</div>", unsafe_allow_html=True)
     if "research_panel" not in st.session_state:
         st.session_state.research_panel = 0
     panel_buttons = st.columns(5)
-    for i, (label, _what, _why, _say) in enumerate(RESEARCH_PANELS):
+    for i, (label, _statement) in enumerate(RESEARCH_PANELS):
         with panel_buttons[i]:
             if st.button(label, key=f"research_panel_{i}", use_container_width=True, type="primary" if i == st.session_state.research_panel else "secondary"):
                 st.session_state.research_panel = i
-    components.html(research_logic_svg(st.session_state.research_panel), height=630, scrolling=False)
-    st.button("Continue to simulated world →", type="primary", on_click=_navigate, args=(2,))
+    panel = st.session_state.research_panel
+    detail_key = f"research_detail_{panel}"
+    if detail_key not in st.session_state:
+        st.session_state[detail_key] = 0
+    controls = st.columns([1, 1, 1, 2.2])
+    with controls[0]:
+        controls[0].button("← Previous concept", use_container_width=True, disabled=panel == 0, on_click=lambda: st.session_state.update(research_panel=max(0, panel - 1)))
+    with controls[1]:
+        if panel == 1:
+            label = "Next RQ →"
+        elif panel == 3:
+            label = "Show notation" if not st.session_state[detail_key] else "Plain English"
+        elif panel == 4:
+            label = "Difficult regime" if not st.session_state[detail_key] else "Clean Normal"
+        else:
+            label = "Plain-English view"
+        if controls[1].button(label, use_container_width=True):
+            if panel in (1, 3, 4):
+                st.session_state[detail_key] += 1
+    with controls[2]:
+        controls[2].button("Next concept →", use_container_width=True, disabled=panel == 4, on_click=lambda: st.session_state.update(research_panel=min(4, panel + 1)))
+    with controls[3]:
+        st.caption("One layer, five explanatory views · use the buttons above or these presentation controls.")
+    components.html(research_logic_svg(panel, st.session_state[detail_key]), height=790, scrolling=False)
+    with st.expander("Presenter guide", expanded=False):
+        st.write(PRESENTER_GUIDES[panel])
+    if panel == 4:
+        st.button("Continue to Data-generating world →", type="primary", on_click=_navigate, args=(2,))
 
 DEFENSE_SCENE_SECTION = {
     "02 · Data-generating world": 4,
