@@ -32,6 +32,32 @@ div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{bo
 .pipeline-stage{min-height:136px;padding:14px 12px;border:1px solid #2b668f;border-radius:9px;background:#0a1b30;color:#b9cae0}.pipeline-stage.active{background:linear-gradient(135deg,#203d67,#152b48);border:2px solid #f3c743;box-shadow:0 0 20px rgba(243,199,67,.22);color:#f6fbff}.pipeline-step{font-size:11px;font-weight:800;letter-spacing:.08em;color:#72cfff}.pipeline-title{font-size:16px;font-weight:800;margin:8px 0}.pipeline-mini{font-size:12px;line-height:1.35}.story-panel{min-height:245px;padding:24px;border:1px solid #367eaf;border-radius:10px;background:linear-gradient(135deg,#0d2642,#08182b)}.story-kicker{font-size:12px;font-weight:800;letter-spacing:.1em;color:#72cfff}.story-title{font-size:28px;font-weight:800;color:#f5f8ff;margin:8px 0 16px}.story-label{font-size:12px;font-weight:800;letter-spacing:.08em;color:#f3c743;margin-bottom:6px}.story-body{font-size:16px;line-height:1.48;color:#dbe9f7}.funnel-step{padding:10px 14px;margin:6px auto;border:1px solid #3c79a5;border-radius:6px;background:#0d2642;color:#dceaff;text-align:center;font-weight:700}.funnel-step.active{border-color:#4de080;color:#c8ffd7;background:#123d30}
 [data-testid="stSidebar"]{min-width:215px!important;max-width:215px!important;background:#071525!important;border-right:1px solid #245f8e}[data-testid="stSidebar"] [data-testid="stRadio"] label{font-size:.78rem!important;line-height:1.15!important;padding:.18rem 0!important}
 </style>""", unsafe_allow_html=True)
+
+# The presenter view deliberately uses the same deployment, but it is rendered
+# in a separate browser tab.  It is intentionally introduced only for Layer 1
+# while the format and content of the remaining speaker notes are agreed.
+_query = st.query_params
+if _query.get("presenter_notes") == "1":
+    note_section = _query.get("section", "")
+    st.title("Presenter notes")
+    if note_section == "research_logic":
+        st.caption("Layer 1 · Research logic · private rehearsal view")
+        st.markdown("""
+        <div class="scenario-panel" style="max-width:980px;margin-top:1.2rem;padding:1.5rem 1.7rem">
+          <div class="story-kicker">TEST NOTE</div>
+          <div class="story-title">Una carta feliz</div>
+          <div class="story-body">
+            Esta es una nota privada de prueba para el presentador. La audiencia no la ve:
+            queda abierta en esta pestaña independiente mientras la presentación permanece
+            en la otra pantalla.
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.info("Prueba: al abrir el escudo de la Universidad de Hull desde la capa 1, esta vista debe aparecer en otra pestaña.")
+    else:
+        st.warning("No hay notas configuradas para esta capa todavía.")
+    st.stop()
+
 st.title("Robust Estimators Lab")
 st.caption("Defense Mode · a visual thesis narrative for robust estimator mixtures")
 
@@ -67,6 +93,14 @@ with st.sidebar:
     previous, following = st.columns(2)
     previous.button("← Previous", use_container_width=True, disabled=position == 0, on_click=_navigate, args=(position - 1,))
     following.button("Next →", use_container_width=True, disabled=position == len(DEFENSE_INDEX) - 1, on_click=_navigate, args=(position + 1,))
+    if active_section == "01 · Research logic":
+        st.markdown("""
+        <a href="?presenter_notes=1&amp;section=research_logic" target="_blank" rel="noopener noreferrer"
+           title="Open presenter notes in a separate tab" style="display:block;margin-top:1.4rem">
+          <img src="app/static/assets/university_of_hull_logo.jpeg" alt="University of Hull"
+               style="display:block;width:100%;border-radius:6px;border:1px solid #245f8e;padding:4px;background:#fff" />
+        </a>
+        """, unsafe_allow_html=True)
 
 if active_section == "04 · Simulation lab":
     # Layer 1 is a real, deterministic sample construction, not an analogy.

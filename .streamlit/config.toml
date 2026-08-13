@@ -1,0 +1,4 @@
+[server]
+# Required for the private presenter-notes trigger in the sidebar: it serves
+# the bundled University of Hull image from this offline deployment.
+enableStaticServing = true
