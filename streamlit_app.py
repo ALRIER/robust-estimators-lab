@@ -417,22 +417,36 @@ if active_section == "00 · Cover":
     st.info("Conditional estimator discovery — not universal GA superiority.")
 
 if active_section == "01 · Research logic":
+    st.markdown("""<style>
+    .research-logic-nav .stButton>button{min-height:3.6rem!important;padding:.65rem .75rem!important;font-size:1.03rem!important;line-height:1.18!important;white-space:normal!important}
+    .research-logic-nav .stButton>button[kind="primary"]{box-shadow:0 0 18px rgba(93,62,221,.38)!important}
+    .research-logic-next .stButton>button{min-height:3.25rem!important;padding:.65rem 1.25rem!important;font-size:1.05rem!important}
+    </style>""", unsafe_allow_html=True)
     st.markdown("<div class='layer-heading'>Research logic: why the experiment exists</div>", unsafe_allow_html=True)
     if "research_panel" not in st.session_state:
         st.session_state.research_panel = 0
-    panel_buttons = st.columns(5)
+    st.markdown('<div class="research-logic-nav">', unsafe_allow_html=True)
+    panel_buttons = st.columns(5, gap="medium")
     for i, (label, _what, _why, _say) in enumerate(RESEARCH_PANELS):
         with panel_buttons[i]:
             if st.button(label, key=f"research_panel_{i}", use_container_width=True, type="primary" if i == st.session_state.research_panel else "secondary"):
                 st.session_state.research_panel = i
+    st.markdown('</div>', unsafe_allow_html=True)
     # Match the full defense-canvas scale used by Layer 5, leaving room for the
     # primary story plus the technical notation support band below it.
-    components.html(research_logic_svg(st.session_state.research_panel), height=940, scrolling=False)
+    components.html(research_logic_svg(st.session_state.research_panel), height=1000, scrolling=False)
+    st.markdown('<div class="research-logic-next">', unsafe_allow_html=True)
     st.button("Continue to simulated world →", type="primary", on_click=_navigate, args=(2,))
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if active_section == "03 · Monte Carlo engine":
+    st.markdown("""<style>
+    .monte-carlo-tabs .stButton>button{min-height:3.5rem!important;padding:.65rem 1rem!important;font-size:1.04rem!important;white-space:normal!important}
+    .validation-stage-tabs .stButton>button{min-height:3.8rem!important;padding:.55rem .7rem!important;font-size:.96rem!important;line-height:1.2!important;white-space:normal!important}
+    </style>""", unsafe_allow_html=True)
     if "monte_carlo_view" not in st.session_state:
         st.session_state.monte_carlo_view = "engine"
+    st.markdown('<div class="monte-carlo-tabs">', unsafe_allow_html=True)
     engine_tab, validation_tab = st.columns(2)
     with engine_tab:
         if st.button("Monte Carlo measurement engine", key="monte_carlo_engine", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "engine" else "secondary"):
@@ -440,24 +454,28 @@ if active_section == "03 · Monte Carlo engine":
     with validation_tab:
         if st.button("Data-generating world validation", key="monte_carlo_validation", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "validation" else "secondary"):
             st.session_state.monte_carlo_view = "validation"
+    st.markdown('</div>', unsafe_allow_html=True)
     if st.session_state.monte_carlo_view == "engine":
-        components.html(defense_scene_svg(5), height=770, scrolling=False)
+        components.html(defense_scene_svg(5), height=910, scrolling=False)
     else:
         if "validation_stage" not in st.session_state:
             st.session_state.validation_stage = 0
-        validation_buttons = st.columns(4)
+        st.markdown('<div class="validation-stage-tabs">', unsafe_allow_html=True)
+        validation_buttons = st.columns(4, gap="medium")
         for index, (title, *_detail) in enumerate(VALIDATION_STAGES):
             with validation_buttons[index]:
                 if st.button(title, key=f"validation_stage_{index}", use_container_width=True, type="primary" if index == st.session_state.validation_stage else "secondary"):
                     st.session_state.validation_stage = index
-        components.html(validation_scene_svg(st.session_state.validation_stage), height=770, scrolling=False)
+        st.markdown('</div>', unsafe_allow_html=True)
+        components.html(validation_scene_svg(st.session_state.validation_stage), height=860, scrolling=False)
 
 DEFENSE_SCENE_SECTION = {
     "02 · Data-generating world": 4,
     "09 · Conclusions": 6,
 }
 if active_section in DEFENSE_SCENE_SECTION:
-    components.html(defense_scene_svg(DEFENSE_SCENE_SECTION[active_section]), height=770, scrolling=False)
+    scene_height = 860 if active_section == "02 · Data-generating world" else 770
+    components.html(defense_scene_svg(DEFENSE_SCENE_SECTION[active_section]), height=scene_height, scrolling=False)
     if active_section == "09 · Conclusions":
         closing_a, closing_b = st.columns(2)
         closing_a.button("Go to technical appendix", use_container_width=True, on_click=_navigate, args=(8,))
