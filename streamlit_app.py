@@ -109,7 +109,9 @@ PRESENTER_NOTES = {
     ], "Invite questions on the simulation, gate, validation or transfer evidence."),
 }
 
-st.set_page_config(page_title="Robust Estimators Lab", page_icon="📊", layout="wide")
+_query = st.query_params
+_browser_note = PRESENTER_NOTES.get(_query.get("section", "")) if _query.get("presenter_notes") == "1" else None
+st.set_page_config(page_title=_browser_note[0] if _browser_note else "Robust Estimators Lab", page_icon="📊", layout="wide")
 pio.templates.default = "plotly_dark"
 st.markdown("""<style>
 .stApp{background:radial-gradient(circle at 48% -12%,#16365c 0,#08172a 35%,#040a14 76%)!important;color:#eef5ff}.block-container{padding:.45rem 2rem 3rem!important;max-width:none!important}.stMetric{background:linear-gradient(135deg,#0d2038,#081525)!important;border:1px solid #218dca!important;border-top:3px solid #9a5cff!important;border-radius:7px;padding:10px;box-shadow:inset 0 0 18px rgba(33,141,202,.08)}.stMetric label,.stMetric [data-testid="stMetricLabel"]{color:#b8c8de!important}.stMetric [data-testid="stMetricValue"]{color:#f5f8ff!important}.badge{padding:6px 10px;border-radius:6px;font-size:.78rem;font-weight:800;display:inline-block;letter-spacing:.03em}.demo{background:#28184c;color:#d7c3ff;border:1px solid #8759de}.thesis{background:#0b372d;color:#9df0b7;border:1px solid #3aaf6f}
@@ -122,7 +124,6 @@ div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{bo
 # The presenter view deliberately uses the same deployment, but it is rendered
 # in a separate browser tab. The first two layers are a controlled preview of
 # the workflow before notes are written for the whole defense.
-_query = st.query_params
 if _query.get("presenter_notes") == "1":
     note_section = _query.get("section", "")
     note = PRESENTER_NOTES.get(note_section)
@@ -132,9 +133,10 @@ if _query.get("presenter_notes") == "1":
         st.markdown(f'''<style>
           [data-testid="stAppViewContainer"]{{background:#071525!important}}
           .block-container{{max-width:1200px!important;padding:2.4rem 3.2rem!important}}
+          .presenter-heading{{font-family:Arial,sans-serif;font-size:2rem;font-weight:800;line-height:1.2;color:#72cfff;margin:0 0 2.2rem}}
           .presenter-copy{{font-family:Arial,sans-serif;font-size:1.55rem;line-height:1.55;color:#f4f8ff}}
           .presenter-copy p{{margin:0 0 1.35rem}}
-        </style><div class="presenter-copy">{notes_html}</div>''', unsafe_allow_html=True)
+        </style><div class="presenter-heading">{_heading}</div><div class="presenter-copy">{notes_html}</div>''', unsafe_allow_html=True)
     else:
         st.warning("No hay notas configuradas para esta vista todavía.")
     st.stop()
