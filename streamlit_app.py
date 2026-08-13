@@ -125,20 +125,16 @@ div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{bo
 _query = st.query_params
 if _query.get("presenter_notes") == "1":
     note_section = _query.get("section", "")
-    st.title("Presenter notes")
     note = PRESENTER_NOTES.get(note_section)
     if note:
-        heading, source, talking_points, transition = note
-        st.caption(f"{heading} · private rehearsal view")
-        st.markdown("""
-        <div class="scenario-panel" style="max-width:980px;margin-top:1.2rem;padding:1.5rem 1.7rem">
-          <div class="story-kicker">SPEAKER NOTES</div>
-          <div class="story-title">{heading}</div>
-          <div class="story-body">{''.join(f'<p>• {point}</p>' for point in talking_points)}</div>
-        </div>
-        """.replace("{heading}", heading).replace("{''.join(f'<p>• {point}</p>' for point in talking_points)}", ''.join(f"<p>• {point}</p>" for point in talking_points)), unsafe_allow_html=True)
-        st.caption(f"Source: {source}")
-        st.info(f"Transition: {transition}")
+        _heading, _source, talking_points, _transition = note
+        notes_html = "".join(f"<p>• {point}</p>" for point in talking_points)
+        st.markdown(f'''<style>
+          [data-testid="stAppViewContainer"]{{background:#071525!important}}
+          .block-container{{max-width:1200px!important;padding:2.4rem 3.2rem!important}}
+          .presenter-copy{{font-family:Arial,sans-serif;font-size:1.55rem;line-height:1.55;color:#f4f8ff}}
+          .presenter-copy p{{margin:0 0 1.35rem}}
+        </style><div class="presenter-copy">{notes_html}</div>''', unsafe_allow_html=True)
     else:
         st.warning("No hay notas configuradas para esta vista todavía.")
     st.stop()
@@ -169,6 +165,11 @@ DEFENSE_INDEX = (
 
 def _navigate(index):
     st.session_state.defense_section = DEFENSE_INDEX[max(0, min(index, len(DEFENSE_INDEX) - 1))]
+
+
+def _set_presenter_state(key, value):
+    """Set a view before the sidebar is rendered during Streamlit's rerun."""
+    st.session_state[key] = value
 
 
 def _presenter_note_key(active_section: str) -> str:
@@ -569,8 +570,7 @@ if active_section == "01 · Research logic":
     panel_buttons = st.columns(5, gap="medium")
     for i, (label, _what, _why, _say) in enumerate(RESEARCH_PANELS):
         with panel_buttons[i]:
-            if st.button(label, key=f"research_panel_{i}", use_container_width=True, type="primary" if i == st.session_state.research_panel else "secondary"):
-                st.session_state.research_panel = i
+            st.button(label, key=f"research_panel_{i}", use_container_width=True, type="primary" if i == st.session_state.research_panel else "secondary", on_click=_set_presenter_state, args=("research_panel", i))
     st.markdown('</div>', unsafe_allow_html=True)
     # Match the full defense-canvas scale used by Layer 5, leaving room for the
     # primary story plus the technical notation support band below it.
@@ -589,11 +589,9 @@ if active_section == "03 · Monte Carlo engine":
     st.markdown('<div class="monte-carlo-tabs">', unsafe_allow_html=True)
     engine_tab, validation_tab = st.columns(2)
     with engine_tab:
-        if st.button("Monte Carlo measurement engine", key="monte_carlo_engine", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "engine" else "secondary"):
-            st.session_state.monte_carlo_view = "engine"
+        st.button("Monte Carlo measurement engine", key="monte_carlo_engine", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "engine" else "secondary", on_click=_set_presenter_state, args=("monte_carlo_view", "engine"))
     with validation_tab:
-        if st.button("Data-generating world validation", key="monte_carlo_validation", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "validation" else "secondary"):
-            st.session_state.monte_carlo_view = "validation"
+        st.button("Data-generating world validation", key="monte_carlo_validation", use_container_width=True, type="primary" if st.session_state.monte_carlo_view == "validation" else "secondary", on_click=_set_presenter_state, args=("monte_carlo_view", "validation"))
     st.markdown('</div>', unsafe_allow_html=True)
     if st.session_state.monte_carlo_view == "engine":
         components.html(defense_scene_svg(5), height=910, scrolling=False)
@@ -604,8 +602,7 @@ if active_section == "03 · Monte Carlo engine":
         validation_buttons = st.columns(4, gap="medium")
         for index, (title, *_detail) in enumerate(VALIDATION_STAGES):
             with validation_buttons[index]:
-                if st.button(title, key=f"validation_stage_{index}", use_container_width=True, type="primary" if index == st.session_state.validation_stage else "secondary"):
-                    st.session_state.validation_stage = index
+                st.button(title, key=f"validation_stage_{index}", use_container_width=True, type="primary" if index == st.session_state.validation_stage else "secondary", on_click=_set_presenter_state, args=("validation_stage", index))
         st.markdown('</div>', unsafe_allow_html=True)
         components.html(validation_scene_svg(st.session_state.validation_stage), height=860, scrolling=False)
 
