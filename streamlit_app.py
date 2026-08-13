@@ -2,6 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import time
 import importlib
+from base64 import b64encode
+from pathlib import Path
 import plotly.graph_objects as go
 import plotly.io as pio
 import numpy as np
@@ -22,6 +24,10 @@ from src.constants import ESTIMATOR_NAMES
 # an imported helper module alive across a source-only deployment. Reload the
 # renderer so Layer 2 always reflects the exact revision shipped with this app.
 simplex_renderer = importlib.reload(simplex_renderer)
+UNIVERSITY_LOGO_DATA_URI = (
+    "data:image/jpeg;base64,"
+    + b64encode((Path(__file__).parent / "assets" / "university_of_hull_logo.jpeg").read_bytes()).decode("ascii")
+)
 
 st.set_page_config(page_title="Robust Estimators Lab", page_icon="📊", layout="wide")
 pio.templates.default = "plotly_dark"
@@ -34,18 +40,19 @@ div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{bo
 </style>""", unsafe_allow_html=True)
 
 # The presenter view deliberately uses the same deployment, but it is rendered
-# in a separate browser tab.  It is intentionally introduced only for Layer 1
-# while the format and content of the remaining speaker notes are agreed.
+# in a separate browser tab. The first two layers are a controlled preview of
+# the workflow before notes are written for the whole defense.
 _query = st.query_params
 if _query.get("presenter_notes") == "1":
     note_section = _query.get("section", "")
     st.title("Presenter notes")
-    if note_section == "research_logic":
-        st.caption("Layer 1 · Research logic · private rehearsal view")
+    if note_section in {"research_logic", "data_generating_world"}:
+        layer_title = "Layer 1 · Research logic" if note_section == "research_logic" else "Layer 2 · Data-generating world"
+        st.caption(f"{layer_title} · private rehearsal view")
         st.markdown("""
         <div class="scenario-panel" style="max-width:980px;margin-top:1.2rem;padding:1.5rem 1.7rem">
           <div class="story-kicker">TEST NOTE</div>
-          <div class="story-title">Una carta feliz</div>
+          <div class="story-title">Una carta feliz · prueba de notas</div>
           <div class="story-body">
             Esta es una nota privada de prueba para el presentador. La audiencia no la ve:
             queda abierta en esta pestaña independiente mientras la presentación permanece
@@ -53,7 +60,7 @@ if _query.get("presenter_notes") == "1":
           </div>
         </div>
         """, unsafe_allow_html=True)
-        st.info("Prueba: al abrir el escudo de la Universidad de Hull desde la capa 1, esta vista debe aparecer en otra pestaña.")
+        st.info("Prueba: al abrir el escudo de la Universidad de Hull desde la barra lateral, esta vista debe aparecer en otra pestaña.")
     else:
         st.warning("No hay notas configuradas para esta capa todavía.")
     st.stop()
@@ -85,6 +92,15 @@ DEFENSE_INDEX = (
 def _navigate(index):
     st.session_state.defense_section = DEFENSE_INDEX[max(0, min(index, len(DEFENSE_INDEX) - 1))]
 
+
+def _presenter_notes_link(section: str) -> str:
+    """A logo-only, new-tab trigger that does not rely on Cloud static paths."""
+    return f'''<a href="?presenter_notes=1&amp;section={section}" target="_blank" rel="noopener noreferrer"
+        title="Open presenter notes in a separate tab" style="display:block;margin-top:1.4rem">
+      <img src="{UNIVERSITY_LOGO_DATA_URI}" alt="University of Hull"
+           style="display:block;width:100%;box-sizing:border-box;border-radius:6px;border:1px solid #245f8e;padding:4px;background:#fff" />
+    </a>'''
+
 with st.sidebar:
     st.markdown("### DEFENSE MODE")
     st.caption("Manual presentation index · live layers are preserved")
@@ -93,14 +109,12 @@ with st.sidebar:
     previous, following = st.columns(2)
     previous.button("← Previous", use_container_width=True, disabled=position == 0, on_click=_navigate, args=(position - 1,))
     following.button("Next →", use_container_width=True, disabled=position == len(DEFENSE_INDEX) - 1, on_click=_navigate, args=(position + 1,))
-    if active_section == "01 · Research logic":
-        st.markdown("""
-        <a href="?presenter_notes=1&amp;section=research_logic" target="_blank" rel="noopener noreferrer"
-           title="Open presenter notes in a separate tab" style="display:block;margin-top:1.4rem">
-          <img src="app/static/assets/university_of_hull_logo.jpeg" alt="University of Hull"
-               style="display:block;width:100%;border-radius:6px;border:1px solid #245f8e;padding:4px;background:#fff" />
-        </a>
-        """, unsafe_allow_html=True)
+    presenter_sections = {
+        "01 · Research logic": "research_logic",
+        "02 · Data-generating world": "data_generating_world",
+    }
+    if active_section in presenter_sections:
+        st.markdown(_presenter_notes_link(presenter_sections[active_section]), unsafe_allow_html=True)
 
 if active_section == "04 · Simulation lab":
     # Layer 1 is a real, deterministic sample construction, not an analogy.
