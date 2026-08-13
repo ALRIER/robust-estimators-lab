@@ -32,9 +32,11 @@ PRESENTER_NOTES = {
         "State the bounded contribution: this is benchmark-gated, regime-conditional discovery — not a claim that a GA is universally superior.",
     ], "Move to the research logic: why this experiment is necessary."),
     "research_problem": ("Layer 1 · Problem", "Defense deck · 01 Research framing", [
-        "No single admissible estimator remains uniformly reliable when skewness, tails, contamination, or sample size change.",
-        "Under clean symmetry the mean can be efficient; under contamination, robust estimators may move less. The ranking depends on the regime.",
-        "Do not say the mean is always poor. The point is conditional performance.",
+        "The problem is this: no estimator is uniformly reliable when the conditions of the data change, especially under contamination.",
+        "A regime is R = {family, n, γ, scale, mechanism}: family is the distributional shape; n is sample size; γ is the proportion of contaminated observations; scale is how extreme those observations are; and mechanism is where or how contamination enters the sample.",
+        "The sample is written x ∼ R: x is one observed sample generated under that complete set of conditions. Keeping R explicit lets us compare estimators in the same statistical world.",
+        "Conditional risk is R(T, R) = E[(T(x) − θ)² | R]. It is the expected squared error of estimator T relative to the true population mean θ, conditional on this particular regime R. This is why rankings can change from one regime to another.",
+        "With clean, approximately symmetric data and moderate tails, the sample mean is centred on θ and uses every observation efficiently, so it often has low variance. When contamination or strong skew is introduced, a few extreme observations can pull the mean away from θ; robust estimators reduce that influence, but can sacrifice efficiency when the data are clean.",
     ], "Therefore the question is not ‘which estimator always wins?’ but ‘under which regimes can improvement be justified?’"),
     "research_objective": ("Layer 1 · Objective / research questions", "Defense deck · 01 Research framing; thesis abstract", [
         "The objective is to develop a benchmark-gated GA framework for estimating the population mean E[X] in controlled regimes.",
