@@ -24,6 +24,91 @@ UNIVERSITY_LOGO_DATA_URI = (
     + b64encode((Path(__file__).parent / "assets" / "university_of_hull_logo.jpeg").read_bytes()).decode("ascii")
 )
 
+# Presenter notes are a rehearsal aid, not a source of new thesis claims.  Each
+# entry below is condensed from the defense deck and the written thesis.
+PRESENTER_NOTES = {
+    "cover": ("Opening", "Defense deck · title slide", [
+        "Introduce the problem in one sentence: we want better estimates of a population mean when ordinary conditions fail.",
+        "State the bounded contribution: this is benchmark-gated, regime-conditional discovery — not a claim that a GA is universally superior.",
+    ], "Move to the research logic: why this experiment is necessary."),
+    "research_problem": ("Layer 1 · Problem", "Defense deck · 01 Research framing", [
+        "No single admissible estimator remains uniformly reliable when skewness, tails, contamination, or sample size change.",
+        "Under clean symmetry the mean can be efficient; under contamination, robust estimators may move less. The ranking depends on the regime.",
+        "Do not say the mean is always poor. The point is conditional performance.",
+    ], "Therefore the question is not ‘which estimator always wins?’ but ‘under which regimes can improvement be justified?’"),
+    "research_objective": ("Layer 1 · Objective / research questions", "Defense deck · 01 Research framing; thesis abstract", [
+        "The objective is to develop a benchmark-gated GA framework for estimating the population mean E[X] in controlled regimes.",
+        "The GA searches interpretable convex mixtures; discovery is followed by freezing and testing on new evidence.",
+        "The four questions move from discovery, to confirmation, to an expanded estimator basis, and then to external transfer.",
+    ], "Before looking at results, make the predictions explicit."),
+    "research_hypotheses": ("Layer 1 · H1–H4", "Defense deck · 01 Research framing", [
+        "H1: no universal estimator. H2: performance depends on the regime. H3: GA help should be selective. H4: the gate prevents false claims.",
+        "These are a reasoning chain: varying conditions change rankings; that may create local opportunity; the gate limits what can be claimed.",
+        "Benchmark retention is a valid result, not a failure of the study.",
+    ], "Now define exactly what is fixed and what the GA is allowed to change."),
+    "research_target": ("Layer 1 · Target / simplex", "Defense deck · 01 Research framing; thesis abstract", [
+        "The population target is θ = E[X], known in simulation from the data-generating distribution.",
+        "A candidate is a convex mixture θ̂GA(x) = Σ wj Tj(x): weights are non-negative and sum to one.",
+        "The target never changes. The GA only proposes an auditable recipe of established estimators.",
+    ], "A valid mixture can still lose; next is the condition under which it could improve."),
+    "research_why_win": ("Layer 1 · Why a composite can win", "Thesis · finite-sample bias, variance and MSE; defense deck", [
+        "The relevant comparison is squared error against θ. MSE measures average risk and q95 MSE protects against difficult upper-tail cases.",
+        "A composite is useful only where variance reduction compensates for its squared bias cost.",
+        "Under clean Normal data the mean leaves little room; skew, tails and contamination can create conditional opportunity.",
+    ], "Simulation lets us measure that trade-off against known truth."),
+    "data_world": ("Layer 2 · Data-generating world", "Defense deck · Monte Carlo evaluation; Appendix A1/A2", [
+        "Simulation is deliberate because it makes the true target known; real datasets do not reveal the population mean.",
+        "The grid varies family, sample size, contamination rate, outlier scale and contamination mechanism to stress estimator failure modes.",
+        "The simulator is validated before any GA conclusion is trusted.",
+    ], "With a controlled world and known θ, Monte Carlo can measure true error."),
+    "monte_carlo_engine": ("Layer 3 · Monte Carlo measurement engine", "Defense deck · 05 Monte Carlo evaluation", [
+        "Specify one regime R, compute θ = E[X], generate repeated samples, and apply every estimator to the same sample paths.",
+        "For each replication, calculate (Tj(x(r)) − θ)². Aggregate to MSE and q95 MSE.",
+        "The GA does not create the target; it searches using certified error estimates from this procedure.",
+    ], "The next question is whether the simulated world itself behaves as designed."),
+    "monte_carlo_validation_0": ("Layer 3 · Validation: moment fidelity", "Defense deck · Appendix A1", [
+        "Check that large generated populations recover their analytic moments before scoring estimators.",
+        "If the population target is wrong at this stage, every subsequent error calculation is wrong.",
+    ], "Proceed to validate the contamination design."),
+    "monte_carlo_validation_1": ("Layer 3 · Validation: contamination fidelity", "Defense deck · Monte Carlo workflow", [
+        "Verify that the realised contamination rate and severity match the regime label after injection.",
+        "A declared upper-tail or 10% contamination regime must behave as labelled before it enters the experiment.",
+    ], "Then check a known statistical benchmark."),
+    "monte_carlo_validation_2": ("Layer 3 · Validation: statistical sanity", "Defense deck · Appendix A1", [
+        "Under clean Normal data, the sample mean should outperform the median in MSE; this is a theory-based sanity check.",
+        "Recovering this ordering supports the fitness and error calculations, but does not yet prove a GA result.",
+    ], "Finally, connect the synthetic grid to relevant empirical shapes."),
+    "monte_carlo_validation_3": ("Layer 3 · Validation: empirical anchoring", "Thesis abstract; defense deck · Appendix A1", [
+        "Public-data diagnostics are used to check that synthetic worlds cover relevant shapes of interest.",
+        "This is calibration, not known-θ validation: real data do not provide population ground truth.",
+    ], "Only after these checks is the search procedure interpreted."),
+    "simulation_lab": ("Layer 4 · Simulation lab", "Defense script map", [
+        "Change contamination and observe estimator movement. Keep the message simple: estimator ranking depends on the regime.",
+        "This is a deterministic pedagogical demonstration, not a rerun of the thesis search.",
+    ], "Next, show how a candidate mixture is searched on the simplex."),
+    "ga_search": ("Layer 5 · GA search", "Defense deck · 05 Genetic Algorithm Search", [
+        "The GA receives certified error information and an admissible estimator bank, then initializes valid simplex weight vectors.",
+        "Selection, crossover, mutation and elitism propose a candidate specialist; they do not establish a final claim.",
+        "Held-out evidence decides: if the gate is insufficient, the benchmark remains the final answer.",
+    ], "The pipeline makes that distinction between proposal and evidence explicit."),
+    "pipeline": ("Layer 6 · Experiment pipeline", "Defense script map; thesis abstract", [
+        "Narrate the sequence: discovery proposes candidates; weights are frozen; new seeds and stronger benchmarks test credibility.",
+        "Keep discovery, fixed-weight confirmation, profile audit and external calibration distinct.",
+    ], "Now inspect the precomputed thesis evidence, not a live optimization."),
+    "results": ("Layer 7 · Results journey", "Defense deck · Results: strict validation and transfer/audit", [
+        "Use the selected result stage to make a bounded claim. Stronger validation narrows broad discovery signals to local specialists.",
+        "The essential conclusion is evidence conditional on profile, not a universal GA winner.",
+    ], "Technical drill-down shows the candidate-level evidence behind that claim."),
+    "technical": ("Layer 8 · Technical drill-down", "Thesis abstract; defense deck · strict validation", [
+        "Read the displayed decision as fixed-weight evidence; do not treat a discovery pass as confirmation.",
+        "Bootstrap intervals, unseen-similar regimes and evidence taxonomy constrain the interpretation.",
+    ], "Finish with the contribution and its limits."),
+    "conclusions": ("Layer 9 · Conclusions", "Defense script map · closing message", [
+        "The GA proposes candidate mixtures; held-out and fixed-weight evidence decides what survives.",
+        "The contribution is an auditable way to identify conditional opportunity and retain the benchmark when support is insufficient.",
+    ], "Invite questions on the simulation, gate, validation or transfer evidence."),
+}
+
 st.set_page_config(page_title="Robust Estimators Lab", page_icon="📊", layout="wide")
 pio.templates.default = "plotly_dark"
 st.markdown("""<style>
@@ -41,23 +126,21 @@ _query = st.query_params
 if _query.get("presenter_notes") == "1":
     note_section = _query.get("section", "")
     st.title("Presenter notes")
-    if note_section in {"research_logic", "data_generating_world"}:
-        layer_title = "Layer 1 · Research logic" if note_section == "research_logic" else "Layer 2 · Data-generating world"
-        st.caption(f"{layer_title} · private rehearsal view")
+    note = PRESENTER_NOTES.get(note_section)
+    if note:
+        heading, source, talking_points, transition = note
+        st.caption(f"{heading} · private rehearsal view")
         st.markdown("""
         <div class="scenario-panel" style="max-width:980px;margin-top:1.2rem;padding:1.5rem 1.7rem">
-          <div class="story-kicker">TEST NOTE</div>
-          <div class="story-title">Una carta feliz · prueba de notas</div>
-          <div class="story-body">
-            Esta es una nota privada de prueba para el presentador. La audiencia no la ve:
-            queda abierta en esta pestaña independiente mientras la presentación permanece
-            en la otra pantalla.
-          </div>
+          <div class="story-kicker">SPEAKER NOTES</div>
+          <div class="story-title">{heading}</div>
+          <div class="story-body">{''.join(f'<p>• {point}</p>' for point in talking_points)}</div>
         </div>
-        """, unsafe_allow_html=True)
-        st.info("Prueba: al abrir el escudo de la Universidad de Hull desde la barra lateral, esta vista debe aparecer en otra pestaña.")
+        """.replace("{heading}", heading).replace("{''.join(f'<p>• {point}</p>' for point in talking_points)}", ''.join(f"<p>• {point}</p>" for point in talking_points)), unsafe_allow_html=True)
+        st.caption(f"Source: {source}")
+        st.info(f"Transition: {transition}")
     else:
-        st.warning("No hay notas configuradas para esta capa todavía.")
+        st.warning("No hay notas configuradas para esta vista todavía.")
     st.stop()
 
 st.title("Robust Estimators Lab")
@@ -88,6 +171,24 @@ def _navigate(index):
     st.session_state.defense_section = DEFENSE_INDEX[max(0, min(index, len(DEFENSE_INDEX) - 1))]
 
 
+def _presenter_note_key(active_section: str) -> str:
+    """Resolve the exact speaking note for the currently visible defense view."""
+    fixed = {
+        "00 · Cover": "cover", "02 · Data-generating world": "data_world",
+        "04 · Simulation lab": "simulation_lab", "05 · GA search": "ga_search",
+        "06 · Experiment pipeline": "pipeline", "07 · Results journey": "results",
+        "08 · Technical drill-down": "technical", "09 · Conclusions": "conclusions",
+    }
+    if active_section == "01 · Research logic":
+        keys = ("research_problem", "research_objective", "research_hypotheses", "research_target", "research_why_win")
+        return keys[int(st.session_state.get("research_panel", 0))]
+    if active_section == "03 · Monte Carlo engine":
+        if st.session_state.get("monte_carlo_view", "engine") == "validation":
+            return f"monte_carlo_validation_{int(st.session_state.get('validation_stage', 0))}"
+        return "monte_carlo_engine"
+    return fixed[active_section]
+
+
 def _presenter_notes_link(section: str) -> str:
     """Open and then reuse one movable presenter-notes browser window."""
     return f'''<a href="?presenter_notes=1&amp;section={section}"
@@ -105,12 +206,7 @@ with st.sidebar:
     previous, following = st.columns(2)
     previous.button("← Previous", use_container_width=True, disabled=position == 0, on_click=_navigate, args=(position - 1,))
     following.button("Next →", use_container_width=True, disabled=position == len(DEFENSE_INDEX) - 1, on_click=_navigate, args=(position + 1,))
-    presenter_sections = {
-        "01 · Research logic": "research_logic",
-        "02 · Data-generating world": "data_generating_world",
-    }
-    if active_section in presenter_sections:
-        st.markdown(_presenter_notes_link(presenter_sections[active_section]), unsafe_allow_html=True)
+    st.markdown(_presenter_notes_link(_presenter_note_key(active_section)), unsafe_allow_html=True)
 
 if active_section == "04 · Simulation lab":
     # Layer 1 is a real, deterministic sample construction, not an analogy.
