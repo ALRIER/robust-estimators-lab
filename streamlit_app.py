@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import time
-import importlib
 from base64 import b64encode
 from pathlib import Path
 import plotly.graph_objects as go
@@ -20,10 +19,6 @@ from src.research_logic import PANELS as RESEARCH_PANELS, research_logic_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
 
-# Streamlit reliably reruns the page module, but its long-lived worker can keep
-# an imported helper module alive across a source-only deployment. Reload the
-# renderer so Layer 2 always reflects the exact revision shipped with this app.
-simplex_renderer = importlib.reload(simplex_renderer)
 UNIVERSITY_LOGO_DATA_URI = (
     "data:image/jpeg;base64,"
     + b64encode((Path(__file__).parent / "assets" / "university_of_hull_logo.jpeg").read_bytes()).decode("ascii")
