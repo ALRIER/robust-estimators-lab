@@ -32,31 +32,29 @@ PRESENTER_NOTES = {
         "State the bounded contribution: this is benchmark-gated, regime-conditional discovery — not a claim that a GA is universally superior.",
     ], "Move to the research logic: why this experiment is necessary."),
     "research_problem": ("Layer 1 · Problem", "Defense deck · 01 Research framing", [
-        "The problem is this: no estimator is uniformly reliable when the conditions of the data change, especially under contamination.",
-        "A regime is R = {family, n, γ, scale, mechanism}: family is the distributional shape; n is sample size; γ is the proportion of contaminated observations; scale is how extreme those observations are; and mechanism is where or how contamination enters the sample.",
-        "The sample is written x ∼ R: x is one observed sample generated under that complete set of conditions. Keeping R explicit lets us compare estimators in the same statistical world.",
-        "Conditional risk is R(T, R) = E[(T(x) − θ)² | R]. It is the expected squared error of estimator T relative to the true population mean θ, conditional on this particular regime R. This is why rankings can change from one regime to another.",
-        "With clean, approximately symmetric data and moderate tails, the sample mean is centred on θ and uses every observation efficiently, so it often has low variance. When contamination or strong skew is introduced, a few extreme observations can pull the mean away from θ; robust estimators reduce that influence, but can sacrifice efficiency when the data are clean.",
+        ("SPEAK", "The problem is this: no estimator is uniformly reliable when the conditions of the data change, especially under contamination. With clean, approximately symmetric data and moderate tails, the sample mean uses every observation efficiently and is usually close to the target. But when a small number of observations are extreme, or the distribution is strongly skewed, those observations can pull the mean away from the population mean. Robust estimators reduce the influence of those observations, although that protection can cost efficiency when the data are clean. So the ranking is conditional on the regime, not universal."),
+        ("FORMULAS AND NOTATION", "R = {family, n, γ, scale, mechanism}. Family is distributional shape; n is sample size; γ is the proportion contaminated; scale is the severity of contamination; mechanism describes where or how it enters. x ∼ R means one sample x is generated under that complete regime. Conditional risk is R(T, R) = E[(T(x) − θ)² | R]: the expected squared error of estimator T around the true population mean θ, conditional on regime R."),
+        ("POSSIBLE QUESTIONS", "Why not use the mean everywhere? Because its efficiency under clean symmetry does not make it uniformly reliable under skewness, heavy tails or contamination. Why condition on R? Because averaging across incompatible data-generating conditions can hide the setting in which an estimator fails."),
     ], "Therefore the question is not ‘which estimator always wins?’ but ‘under which regimes can improvement be justified?’"),
     "research_objective": ("Layer 1 · Objective / research questions", "Defense deck · 01 Research framing; thesis abstract", [
-        "The objective is to develop a benchmark-gated GA framework for estimating the population mean E[X] in controlled regimes.",
-        "The GA searches interpretable convex mixtures; discovery is followed by freezing and testing on new evidence.",
-        "The four questions move from discovery, to confirmation, to an expanded estimator basis, and then to external transfer.",
+        ("SPEAK", "The objective is not to crown a universal genetic-algorithm estimator. It is to build a benchmark-gated framework for estimating the population mean E[X] under controlled regimes. The GA is used as a search tool: it proposes an interpretable mixture of established estimators. A proposal is then frozen and challenged with new seeds, stronger benchmarks and related regimes. The four research questions make that programme explicit: where can a composite first improve; do gains remain after selection; what changes when the estimator library expands; and do supported specialists transfer beyond their discovery setting?"),
+        ("FORMULAS AND NOTATION", "The programme can be summarized as R → x → {T₁(x), …, Tᴸ(x)} → w → gate. R is the regime; x is a sample; T₁ through Tᴸ are admissible base estimators; w is the vector of mixture weights; and the gate decides whether the composite has enough evidence to replace the best benchmark. E[X] is the expectation, or population mean, of random variable X. ‘Freeze’ means the learned weights are held fixed during confirmation: they are not retrained on validation data."),
+        ("POSSIBLE QUESTIONS", "Why use a GA rather than select one estimator? The search can explore transparent convex combinations while retaining named components. Why is the gate necessary? Optimisation can overfit a discovery setting; the gate separates a promising candidate from a supported claim. What is success? Either a supported specialist or a justified decision to retain the benchmark."),
     ], "Before looking at results, make the predictions explicit."),
     "research_hypotheses": ("Layer 1 · H1–H4", "Defense deck · 01 Research framing", [
-        "H1: no universal estimator. H2: performance depends on the regime. H3: GA help should be selective. H4: the gate prevents false claims.",
-        "These are a reasoning chain: varying conditions change rankings; that may create local opportunity; the gate limits what can be claimed.",
-        "Benchmark retention is a valid result, not a failure of the study.",
+        ("SPEAK", "These four hypotheses are one reasoning chain rather than four separate claims. H1 says there is no universal estimator. H2 says estimator performance therefore depends on the regime. H3 says a GA mixture may help, but only in selected regimes where the trade-off is favourable. H4 protects the conclusion: the benchmark gate prevents us from turning every discovery signal into a claim. The expected result is selective improvement and many valid benchmark-retained cases."),
+        ("FORMULAS AND NOTATION", "H1 → H2 → H3 → H4 reads as: changing R changes conditional risk R(T, R); different rankings may create a local opportunity for a composite θ̂GA; and the dual comparison against the strongest admissible benchmark controls acceptance. The operative error is e² = (θ̂(x) − θ)². MSE averages this quantity across replications; q95 MSE summarizes its difficult upper tail."),
+        ("POSSIBLE QUESTIONS", "Is H3 a claim that GA should win often? No. It predicts selected, regime-specific opportunity. Does retaining a benchmark reject the whole study? No. It is the correct output when the evidence does not support replacement. Why pre-specify H4? It prevents hindsight interpretation of an optimisation result as a general discovery."),
     ], "Now define exactly what is fixed and what the GA is allowed to change."),
     "research_target": ("Layer 1 · Target / simplex", "Defense deck · 01 Research framing; thesis abstract", [
-        "The population target is θ = E[X], known in simulation from the data-generating distribution.",
-        "A candidate is a convex mixture θ̂GA(x) = Σ wj Tj(x): weights are non-negative and sum to one.",
-        "The target never changes. The GA only proposes an auditable recipe of established estimators.",
+        ("SPEAK", "Here I separate the target from the estimator. The target is fixed: θ = E[X], the population mean defined by the simulated distribution. The GA never changes θ. It only searches a recipe for estimating it, built from an admissible bank of base estimators. Because the weights are non-negative and add to one, every candidate is an interpretable convex mixture rather than an opaque prediction. This makes the recipe inspectable and keeps the search inside the probability simplex."),
+        ("FORMULAS AND NOTATION", "θ = E[X] is the population mean. The composite is θ̂GA(x) = Σⱼ₌₁ᴸ wⱼTⱼ(x), where Tⱼ(x) is the jth base estimator evaluated on sample x, L is the number of components, and wⱼ is its weight. The simplex constraint is wⱼ ≥ 0 and Σⱼ₌₁ᴸwⱼ = 1. Thus weights are proportions summing to 100%. Admissibility also matters: an estimator must be defined on the support of the data; for example, geometric and harmonic means require positive values."),
+        ("POSSIBLE QUESTIONS", "Why insist on non-negative weights? They preserve an interpretable mixture and avoid cancellation through arbitrary negative extrapolation. Why not let the GA estimate θ directly? The scientific aim is an auditable combination of established estimators, not a black-box predictor. Does a valid simplex vector guarantee better performance? No; validity is separate from evidence of lower conditional risk."),
     ], "A valid mixture can still lose; next is the condition under which it could improve."),
     "research_why_win": ("Layer 1 · Why a composite can win", "Thesis · finite-sample bias, variance and MSE; defense deck", [
-        "The relevant comparison is squared error against θ. MSE measures average risk and q95 MSE protects against difficult upper-tail cases.",
-        "A composite is useful only where variance reduction compensates for its squared bias cost.",
-        "Under clean Normal data the mean leaves little room; skew, tails and contamination can create conditional opportunity.",
+        ("SPEAK", "A composite can only win through a favourable bias–variance trade-off. The sample mean has no general competitor advantage under clean Normal data because it is already highly efficient. But in skewed, heavy-tailed or contaminated regimes, a mixture can down-weight estimators that react strongly to extremes and combine robust components in a way that reduces sampling variability. That helps only if the variance reduction is larger than the squared bias introduced by moving away from the mean. Monte Carlo measures this; the benchmark gate decides whether the gain is credible."),
+        ("FORMULAS AND NOTATION", "For an estimator θ̂, MSE(θ̂) = Bias(θ̂)² + Var(θ̂). A composite can beat the sample mean X̄ only if Bias(θ̂GA)² + Var(θ̂GA) < Var(X̄), when the mean is the relevant unbiased benchmark. Replicate loss is e² = (θ̂(x) − θ)². MSE is the mean of e² across repeated samples; q95 MSE is the 95th-percentile boundary of that error distribution, so it prevents an apparent average win that performs badly in difficult cases."),
+        ("POSSIBLE QUESTIONS", "Why not minimise MSE alone? A method could improve on average while producing unacceptable worst-case errors; q95 adds upper-tail protection. Is bias always bad? No. A small bias can be worthwhile if it buys a larger reduction in variance, but that trade-off must be measured against the same target. Why is clean Normal data important? It is the difficult baseline for improvement because the mean is already efficient there."),
     ], "Simulation lets us measure that trade-off against known truth."),
     "data_world": ("Layer 2 · Data-generating world", "Defense deck · Monte Carlo evaluation; Appendix A1/A2", [
         "Simulation is deliberate because it makes the true target known; real datasets do not reveal the population mean.",
@@ -131,13 +129,18 @@ if _query.get("presenter_notes") == "1":
     note = PRESENTER_NOTES.get(note_section)
     if note:
         _heading, _source, talking_points, _transition = note
-        notes_html = "".join(f"<p>• {point}</p>" for point in talking_points)
+        notes_html = "".join(
+            f'<section class="presenter-section"><h2>{label}</h2><p>{copy}</p></section>'
+            for label, copy in talking_points
+        )
         st.markdown(f'''<style>
           [data-testid="stAppViewContainer"]{{background:#071525!important}}
           .block-container{{max-width:1200px!important;padding:2.4rem 3.2rem!important}}
           .presenter-heading{{font-family:Arial,sans-serif;font-size:2rem;font-weight:800;line-height:1.2;color:#72cfff;margin:0 0 2.2rem}}
-          .presenter-copy{{font-family:Arial,sans-serif;font-size:1.55rem;line-height:1.55;color:#f4f8ff}}
-          .presenter-copy p{{margin:0 0 1.35rem}}
+          .presenter-copy{{font-family:Arial,sans-serif;font-size:1.4rem;line-height:1.58;color:#f4f8ff}}
+          .presenter-section{{margin:0 0 2.5rem}}
+          .presenter-section h2{{font-size:1.05rem!important;letter-spacing:.12em;color:#72cfff!important;margin:0 0 .8rem!important}}
+          .presenter-section p{{margin:0}}
         </style><div class="presenter-heading">{_heading}</div><div class="presenter-copy">{notes_html}</div>''', unsafe_allow_html=True)
     else:
         st.warning("No hay notas configuradas para esta vista todavía.")
