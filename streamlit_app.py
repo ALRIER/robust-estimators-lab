@@ -94,9 +94,9 @@ def _navigate(index):
 
 
 def _presenter_notes_link(section: str) -> str:
-    """A logo-only, new-tab trigger that does not rely on Cloud static paths."""
-    return f'''<a href="?presenter_notes=1&amp;section={section}" target="_blank" rel="noopener noreferrer"
-        title="Open presenter notes in a separate tab" style="display:block;margin-top:1.4rem">
+    """A logo-only trigger that reuses one dedicated presenter-notes tab."""
+    return f'''<a href="?presenter_notes=1&amp;section={section}" target="presenter_notes_window"
+        title="Open presenter notes in the presenter window" style="display:block;margin-top:1.4rem">
       <img src="{UNIVERSITY_LOGO_DATA_URI}" alt="University of Hull"
            style="display:block;width:100%;box-sizing:border-box;border-radius:6px;border:1px solid #245f8e;padding:4px;background:#fff" />
     </a>'''
