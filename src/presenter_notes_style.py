@@ -46,6 +46,23 @@ PRESENTER_NOTES_CSS = """
     padding-left:.2rem!important;
   }
 
+  [data-testid="stAppViewContainer"] .presenter-help-list{
+    margin:.35rem 0 0 1.7rem!important;
+    padding:0!important;
+    max-width:1180px!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-help-list li{
+    margin:0 0 1.25rem!important;
+    padding-left:.35rem!important;
+    line-height:1.55!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-help-list li::marker{
+    color:#f3c743!important;
+    font-size:1.08em!important;
+  }
+
   [data-testid="stAppViewContainer"] .presenter-section li ul{
     margin:.6rem 0 .35rem 1.55rem!important;
     color:#c9daeb!important;
