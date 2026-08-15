@@ -60,32 +60,32 @@ PRESENTER_NOTES = {
         "Simulation is deliberate because it makes the true target known; real datasets do not reveal the population mean.",
         "The grid varies family, sample size, contamination rate, outlier scale and contamination mechanism to stress estimator failure modes.",
         "The simulator is validated before any GA conclusion is trusted.",
-    ], "With a controlled world and known θ, Monte Carlo can measure true error."),
-    "monte_carlo_engine": ("Layer 3 · Monte Carlo measurement engine", "Defense deck · 05 Monte Carlo evaluation", [
+    ], "First inspect one generated sample in the Simulation Lab before moving to repeated sampling."),
+    "simulation_lab": ("Layer 3 · Simulation lab", "Defense script map", [
+        "Change contamination and observe estimator movement. Keep the message simple: estimator ranking depends on the regime.",
+        "This is a deterministic pedagogical demonstration, not a rerun of the thesis search.",
+    ], "Now move from one sample to repeated sampling with the Monte Carlo engine."),
+    "monte_carlo_engine": ("Layer 4 · Monte Carlo measurement engine", "Defense deck · 05 Monte Carlo evaluation", [
         "Specify one regime R, compute θ = E[X], generate repeated samples, and apply every estimator to the same sample paths.",
         "For each replication, calculate (Tj(x(r)) − θ)². Aggregate to MSE and q95 MSE.",
         "The GA does not create the target; it searches using certified error estimates from this procedure.",
-    ], "The next question is whether the simulated world itself behaves as designed."),
-    "monte_carlo_validation_0": ("Layer 3 · Validation: moment fidelity", "Defense deck · Appendix A1", [
+    ], "With repeated-sampling risk measured, the search procedure can now be interpreted."),
+    "monte_carlo_validation_0": ("Layer 4 · Validation: moment fidelity", "Defense deck · Appendix A1", [
         "Check that large generated populations recover their analytic moments before scoring estimators.",
         "If the population target is wrong at this stage, every subsequent error calculation is wrong.",
     ], "Proceed to validate the contamination design."),
-    "monte_carlo_validation_1": ("Layer 3 · Validation: contamination fidelity", "Defense deck · Monte Carlo workflow", [
+    "monte_carlo_validation_1": ("Layer 4 · Validation: contamination fidelity", "Defense deck · Monte Carlo workflow", [
         "Verify that the realised contamination rate and severity match the regime label after injection.",
         "A declared upper-tail or 10% contamination regime must behave as labelled before it enters the experiment.",
     ], "Then check a known statistical benchmark."),
-    "monte_carlo_validation_2": ("Layer 3 · Validation: statistical sanity", "Defense deck · Appendix A1", [
+    "monte_carlo_validation_2": ("Layer 4 · Validation: statistical sanity", "Defense deck · Appendix A1", [
         "Under clean Normal data, the sample mean should outperform the median in MSE; this is a theory-based sanity check.",
         "Recovering this ordering supports the fitness and error calculations, but does not yet prove a GA result.",
     ], "Finally, connect the synthetic grid to relevant empirical shapes."),
-    "monte_carlo_validation_3": ("Layer 3 · Validation: empirical anchoring", "Thesis abstract; defense deck · Appendix A1", [
+    "monte_carlo_validation_3": ("Layer 4 · Validation: empirical anchoring", "Thesis abstract; defense deck · Appendix A1", [
         "Public-data diagnostics are used to check that synthetic worlds cover relevant shapes of interest.",
         "This is calibration, not known-θ validation: real data do not provide population ground truth.",
     ], "Only after these checks is the search procedure interpreted."),
-    "simulation_lab": ("Layer 4 · Simulation lab", "Defense script map", [
-        "Change contamination and observe estimator movement. Keep the message simple: estimator ranking depends on the regime.",
-        "This is a deterministic pedagogical demonstration, not a rerun of the thesis search.",
-    ], "Next, show how a candidate mixture is searched on the simplex."),
     "ga_search": ("Layer 5 · GA search", "Defense deck · 05 Genetic Algorithm Search", [
         "The GA receives certified error information and an admissible estimator bank, then initializes valid simplex weight vectors.",
         "Selection, crossover, mutation and elitism propose a candidate specialist; they do not establish a final claim.",
@@ -98,15 +98,15 @@ PRESENTER_NOTES = {
     "results": ("Layer 7 · Results journey", "Defense deck · Results: strict validation and transfer/audit", [
         "Use the selected result stage to make a bounded claim. Stronger validation narrows broad discovery signals to local specialists.",
         "The essential conclusion is evidence conditional on profile, not a universal GA winner.",
-    ], "Technical drill-down shows the candidate-level evidence behind that claim."),
-    "technical": ("Layer 8 · Technical drill-down", "Thesis abstract; defense deck · strict validation", [
-        "Read the displayed decision as fixed-weight evidence; do not treat a discovery pass as confirmation.",
-        "Bootstrap intervals, unseen-similar regimes and evidence taxonomy constrain the interpretation.",
-    ], "Finish with the contribution and its limits."),
-    "conclusions": ("Layer 9 · Conclusions", "Defense script map · closing message", [
+    ], "Now synthesize what the evidence means before opening the technical backup."),
+    "conclusions": ("Layer 8 · Conclusions", "Defense script map · closing message", [
         "The GA proposes candidate mixtures; held-out and fixed-weight evidence decides what survives.",
         "The contribution is an auditable way to identify conditional opportunity and retain the benchmark when support is insufficient.",
-    ], "Invite questions on the simulation, gate, validation or transfer evidence."),
+    ], "Technical drill-down remains available as backup for committee questions."),
+    "technical": ("Layer 9 · Technical drill-down", "Thesis abstract; defense deck · strict validation", [
+        "Read the displayed decision as fixed-weight evidence; do not treat a discovery pass as confirmation.",
+        "Bootstrap intervals, unseen-similar regimes and evidence taxonomy constrain the interpretation.",
+    ], "Use this backup when the committee asks for candidate-level evidence."),
 }
 
 _query = st.query_params
@@ -174,9 +174,9 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
     return {"run": run, "terrain": terrain}
 
 DEFENSE_INDEX = (
-    "00 · Cover", "01 · Research logic", "02 · Data-generating world", "03 · Monte Carlo engine",
-    "04 · Simulation lab", "05 · GA search", "06 · Experiment pipeline", "07 · Results journey",
-    "08 · Technical drill-down", "09 · Conclusions",
+    "00 · Cover", "01 · Research logic", "02 · Data-generating world", "03 · Simulation lab",
+    "04 · Monte Carlo engine", "05 · GA search", "06 · Experiment pipeline", "07 · Results journey",
+    "08 · Conclusions", "09 · Technical drill-down",
 )
 
 def _navigate(index):
@@ -192,14 +192,14 @@ def _presenter_note_key(active_section: str) -> str:
     """Resolve the exact speaking note for the currently visible defense view."""
     fixed = {
         "00 · Cover": "cover", "02 · Data-generating world": "data_world",
-        "04 · Simulation lab": "simulation_lab", "05 · GA search": "ga_search",
+        "03 · Simulation lab": "simulation_lab", "05 · GA search": "ga_search",
         "06 · Experiment pipeline": "pipeline", "07 · Results journey": "results",
-        "08 · Technical drill-down": "technical", "09 · Conclusions": "conclusions",
+        "08 · Conclusions": "conclusions", "09 · Technical drill-down": "technical",
     }
     if active_section == "01 · Research logic":
         keys = ("research_problem", "research_objective", "research_hypotheses", "research_target", "research_why_win")
         return keys[int(st.session_state.get("research_panel", 0))]
-    if active_section == "03 · Monte Carlo engine":
+    if active_section == "04 · Monte Carlo engine":
         if st.session_state.get("monte_carlo_view", "engine") == "validation":
             return f"monte_carlo_validation_{int(st.session_state.get('validation_stage', 0))}"
         return "monte_carlo_engine"
@@ -225,8 +225,8 @@ with st.sidebar:
     following.button("Next →", use_container_width=True, disabled=position == len(DEFENSE_INDEX) - 1, on_click=_navigate, args=(position + 1,))
     st.markdown(_presenter_notes_link(_presenter_note_key(active_section)), unsafe_allow_html=True)
 
-if active_section == "04 · Simulation lab":
-    # Layer 1 is a real, deterministic sample construction, not an analogy.
+if active_section == "03 · Simulation lab":
+    # This is a real, deterministic sample construction, not an analogy.
     # A fixed internal seed makes parameter changes directly comparable without
     # exposing an unnecessary defense-time control.
     L1_SEED = 20260808
@@ -255,8 +255,6 @@ if active_section == "04 · Simulation lab":
         l1_speed=st.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l1_speed")
         stage=st.select_slider("Construction stage", options=list(range(10)), value=9, format_func=lambda item: f"Step {item + 1} / 10", key="l1_stage")
     sample=draw_sample(DemoScenario(l1_family,l1_contam,float(l1_rate),float(l1_scale),int(l1_n),L1_SEED))
-    # A real contaminated sample arrives as one mixed random sequence; the
-    # original baseline-then-outliers ordering was only a teaching convention.
     construction_order=np.random.default_rng(L1_SEED + 77).permutation(l1_n)
     progress=(stage + 1) / 10
     stage_names=("mixed sample begins", "early mixed draw", "mixed draw grows", "mixed draw grows", "half the sample visible", "mixed draw grows", "contamination becomes clearer", "near-complete mixed sample", "near-complete mixed sample", "full contaminated sample")
@@ -294,8 +292,6 @@ if active_section == "04 · Simulation lab":
         st.plotly_chart(strip,use_container_width=True)
     if st.session_state.l1_playing:
         if stage < 9:
-            # Nine well-spaced transitions make the real mixed draw observable
-            # without the 50-update websocket flood of the original animation.
             time.sleep({"Slow":3.5,"Normal":1.8,"Fast":.8}[l1_speed])
             st.session_state.l1_next_stage=stage+1
             st.rerun()
@@ -310,7 +306,7 @@ if active_section == "05 · GA search":
         st.session_state.l2_rate=scenario_from_l1["rate"]
         st.session_state.l2_scale=scenario_from_l1["scale"]
         st.session_state.l2_sample_n=scenario_from_l1["n"]
-        st.success("Layer 1 regime loaded. This mini-GA now optimizes the same pedagogical scenario.")
+        st.success("Simulation Lab regime loaded. This mini-GA now optimizes the same pedagogical scenario.")
     controls, visual = st.columns([.72, 5.28])
     with controls:
         st.markdown("**SEARCH CONTEXT**")
@@ -333,7 +329,6 @@ if active_section == "05 · GA search":
         if reset_side.button("↺", use_container_width=True, key="l2_reset"):
             st.session_state.l2_scrubber = 0; st.session_state.l2_playing = False
         speed = st.select_slider("Animation pace", ["Slow", "Normal", "Fast"], value="Normal", key="l2_speed")
-    # Apply queued animation progress before the generation widget is created.
     if "l2_next_frame" in st.session_state:
         st.session_state.l2_scrubber = st.session_state.pop("l2_next_frame")
     if "l2_next_phase" in st.session_state:
@@ -359,8 +354,6 @@ if active_section == "05 · GA search":
         show_contamination = st.toggle("Eliminated", value=True, key="l2_show_contamination")
     active_rate = float(l2_rate)
     with visual:
-        # The generation map is the instructional focus: keep it first and tall
-        # enough to be fully visible without the former summary-card row.
         components.html(cluster_map_svg(run, frame, phase, show_inheritance=show_contours, show_eliminated=show_contamination, show_grid=show_grid, show_path=show_path), height=940, scrolling=False)
         observations, target_shift = st.columns(2)
         with observations:
@@ -386,8 +379,6 @@ if active_section == "05 · GA search":
         score_span = max(float(all_scores[0] - all_scores[-1]), 1e-9)
         visible_scores = 100 * (all_scores[0] - all_scores[:frame + 1]) / score_span
         visible_scores = np.maximum.accumulate(visible_scores)
-        progress = visible_generations / max_generation
-        # Count actual parent indices represented in recorded offspring events.
         lineage_counts=[]
         for gen in visible_generations:
             if gen >= max_generation:
@@ -406,11 +397,9 @@ if active_section == "05 · GA search":
             survivors.update_layout(title="Selected lineages by generation", height=210, margin=dict(l=24,r=10,t=35,b=22), showlegend=False, xaxis=soft_grid, yaxis=soft_grid, plot_bgcolor="#081525", paper_bgcolor="#081525", yaxis_title="Parents")
             st.plotly_chart(survivors, use_container_width=True)
         st.caption("Low-dimensional slice of the full 26-dimensional simplex; shown for visualization only.")
-    st.markdown('<div class="independent-note">This layer runs its own seeded mini-GA. It does not reuse the Layer 1 sample as evidence and never represents this animated path as a thesis trajectory.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="independent-note">This layer runs its own seeded mini-GA. It does not reuse the Simulation Lab sample as evidence and never represents this animated path as a thesis trajectory.</div>', unsafe_allow_html=True)
     if st.session_state.l2_playing:
         if frame < max_generation or phase < 4:
-            # A complete generation has five teaching scenes; normal playback
-            # deliberately leaves time to narrate each one during a defense.
             time.sleep({"Slow": 4.5, "Normal": 2.0, "Fast": .75}[speed])
             if phase < 4:
                 st.session_state.l2_next_phase = phase + 1
@@ -501,7 +490,7 @@ if active_section == "07 · Results journey":
             top["gain"] = top["ga_rel_improvement_q95"].astype(float)
             st.dataframe(top[["distribution", "specialist_regime_id", "gate_pass", "final_selected_type", "gain"]].head(12), use_container_width=True, hide_index=True)
 
-if active_section == "08 · Technical drill-down":
+if active_section == "09 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     winners=load_winners()
     if winners.empty: st.error('Not exported'); st.stop()
@@ -516,7 +505,7 @@ if active_section == "08 · Technical drill-down":
     st.plotly_chart(wf,use_container_width=True)
     st.info(f"Relative gain in q95(MSE): {row.get('ga_rel_improvement_q95','Not exported')} · Relative gain in mean MSE: {row.get('ga_rel_improvement_mean','Not exported')}. Discovery does not equal fixed-weight confirmation.")
 
-if active_section == "08 · Technical drill-down":
+if active_section == "09 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     st.caption('Discovery → locked / fixed weights → bootstrap CI → evidence taxonomy')
     decisions,ci,evidence,validated=load_final_decisions(),load_bootstrap_ci(),load_evidence_taxonomy(),load_validated_specialists()
@@ -534,7 +523,7 @@ if active_section == "08 · Technical drill-down":
     fig.add_vline(x=0,line_dash='dash');fig.update_layout(title='Mean gain with bootstrap CI',height=400,xaxis_title='Mean gain',yaxis_title='Validation seed')
     st.plotly_chart(fig,use_container_width=True);st.caption(f'Validated specialists in curated taxonomy: {len(validated)}')
 
-if active_section == "08 · Technical drill-down":
+if active_section == "09 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — external evidence</span>', unsafe_allow_html=True)
     st.caption("These two audits answer different questions and neither retrains a discovered estimator.")
     real, audit = st.columns(2)
@@ -570,7 +559,7 @@ if active_section == "00 · Cover":
         start, results, appendix = st.columns([1.45, 1, 1])
         start.button("Start Defense →", type="primary", use_container_width=True, on_click=_navigate, args=(1,))
         results.button("Jump to Results", use_container_width=True, on_click=_navigate, args=(7,))
-        appendix.button("Technical Appendix", use_container_width=True, on_click=_navigate, args=(8,))
+        appendix.button("Technical Appendix", use_container_width=True, on_click=_navigate, args=(9,))
     st.info("Conditional estimator discovery — not universal GA superiority.")
 
 if active_section == "01 · Research logic":
@@ -588,14 +577,12 @@ if active_section == "01 · Research logic":
         with panel_buttons[i]:
             st.button(label, key=f"research_panel_{i}", use_container_width=True, type="primary" if i == st.session_state.research_panel else "secondary", on_click=_set_presenter_state, args=("research_panel", i))
     st.markdown('</div>', unsafe_allow_html=True)
-    # Match the full defense-canvas scale used by Layer 5, leaving room for the
-    # primary story plus the technical notation support band below it.
     components.html(research_logic_svg(st.session_state.research_panel), height=1000, scrolling=False)
     st.markdown('<div class="research-logic-next">', unsafe_allow_html=True)
     st.button("Continue to simulated world →", type="primary", on_click=_navigate, args=(2,))
     st.markdown('</div>', unsafe_allow_html=True)
 
-if active_section == "03 · Monte Carlo engine":
+if active_section == "04 · Monte Carlo engine":
     st.markdown("""<style>
     .monte-carlo-tabs .stButton>button{min-height:3.5rem!important;padding:.65rem 1rem!important;font-size:1.04rem!important;white-space:normal!important}
     .validation-stage-tabs .stButton>button{min-height:3.8rem!important;padding:.55rem .7rem!important;font-size:.96rem!important;line-height:1.2!important;white-space:normal!important}
@@ -624,14 +611,14 @@ if active_section == "03 · Monte Carlo engine":
 
 DEFENSE_SCENE_SECTION = {
     "02 · Data-generating world": 4,
-    "09 · Conclusions": 6,
+    "08 · Conclusions": 6,
 }
 if active_section in DEFENSE_SCENE_SECTION:
     scene_height = 860 if active_section == "02 · Data-generating world" else 770
     components.html(defense_scene_svg(DEFENSE_SCENE_SECTION[active_section]), height=scene_height, scrolling=False)
-    if active_section == "09 · Conclusions":
+    if active_section == "08 · Conclusions":
         closing_a, closing_b = st.columns(2)
-        closing_a.button("Go to technical appendix", use_container_width=True, on_click=_navigate, args=(8,))
+        closing_a.button("Go to technical appendix", use_container_width=True, on_click=_navigate, args=(9,))
         closing_b.button("Back to results", type="primary", use_container_width=True, on_click=_navigate, args=(7,))
     else:
         st.caption("This methodological scene prepares the live simulations; it does not present a result.")
