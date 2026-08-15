@@ -353,6 +353,7 @@ div[data-testid="stVerticalBlockBorderWrapper"],div[data-testid="stExpander"]{bo
 # used by later layers.
 if _query.get("presenter_notes") == "1":
     import html as _html
+    import re as _re
 
     note_section = _query.get("section", "")
     note = PRESENTER_NOTES.get(note_section)
@@ -365,7 +366,7 @@ if _query.get("presenter_notes") == "1":
             text_value = str(copy).strip()
             if not text_value:
                 return []
-            return [part.strip() for part in re.split(r"(?<=[.!?])\s+", text_value) if part.strip()]
+            return [part.strip() for part in _re.split(r"(?<=[.!?])\s+", text_value) if part.strip()]
 
         def _bullets(items, css_class=""):
             return "<ul class=\"%s\">%s</ul>" % (
