@@ -67,14 +67,17 @@ def research_logic_svg(panel: int) -> str:
     p = ['<rect x="20" y="16" width="1560" height="904" rx="18" class="canvas"/>', _t(48, 56, "01 · RESEARCH LOGIC", "kicker"), _t(48, 100, headings[panel], "title"), _t(48, 137, claims[panel], "claim")]
     def card(x, y, w, h, title, lines, cls="card"):
         p.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" class="{cls}"/>'); p.append(_t(x+20, y+32, title, "head")); p.extend(_t(x+20, y+62+i*22, line, "body") for i,line in enumerate(lines))
-    def rail(lines, why, next_):
-        card(1260,170,300,705,"WHAT THIS MEANS",lines,"rail"); p.extend([_t(1280,310,"WHY IT MATTERS","kicker"),_t(1280,340,why,"railtext"),_t(1280,410,"NEXT","kicker"),_t(1280,440,next_,"railtext")])
+    def rail(lines, why, next_=None):
+        card(1260,170,300,705,"WHAT THIS MEANS",lines,"rail")
+        p.extend([_t(1280,310,"WHY IT MATTERS","kicker"),_t(1280,340,why,"railtext")])
+        if next_:
+            p.extend([_t(1280,410,"NEXT","kicker"),_t(1280,440,next_,"railtext")])
     if panel == 0:
         card(48,185,520,350,"CLEAN / NEAR-SYMMETRIC",["Mean is close to the target.","Mean — efficient here."],"scene")
-        p.extend(['<path d="M100 435 C180 275 350 275 520 435" class="curve"/>','<path d="M310 268 V465" class="target"/>','<circle cx="310" cy="382" r="10" class="mean"/>',_t(310,495,"population mean","small","middle"),'<path d="M590 355 L750 355" class="bigarrow" marker-end="url(#arrow)"/>',_t(670,320,"change regime","gold","middle"),_t(670,350,"change risk · change ranking","gold","middle")])
+        p.extend(['<path d="M100 435 C180 275 350 275 520 435" class="curve"/>','<path d="M310 268 V465" class="target"/>','<circle cx="310" cy="382" r="10" class="mean"/>',_t(310,495,"population mean","small","middle"),'<path d="M590 355 L750 355" class="bigarrow" marker-end="url(#arrow)"/>'])
         card(800,185,400,350,"SKEWED / CONTAMINATED",["Outliers pull the mean away.","Robust estimators move less."],"warn")
-        p.extend(['<path d="M840 435 C900 285 980 300 1020 415 C1100 440 1140 350 1175 250" class="curvewarn"/>','<path d="M965 268 V465" class="target"/>','<circle cx="1080" cy="382" r="10" class="mean"/>','<circle cx="985" cy="382" r="10" class="robust"/>',_t(1080,415,"Mean","small","middle"),_t(985,415,"Robust","small","middle")])
-        rail(["The same estimator can be","excellent here and poor there."],"The regime changes the ranking.","Can a mixture be justified?")
+        p.extend(['<path d="M840 435 C900 285 980 300 1020 415 C1100 440 1140 350 1175 250" class="curvewarn"/>','<path d="M965 268 V465" class="target"/>','<circle cx="1080" cy="382" r="10" class="mean"/>','<circle cx="985" cy="382" r="10" class="robust"/>',_t(1080,415,"Mean","small","middle"),_t(985,415,"Robust","small","middle"),_t(624,590,"Change regime  →  change risk  →  change ranking","gold","middle")])
+        rail(["The same estimator can be","excellent here and poor there."],"The regime changes the ranking.")
     elif panel == 1:
         card(48,175,1150,95,"AIM",["Determine whether evolutionary search identifies interpretable E[X] improvements that remain credible after optimisation."],"hero")
         for i,(name,desc) in enumerate((("SEARCH","Find candidate recipes"),("CHALLENGE","Freeze; test new seeds"),("ACCEPT / ABSTAIN","Gate decides the claim"))):
