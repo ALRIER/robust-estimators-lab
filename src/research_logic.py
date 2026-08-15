@@ -44,7 +44,7 @@ def _t(x, y, value, cls="body", anchor="start"):
 
 
 def _wrap_text(value: str, max_chars: int = 31):
-    """Split SVG rail copy into short lines so it never escapes the card."""
+    """Split SVG copy into short lines so it never escapes its card."""
     words = str(value).split()
     if not words:
         return []
@@ -154,22 +154,28 @@ def research_logic_svg(panel: int) -> str:
 
     elif panel == 2:
         data = (
-            ("H1", "No universal estimator.", "Different regimes can have different winners."),
-            ("H2", "Performance depends on regime.", "Conditional risk changes with F_ℛ."),
-            ("H3", "GA helps only selectively.", "Only some regimes should support replacement."),
-            ("H4", "The gate controls claims.", "Unsupported candidates return to benchmark."),
+            ("H1", "No universal estimator.", "Different regimes can have different winners.", "Scope"),
+            ("H2", "Performance depends on regime.", "Conditional risk changes with F_ℛ.", "Mechanism"),
+            ("H3", "GA helps only selectively.", "Only some regimes should support replacement.", "Opportunity"),
+            ("H4", "The gate controls claims.", "Unsupported candidates return to benchmark.", "Claim control"),
         )
-        for i, (h, statement, prediction) in enumerate(data):
+        for i, (h, statement, prediction, role) in enumerate(data):
             x = 48 + i * 292
-            card(x, 195, 268, 355, h, [
-                statement,
-                "",
-                "PREDICTION",
-                prediction,
-                "",
-                "ROLE IN THE STUDY",
-                ("Scope" if i == 0 else "Mechanism" if i == 1 else "Opportunity" if i == 2 else "Claim control"),
-            ], "hyp")
+            p.append(f'<rect x="{x}" y="195" width="268" height="355" rx="14" class="hyp"/>')
+            p.append(_t(x + 20, 227, h, "head"))
+
+            statement_lines = _wrap_text(statement, 28)
+            for line_i, line in enumerate(statement_lines):
+                p.append(_t(x + 20, 260 + line_i * 22, line, "hypbody"))
+
+            p.append(_t(x + 20, 320, "PREDICTION", "hypsection"))
+            prediction_lines = _wrap_text(prediction, 28)
+            for line_i, line in enumerate(prediction_lines):
+                p.append(_t(x + 20, 348 + line_i * 22, line, "hypbody"))
+
+            p.append(_t(x + 20, 430, "ROLE IN THE STUDY", "hypsection"))
+            p.append(_t(x + 20, 458, role, "hypbody"))
+
             if i < 3:
                 p.append(f'<path d="M{x+272} 375 L{x+286} 375" class="arrow" marker-end="url(#arrow)"/>')
         p.extend([
@@ -278,5 +284,5 @@ def research_logic_svg(panel: int) -> str:
             _t(x, 840, note, "technote"),
         ]
 
-    css = '''body{margin:0;background:#081525;font-family:Arial,sans-serif}svg{width:100%;height:940px}.canvas{fill:#091a2e;stroke:#2d6d9c;stroke-width:1.5}.kicker{font-size:14px;font-weight:800;letter-spacing:1.5px;fill:#72cfff}.title{font-size:33px;font-weight:800;fill:#f5f9ff}.claim{font-size:20px;font-weight:700;fill:#dceaff}.body{font-size:17px;fill:#dce9f8}.small{font-size:14px;fill:#bdd0e2}.gold{font-size:16px;font-weight:800;fill:#f3c743}.head{font-size:18px;font-weight:800;fill:#f5f9ff}.card,.scene,.step,.hyp{fill:#0d2741;stroke:#397daa;stroke-width:1.4}.warn{fill:#382335;stroke:#ff825f;stroke-width:1.8}.hero,.rqactive{fill:#102d4b;stroke:#f3c743;stroke-width:1.8}.rail{fill:#0b2138;stroke:#4b84ad;stroke-width:1.3}.technical{fill:#0a1c31;stroke:#2d6d9c;stroke-width:1.3}.railtext{font-size:15px;fill:#dce9f8}.techlabel{font-size:12px;font-weight:800;letter-spacing:1px;fill:#72cfff}.techtext{font-family:Georgia,serif;font-size:15px;fill:#f3c743}.technote{font-size:12.5px;fill:#bdd0e2}.curve{stroke:#58aee8;stroke-width:4;fill:none}.curvewarn{stroke:#ff825f;stroke-width:4;fill:none}.target{stroke:#f3c743;stroke-width:3;stroke-dasharray:7 5}.mean{fill:#ff825f}.robust{fill:#63dfa2}.arrow,.bigarrow{stroke:#72cfff;stroke-width:3;fill:none}.bigarrow{stroke-width:5}.chain{font-size:27px;font-weight:800;fill:#f3c743}.weight{fill:#58aee8}.formula{font-family:Georgia,serif;font-size:25px;fill:#f3c743}.formula2{font-family:Georgia,serif;font-size:22px;fill:#eaf4ff}'''
+    css = '''body{margin:0;background:#081525;font-family:Arial,sans-serif}svg{width:100%;height:940px}.canvas{fill:#091a2e;stroke:#2d6d9c;stroke-width:1.5}.kicker{font-size:14px;font-weight:800;letter-spacing:1.5px;fill:#72cfff}.title{font-size:33px;font-weight:800;fill:#f5f9ff}.claim{font-size:20px;font-weight:700;fill:#dceaff}.body{font-size:17px;fill:#dce9f8}.small{font-size:14px;fill:#bdd0e2}.gold{font-size:16px;font-weight:800;fill:#f3c743}.head{font-size:18px;font-weight:800;fill:#f5f9ff}.card,.scene,.step,.hyp{fill:#0d2741;stroke:#397daa;stroke-width:1.4}.warn{fill:#382335;stroke:#ff825f;stroke-width:1.8}.hero,.rqactive{fill:#102d4b;stroke:#f3c743;stroke-width:1.8}.rail{fill:#0b2138;stroke:#4b84ad;stroke-width:1.3}.technical{fill:#0a1c31;stroke:#2d6d9c;stroke-width:1.3}.railtext{font-size:15px;fill:#dce9f8}.hypbody{font-size:15.5px;fill:#dce9f8}.hypsection{font-size:15px;font-weight:800;fill:#f5f9ff}.techlabel{font-size:12px;font-weight:800;letter-spacing:1px;fill:#72cfff}.techtext{font-family:Georgia,serif;font-size:15px;fill:#f3c743}.technote{font-size:12.5px;fill:#bdd0e2}.curve{stroke:#58aee8;stroke-width:4;fill:none}.curvewarn{stroke:#ff825f;stroke-width:4;fill:none}.target{stroke:#f3c743;stroke-width:3;stroke-dasharray:7 5}.mean{fill:#ff825f}.robust{fill:#63dfa2}.arrow,.bigarrow{stroke:#72cfff;stroke-width:3;fill:none}.bigarrow{stroke-width:5}.chain{font-size:27px;font-weight:800;fill:#f3c743}.weight{fill:#58aee8}.formula{font-family:Georgia,serif;font-size:25px;fill:#f3c743}.formula2{font-family:Georgia,serif;font-size:22px;fill:#eaf4ff}'''
     return f'<html><style>{css}</style><svg viewBox="0 0 1600 940"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L9,4z" fill="#dceaff"/></marker></defs>{"".join(p)}</svg></html>'
