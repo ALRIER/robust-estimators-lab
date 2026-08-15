@@ -18,6 +18,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Repair one-time patch quoting
+        run: python scripts/fix_presenter_patch_quotes.py
+
       - name: Apply presenter notes patch
         run: python scripts/patch_presenter_notes.py
 
