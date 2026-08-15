@@ -237,7 +237,7 @@ def research_logic_svg(panel: int) -> str:
             "robust mixtures may reduce finite-sample risk.",
         ], "scene")
         rail(
-            ["MSE = squared bias + variance.", "Improvement is conditional, never guaranteed."],
+            ["MSE = squared bias + variance.", "Improvement is conditional,", "never guaranteed."],
             "The benchmark gate must confirm both mean MSE and q0.95 MSE.",
         )
 
