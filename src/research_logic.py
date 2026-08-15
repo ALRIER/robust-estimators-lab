@@ -43,6 +43,23 @@ def _t(x, y, value, cls="body", anchor="start"):
     return f'<text x="{x}" y="{y}" text-anchor="{anchor}" class="{cls}">{value}</text>'
 
 
+def _wrap_text(value: str, max_chars: int = 31):
+    """Split SVG rail copy into short lines so it never escapes the card."""
+    words = str(value).split()
+    if not words:
+        return []
+    lines, current = [], words[0]
+    for word in words[1:]:
+        candidate = f"{current} {word}"
+        if len(candidate) <= max_chars:
+            current = candidate
+        else:
+            lines.append(current)
+            current = word
+    lines.append(current)
+    return lines
+
+
 def research_logic_svg(panel: int) -> str:
     """Render five distinct research-logic scenes in one defense canvas."""
     panel = max(0, min(int(panel), 4))
@@ -73,16 +90,11 @@ def research_logic_svg(panel: int) -> str:
         p.extend(_t(x + 20, y + 62 + i * 22, line, "body") for i, line in enumerate(lines))
 
     def rail(lines, why, next_=None):
+        """Right-side interpretation rail. NEXT is intentionally omitted."""
         card(1260, 170, 300, 705, "WHAT THIS MEANS", lines, "rail")
-        p.extend([
-            _t(1280, 310, "WHY IT MATTERS", "kicker"),
-            _t(1280, 340, why, "railtext"),
-        ])
-        if next_:
-            p.extend([
-                _t(1280, 410, "NEXT", "kicker"),
-                _t(1280, 440, next_, "railtext"),
-            ])
+        p.append(_t(1280, 310, "WHY IT MATTERS", "kicker"))
+        for i, line in enumerate(_wrap_text(why, 31)):
+            p.append(_t(1280, 340 + i * 22, line, "railtext"))
 
     if panel == 0:
         card(48, 185, 520, 350, "CLEAN / NEAR-SYMMETRIC", [
@@ -138,7 +150,6 @@ def research_logic_svg(panel: int) -> str:
         rail(
             ["Search and evidence are separate.", "A candidate is not yet a result."],
             "The framework is allowed to retain the benchmark.",
-            "Next: state the predictions.",
         )
 
     elif panel == 2:
@@ -168,7 +179,6 @@ def research_logic_svg(panel: int) -> str:
         rail(
             ["These are pre-result predictions.", "They bound what counts as success."],
             "Benchmark retention is a valid scientific outcome.",
-            "Next: define target and search space.",
         )
 
     elif panel == 3:
@@ -204,7 +214,6 @@ def research_logic_svg(panel: int) -> str:
         rail(
             ["The estimand never moves.", "Only the estimator recipe evolves."],
             "Simplex weights are interpretable, not proof of superiority.",
-            "Next: why could risk improve?",
         )
 
     else:
@@ -227,7 +236,6 @@ def research_logic_svg(panel: int) -> str:
         rail(
             ["MSE = squared bias + variance.", "Improvement is conditional, never guaranteed."],
             "The benchmark gate must confirm both mean MSE and q0.95 MSE.",
-            "Next: measure true error by simulation.",
         )
 
     technical = (
