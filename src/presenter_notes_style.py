@@ -63,6 +63,57 @@ PRESENTER_NOTES_CSS = """
     font-size:1.08em!important;
   }
 
+  [data-testid="stAppViewContainer"] .presenter-formulas{
+    margin-top:.4rem!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-formula-card{
+    margin:0 0 2.2rem!important;
+    padding:1.25rem 1.45rem 1.15rem!important;
+    border:1px solid #2f6d98!important;
+    border-left:5px solid #f3c743!important;
+    border-radius:10px!important;
+    background:#0a1d32!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-formula-title{
+    font-size:1.32rem!important;
+    line-height:1.25!important;
+    font-weight:800!important;
+    color:#72cfff!important;
+    margin:0 0 .55rem!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-formula-expression{
+    font-family:Georgia,'Times New Roman',serif!important;
+    font-size:2rem!important;
+    line-height:1.35!important;
+    font-weight:700!important;
+    color:#f3c743!important;
+    margin:0 0 1rem!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-formula-parts{
+    margin:.35rem 0 0 1.65rem!important;
+    padding:0!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-formula-parts li{
+    margin:0 0 .9rem!important;
+    padding-left:.25rem!important;
+    line-height:1.5!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-formula-parts li::marker{
+    color:#72cfff!important;
+  }
+
+  [data-testid="stAppViewContainer"] .presenter-formula-parts strong{
+    color:#ffffff!important;
+    font-weight:800!important;
+  }
+
   [data-testid="stAppViewContainer"] .presenter-section li ul{
     margin:.6rem 0 .35rem 1.55rem!important;
     color:#c9daeb!important;
@@ -74,6 +125,7 @@ PRESENTER_NOTES_CSS = """
     [data-testid="stAppViewContainer"] .block-container{padding:2.2rem 2.5rem!important}
     [data-testid="stAppViewContainer"] .presenter-heading{font-size:2.35rem!important}
     [data-testid="stAppViewContainer"] .presenter-copy{font-size:1.58rem!important}
+    [data-testid="stAppViewContainer"] .presenter-formula-expression{font-size:1.75rem!important}
     [data-testid="stAppViewContainer"] .presenter-section li ul{font-size:1.46rem!important}
   }
 </style>
