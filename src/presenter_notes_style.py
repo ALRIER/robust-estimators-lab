@@ -10,54 +10,54 @@ PRESENTER_NOTES_CSS = """
   .block-container{max-width:1320px!important;padding:2.8rem 3.6rem!important}
 
   .presenter-heading{
-    font-family:Arial,sans-serif;
-    font-size:2.7rem;
-    font-weight:800;
-    line-height:1.16;
-    color:#72cfff;
-    margin:0 0 2.5rem;
+    font-family:Arial,sans-serif!important;
+    font-size:2.7rem!important;
+    font-weight:800!important;
+    line-height:1.16!important;
+    color:#72cfff!important;
+    margin:0 0 2.5rem!important;
   }
 
   .presenter-copy{
-    font-family:Arial,sans-serif;
-    font-size:1.78rem;
-    line-height:1.62;
-    color:#f4f8ff;
+    font-family:Arial,sans-serif!important;
+    font-size:1.78rem!important;
+    line-height:1.62!important;
+    color:#f4f8ff!important;
   }
 
-  .presenter-section{margin:0 0 3.1rem}
+  .presenter-section{margin:0 0 3.1rem!important}
 
   .presenter-section h2{
     font-size:1.38rem!important;
-    letter-spacing:.12em;
+    letter-spacing:.12em!important;
     color:#72cfff!important;
     margin:0 0 1rem!important;
   }
 
-  .presenter-section p{margin:0}
+  .presenter-section p{margin:0!important}
 
   .presenter-section ul{
-    margin:.2rem 0 0 1.55rem;
-    padding:0;
+    margin:.2rem 0 0 1.55rem!important;
+    padding:0!important;
   }
 
   .presenter-section li{
-    margin:0 0 1rem;
-    padding-left:.2rem;
+    margin:0 0 1rem!important;
+    padding-left:.2rem!important;
   }
 
   .presenter-section li ul{
-    margin:.6rem 0 .35rem 1.55rem;
-    color:#c9daeb;
-    font-size:1.62rem;
-    line-height:1.58;
+    margin:.6rem 0 .35rem 1.55rem!important;
+    color:#c9daeb!important;
+    font-size:1.62rem!important;
+    line-height:1.58!important;
   }
 
   @media (max-width: 1100px){
     .block-container{padding:2.2rem 2.5rem!important}
-    .presenter-heading{font-size:2.35rem}
-    .presenter-copy{font-size:1.58rem}
-    .presenter-section li ul{font-size:1.46rem}
+    .presenter-heading{font-size:2.35rem!important}
+    .presenter-copy{font-size:1.58rem!important}
+    .presenter-section li ul{font-size:1.46rem!important}
   }
 </style>
 """
