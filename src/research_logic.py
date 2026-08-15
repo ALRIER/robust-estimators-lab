@@ -163,19 +163,15 @@ def research_logic_svg(panel: int) -> str:
             x = 48 + i * 292
             p.append(f'<rect x="{x}" y="195" width="268" height="355" rx="14" class="hyp"/>')
             p.append(_t(x + 20, 227, h, "head"))
-
             statement_lines = _wrap_text(statement, 28)
             for line_i, line in enumerate(statement_lines):
                 p.append(_t(x + 20, 260 + line_i * 22, line, "hypbody"))
-
             p.append(_t(x + 20, 320, "PREDICTION", "hypsection"))
             prediction_lines = _wrap_text(prediction, 28)
             for line_i, line in enumerate(prediction_lines):
                 p.append(_t(x + 20, 348 + line_i * 22, line, "hypbody"))
-
             p.append(_t(x + 20, 430, "ROLE IN THE STUDY", "hypsection"))
             p.append(_t(x + 20, 458, role, "hypbody"))
-
             if i < 3:
                 p.append(f'<path d="M{x+272} 375 L{x+286} 375" class="arrow" marker-end="url(#arrow)"/>')
         p.extend([
@@ -211,12 +207,13 @@ def research_logic_svg(panel: int) -> str:
         p.extend([
             _t(605, 510, "weights sum to 100%", "gold", "middle"),
             '<path d="M835 355 L920 355" class="bigarrow" marker-end="url(#arrow)"/>',
+            '<rect x="930" y="255" width="270" height="190" rx="14" class="hero"/>',
+            _t(950, 287, "INTERPRETABLE", "head"),
+            _t(950, 312, "MIXTURE", "head"),
+            _t(950, 345, "θ̂_w,n = Σⱼ₌₁ᴸ wⱼTⱼ,n", "body"),
+            _t(950, 367, "w ∈ Δ_L", "body"),
+            _t(950, 389, "wⱼ ≥ 0  ·  Σwⱼ = 1", "body"),
         ])
-        card(930, 255, 270, 190, "INTERPRETABLE MIXTURE", [
-            "θ̂_w,n = Σⱼ₌₁ᴸ wⱼTⱼ,n",
-            "w ∈ Δ_L",
-            "wⱼ ≥ 0  ·  Σwⱼ = 1",
-        ], "hero")
         rail(
             ["The estimand never moves.", "Only the estimator recipe evolves."],
             "Simplex weights are interpretable, not proof of superiority.",
