@@ -1,9 +1,8 @@
-"""Force the narrative Layer 7 presentation over the legacy Streamlit block.
+"""Force the polished narrative Layer 7 presentation over the legacy Streamlit block.
 
 This is intentionally presentation-only. It never recomputes thesis evidence.
 The legacy Layer 7 code remains in streamlit_app.py for now, but every central
-result chart and explanatory rail is replaced at render time by the narrative
-renderer from src.results_journey.
+result chart and explanatory rail is replaced at render time.
 """
 
 from __future__ import annotations
@@ -11,10 +10,11 @@ from __future__ import annotations
 import html
 import streamlit as st
 
-from src.results_journey import RESULT_STAGES, EXPLAIN_STEPS, result_figure, message_html
+from src.results_journey import RESULT_STAGES, EXPLAIN_STEPS, message_html
+from src.results_journey_polished import result_figure
 
 _LAYER7 = "07 · Results journey"
-_VERSION = "layer7-force-v4"
+_VERSION = "layer7-force-v5-polished"
 
 
 def _stage() -> int:
@@ -44,9 +44,6 @@ def install_force_layer7_renderer() -> None:
     base_button = st.button
 
     def plotly_chart(figure_or_data, *args, **kwargs):
-        # There is only one Plotly chart in the visible Layer 7 hero. Technical
-        # detail below uses a dataframe, so replacing every Layer 7 Plotly call
-        # is safe and removes all title-matching fragility.
         if _active():
             kwargs.pop("key", None)
             return base_plotly(result_figure(_stage()), *args, **kwargs)
@@ -71,7 +68,7 @@ def install_force_layer7_renderer() -> None:
             )
             return base_markdown(
                 "<div style='border:1px solid #2f6e98;border-radius:9px;background:#0a1d32;"
-                "padding:.72rem 1rem;color:#dceaff;font-weight:800;text-align:center;margin:.2rem 0 .75rem'>"
+                "padding:.85rem 1.1rem;color:#dceaff;font-size:1.02rem;font-weight:800;text-align:center;margin:.2rem 0 .75rem'>"
                 f"QUESTION: {html.escape(item['question'])} &nbsp;&nbsp;|&nbsp;&nbsp; "
                 f"KEY EVIDENCE: {html.escape(item['key'])}</div>",
                 unsafe_allow_html=True,
