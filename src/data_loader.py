@@ -9,7 +9,7 @@ from src.layer7_force_visuals import install_layer7_force_visuals
 from src.layer7_force_renderer import install_force_layer7_renderer
 from src.layer7_readability import install_layer7_readability
 from src.layer7_clean_renderer import install_layer7_clean_renderer
-from src.layer89_pages import install_layer89_pages
+from src.layer89_pages_runtime import install_layer89_pages
 
 install_layer7_runtime_hooks()
 install_layer7_stage_navigation()
