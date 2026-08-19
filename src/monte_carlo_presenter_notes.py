@@ -1,0 +1,68 @@
+"""Simple HELP notes for Layer 4 · Monte Carlo measurement and validation."""
+
+MONTE_CARLO_PRESENTER_NOTES = {
+    "monte_carlo_measurement": (
+        "Layer 4 · Measure repeated risk",
+        "Monte Carlo measurement engine",
+        [
+            "Main idea: one sample gives one estimate, but repeated samples reveal estimator risk.",
+            "First I fix one regime. Then I compute the known population mean theta from the generating distribution.",
+            "The GA does not create the target. Theta exists before any search begins.",
+            "Next I generate many independent samples from the same regime.",
+            "Inside one replicate, every estimator receives the same sample. This makes the comparison fair.",
+            "For estimator T_j in replicate r, I compute squared error: T_j of x_r minus theta, all squared.",
+            "The repeated squared errors are summarized with mean MSE and q95.",
+            "Mean MSE describes average error. q95 describes difficult upper-tail error.",
+            "The sentence to remember is: one regime, one known target, many repeated samples.",
+        ],
+        "Before trusting these risk estimates, I need to show that the simulated world itself was validated.",
+    ),
+    "monte_carlo_why_validate": (
+        "Layer 4 · Why validate first?",
+        "Independent simulator validation",
+        [
+            "Main idea: a search result is only meaningful if the world being searched is trustworthy.",
+            "If the generator has the wrong mean or wrong contamination severity, a GA can optimize the wrong problem very well.",
+            "So I do not use a successful GA result as proof that the simulator is correct.",
+            "The simulator is tested independently before GA evidence is interpreted.",
+            "The order is: build the world, validate the world, measure estimator risk, and only then run search.",
+            "This avoids circular evidence.",
+            "Simple sentence: the GA is not allowed to validate its own environment.",
+        ],
+        "Now I can show exactly what was checked in the validation battery.",
+    ),
+    "monte_carlo_validation_stages": (
+        "Layer 4 · Validation stages",
+        "Simulator certification battery",
+        [
+            "The validation summary is 125 conditions, 0 hard failures, 29 retained warnings, and 0.976 percent maximum mean error.",
+            "Stage 1 is moment fidelity. I ask whether large generated populations recover the intended analytic moments.",
+            "The empirical mean stayed inside the hard 1 percent tolerance. Maximum relative mean error was 0.976 percent.",
+            "Stage 2 is contamination fidelity. I check realised contamination rate and MAD-based severity after injection.",
+            "Stage 3 is statistical sanity. Under clean Normal data, the expected textbook ordering appears: the sample mean should beat the median in MSE.",
+            "Stage 4 is empirical anchoring. Shape diagnostics from five public datasets are compared with matched synthetic coverage.",
+            "Empirical anchoring is calibration, not known-truth validation, because real population theta is unknown.",
+            "Important: 29 warnings are not 29 failures. Warnings stay visible as diagnostic cases. Hard failures are counted separately and there were zero.",
+            "The validation order is population truth, contamination design, known statistical behaviour, and empirical relevance.",
+        ],
+        "The last view shows the safeguards that keep the comparison fair and the evidence stages separate.",
+    ),
+    "monte_carlo_fairness": (
+        "Layer 4 · Fairness & order of trust",
+        "Reproducibility and anti-leakage safeguards",
+        [
+            "This view explains why no single stage is allowed to certify itself.",
+            "First, the target is known before estimator evaluation. This prevents target drift.",
+            "Second, all estimators see the same sample inside each Monte Carlo replicate. This makes the comparison fair.",
+            "Third, seeds and regime settings are fixed and logged. This makes the experiment reproducible.",
+            "Fourth, warnings are retained instead of silently removed. This keeps the validation record transparent.",
+            "Across the full thesis, the order is build, validate, measure, search, freeze, and gate.",
+            "Simulator validation asks: is the world credible?",
+            "Monte Carlo asks: what is the risk?",
+            "GA search asks: where is opportunity?",
+            "Frozen validation asks: is replacement supported?",
+            "The separation between these jobs is part of the methodological contribution.",
+        ],
+        "With risk measured and the experimental world certified, I can now move to the GA search itself.",
+    ),
+}
