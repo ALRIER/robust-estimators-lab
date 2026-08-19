@@ -1,3 +1,4 @@
+# Runtime refresh: force a clean Streamlit Cloud rebuild after consolidating Layers 7-9.
 streamlit
 plotly
 pandas
