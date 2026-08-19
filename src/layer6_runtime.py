@@ -9,7 +9,7 @@ import streamlit.components.v1 as components
 from src.thesis_ga_presenter_notes import THESIS_GA_PRESENTER_NOTES
 
 _LAYER6 = "06 · Experiment pipeline"
-_VERSION = "layer6-didactic-scroll-v1"
+_VERSION = "layer6-didactic-scroll-v2-evolution-mix"
 
 
 def _note_html(key: str) -> str:
@@ -55,7 +55,7 @@ def install_layer6_runtime() -> None:
         active = st.session_state.get("defense_section")
         architecture = st.session_state.get("layer6_view", "architecture") == "architecture"
         if active == _LAYER6 and architecture and "THESIS GA ARCHITECTURE" in str(body):
-            kwargs["height"] = 4300
+            kwargs["height"] = 4450
             kwargs["scrolling"] = False
         return base_html(body, *args, **kwargs)
 
