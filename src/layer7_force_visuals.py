@@ -1,11 +1,11 @@
-"""Force the narrative Layer 7 renderer for every Plotly chart in Results Journey.
+"""Force the polished narrative Layer 7 renderer for every Plotly chart in Results Journey.
 
 This is presentation-only. It never recomputes thesis evidence.
 """
 
 import streamlit as st
 
-from src.results_journey import result_figure
+from src.results_journey_polished import result_figure
 
 _LAYER7 = "07 · Results journey"
 
@@ -18,7 +18,7 @@ def _stage() -> int:
 
 
 def install_layer7_force_visuals() -> None:
-    """Replace any central Plotly figure in Layer 7 with the narrative renderer."""
+    """Replace any central Plotly figure in Layer 7 with the polished narrative renderer."""
     if getattr(st, "_layer7_force_visuals", False):
         return
     st._layer7_force_visuals = True
