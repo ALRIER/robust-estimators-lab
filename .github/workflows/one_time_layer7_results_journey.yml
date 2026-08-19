@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   patch:
-    if: github.event.head_commit.message == 'Run Layer 7 results journey integration'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -18,23 +17,38 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply Layer 7 patch
-        run: python scripts/patch_layer7_results_journey.py
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Verify Python syntax
-        run: python -m py_compile streamlit_app.py src/results_journey.py
+      - name: Apply and verify Layer 7 patch
+        shell: bash
+        run: |
+          set +e
+          python scripts/patch_layer7_results_journey.py > /tmp/layer7_patch.log 2>&1
+          PATCH_CODE=$?
+          if [ $PATCH_CODE -eq 0 ]; then
+            python -m py_compile streamlit_app.py src/results_journey.py >> /tmp/layer7_patch.log 2>&1
+            PATCH_CODE=$?
+          fi
+          cat /tmp/layer7_patch.log
+          if [ $PATCH_CODE -ne 0 ]; then
+            cp /tmp/layer7_patch.log layer7_patch_error.txt
+            git add layer7_patch_error.txt
+            git commit -m "Record Layer 7 patch diagnostic"
+            git push
+            exit $PATCH_CODE
+          fi
 
       - name: Remove one-time helpers
         run: |
           git rm scripts/patch_layer7_results_journey.py
           git rm .github/workflows/one_time_layer7_results_journey.yml
+          rm -f layer7_patch_error.txt
 
       - name: Commit Layer 7 implementation
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add streamlit_app.py src/results_journey.py
           git commit -m "Redesign Layer 7 as self-explaining results journey"
           git push
-
-# explicit trigger
