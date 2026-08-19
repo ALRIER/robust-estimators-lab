@@ -1,9 +1,9 @@
 """Single presentation router for the modular defense pages.
 
 The historical ``streamlit_app.py`` is still monolithic, so this is the one and only
-compatibility router. It now keeps Layer 2 and Layers 7–9 synchronized with their
-current modules. Target modules are reloaded from disk so Streamlit hot-reload cannot
-serve an old page implementation after a Git push.
+compatibility router. It keeps Layers 1–2 and Layers 7–9 synchronized with their
+current modular pages and presenter notes. Target modules are reloaded from disk so
+Streamlit hot-reload cannot serve an old page implementation after a Git push.
 
 No thesis evidence is recomputed here.
 """
@@ -15,17 +15,22 @@ import importlib
 import streamlit as st
 import streamlit.components.v1 as components
 
+_LAYER1 = "01 · Research logic"
 _LAYER2 = "02 · Data-generating world"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v3-layer2-appendix"
+_VERSION = "single-defense-runtime-v4-layer1-didactic"
 
 
 def _load_notes():
-    module = importlib.import_module("src.final_presenter_notes")
-    module = importlib.reload(module)
-    return module.FINAL_PRESENTER_NOTES
+    final_module = importlib.import_module("src.final_presenter_notes")
+    final_module = importlib.reload(final_module)
+    research_module = importlib.import_module("src.research_presenter_notes")
+    research_module = importlib.reload(research_module)
+    notes = dict(final_module.FINAL_PRESENTER_NOTES)
+    notes.update(research_module.RESEARCH_PRESENTER_NOTES)
+    return notes
 
 
 def _load_module(module_name: str):
@@ -39,6 +44,15 @@ def _render_current(module_name: str, function_name: str) -> None:
 
 
 def _current_note_key(active: str) -> str | None:
+    if active == _LAYER1:
+        panel = max(0, min(int(st.session_state.get("research_panel", 0)), 4))
+        return (
+            "research_problem",
+            "research_objective",
+            "research_hypotheses",
+            "research_target",
+            "research_why_win",
+        )[panel]
     if active == _LAYER2:
         view = max(0, min(int(st.session_state.get("data_world_view", 0)), 2))
         return ("data_world_why_simulation", "data_world_regime", "data_world_validity")[view]
@@ -76,7 +90,7 @@ def _note_html(key: str) -> str:
 
 
 def install_defense_runtime() -> None:
-    """Install the single audience/presenter router for Layer 2 and Layers 7–9."""
+    """Install the single audience/presenter router for the modular defense pages."""
     if getattr(st, "_single_defense_runtime_version", None) == _VERSION:
         return
     st._single_defense_runtime_version = _VERSION
@@ -94,8 +108,22 @@ def install_defense_runtime() -> None:
         active = st.session_state.get("defense_section")
         text = str(body)
 
+        # In the separate presenter window, replace the old monolithic Layer-1
+        # cue card with the current simplified note before it is displayed.
+        try:
+            presenter = str(st.query_params.get("presenter_notes", "")) == "1"
+            presenter_key = str(st.query_params.get("section", ""))
+        except Exception:
+            presenter, presenter_key = False, ""
+        research_keys = {
+            "research_problem", "research_objective", "research_hypotheses",
+            "research_target", "research_why_win",
+        }
+        if presenter and presenter_key in research_keys and "presenter-heading" in text:
+            return base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
+
         # Keep the presenter window synchronized with the exact visible subview.
-        if active in (_LAYER2, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
+        if active in (_LAYER1, _LAYER2, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
             key = _current_note_key(active)
             if key:
                 old_keys = (
@@ -137,8 +165,17 @@ def install_defense_runtime() -> None:
         active = st.session_state.get("defense_section")
         text = str(body)
 
-        # Layer 2: always replace the historical SVG with the current didactic view.
-        # This also replaces the old Experimental Grid scene used by view 0.
+        # Layer 1: replace the historical SVG with the current question-led view.
+        if active == _LAYER1:
+            module = _load_module("src.research_logic")
+            panel = max(0, min(int(st.session_state.get("research_panel", 0)), 4))
+            heights = (1550, 1850, 1450, 1700, 1650)
+            current_html = module.research_logic_svg(panel)
+            kwargs["height"] = heights[panel]
+            kwargs["scrolling"] = False
+            return base_html(current_html, *args, **kwargs)
+
+        # Layer 2: always replace the historical view with the current didactic view.
         if active == _LAYER2:
             module = _load_module("src.data_world")
             view = max(0, min(int(st.session_state.get("data_world_view", 0)), 2))
