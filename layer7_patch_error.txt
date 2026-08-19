@@ -1,2 +1,0 @@
-Layer 7 results journey patch applied successfully
-Sorry: IndentationError: expected an indented block after 'if' statement on line 798 (streamlit_app.py, line 799)
