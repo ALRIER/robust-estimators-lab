@@ -9,15 +9,16 @@ from src.layer7_stage_nav import install_layer7_stage_navigation
 from src.layer7_force_visuals import install_layer7_force_visuals
 from src.layer7_force_renderer import install_force_layer7_renderer
 from src.layer7_readability import install_layer7_readability
+from src.layer7_clean_renderer import install_layer7_clean_renderer
 
 install_layer7_runtime_hooks()
 install_layer7_stage_navigation()
 install_layer7_force_visuals()
-# Install the versioned override last so the polished narrative renderer wins
-# over every legacy Layer 7 Plotly/rail helper still present in streamlit_app.py.
 install_force_layer7_renderer()
-# Finally, enlarge the explanatory rail and key-evidence strip for projection.
 install_layer7_readability()
+# Install this last. It unwraps any stale Layer 7 Plotly closures left by
+# Streamlit hot-reload and draws directly through the polished renderer.
+install_layer7_clean_renderer()
 
 ROOT = Path(__file__).resolve().parents[1]
 
