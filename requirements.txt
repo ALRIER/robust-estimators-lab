@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after full Layer 9 redesign and HELP-note update.
+# Runtime refresh: rebuild Streamlit Cloud after Layer 2 simulation/validity redesign and Layer 9 consolidation.
 streamlit
 plotly
 pandas
