@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after Layer 4 Monte Carlo validation redesign and presenter-note update.
+# Runtime refresh: rebuild Streamlit Cloud after consolidating the canonical Monte Carlo flow into Layer 4.
 streamlit
 plotly
 pandas
