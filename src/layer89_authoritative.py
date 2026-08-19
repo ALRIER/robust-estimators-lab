@@ -10,11 +10,11 @@ from __future__ import annotations
 import streamlit as st
 import streamlit.components.v1 as components
 
-from src.layer89_pages_runtime import render_layer8, render_layer9
+from src import layer89_pages_runtime as pages_runtime
 
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "layer89-authoritative-v1"
+_VERSION = "layer89-authoritative-v2-vertical-contrib"
 
 
 def install_layer89_authoritative() -> None:
@@ -35,7 +35,7 @@ def install_layer89_authoritative() -> None:
         if active == _LAYER8 and "WHAT DID WE LEARN?" in text and "No Free Lunch, made operational." in text:
             rendering = True
             try:
-                render_layer8()
+                pages_runtime.render_layer8()
             finally:
                 rendering = False
             st.stop()
@@ -53,7 +53,7 @@ def install_layer89_authoritative() -> None:
         ):
             rendering = True
             try:
-                render_layer9()
+                pages_runtime.render_layer9()
             finally:
                 rendering = False
             st.stop()
