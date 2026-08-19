@@ -5,8 +5,10 @@ import pandas as pd
 # Layer 7 is presentation-only: install its visual/help hooks as soon as this
 # already-imported dashboard module loads. The hooks never recompute evidence.
 from src.layer7_runtime import install_layer7_runtime_hooks
+from src.layer7_stage_nav import install_layer7_stage_navigation
 
 install_layer7_runtime_hooks()
+install_layer7_stage_navigation()
 
 ROOT = Path(__file__).resolve().parents[1]
 
