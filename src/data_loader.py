@@ -6,9 +6,11 @@ import pandas as pd
 # already-imported dashboard module loads. The hooks never recompute evidence.
 from src.layer7_runtime import install_layer7_runtime_hooks
 from src.layer7_stage_nav import install_layer7_stage_navigation
+from src.layer7_force_visuals import install_layer7_force_visuals
 
 install_layer7_runtime_hooks()
 install_layer7_stage_navigation()
+install_layer7_force_visuals()
 
 ROOT = Path(__file__).resolve().parents[1]
 
