@@ -45,3 +45,5 @@ jobs:
           git add streamlit_app.py src/results_journey.py
           git commit -m "Redesign Layer 7 as self-explaining results journey"
           git push
+
+# explicit isolated trigger
