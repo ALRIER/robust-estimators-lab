@@ -1,285 +1,186 @@
-"""Interactive opening scene for the thesis research logic.
+"""Layer 1 · Research logic.
 
-The visible notation follows the final KBS manuscript: regime ℛ, induced
-sampling distribution F_ℛ, fixed target μ_F = E_F[X], simplex-constrained
-composites, and finite-sample MSE decomposition.
+Five didactic views for the opening of the timed defense. The scientific content
+is unchanged: fixed population-mean target, regime-dependent finite-sample risk,
+H1–H4, interpretable simplex mixtures, and the bias–variance condition for
+conditional improvement.
 """
 
 PANELS = (
-    (
-        "Problem",
-        "The target stays fixed, but estimator performance changes with the regime.",
-        "No operationally admissible estimator is uniformly best across all data-generating conditions.",
-        "Change the regime, and the risk ranking can change.",
-    ),
-    (
-        "Objective / RQ",
-        "When can evolutionary search produce an interpretable mixture that improves on the strongest admissible benchmark?",
-        "The question is conditional: discovery proposes candidates, but validation decides whether replacement is justified.",
-        "We ask when improvement is supported, not whether GA always wins.",
-    ),
-    (
-        "H1–H4",
-        "Four linked hypotheses turn the No-Free-Lunch intuition into testable claims.",
-        "They separate regime dependence, selective opportunity, and evidence control.",
-        "The hypotheses form the logical spine of the defense.",
-    ),
-    (
-        "Target / Simplex",
-        "The estimand is fixed at the population mean; the GA only changes the estimator recipe.",
-        "Every candidate is a non-negative convex mixture of named estimators and remains inspectable.",
-        "The target is fixed; only the weights evolve.",
-    ),
-    (
-        "Why can win",
-        "A composite can win only when variance reduction more than compensates for squared bias.",
-        "Clean light-tailed symmetry leaves little room; skewness, heavy tails, or contamination may create conditional opportunity.",
-        "A valid mixture is not automatically a better estimator.",
-    ),
+    ("Why a problem?", "The target stays fixed while risk rankings can change.", "No universal estimator is assumed.", "Change the regime, and the best choice may change."),
+    ("What are we asking?", "Can search find an interpretable improvement that survives validation?", "Search proposes; evidence decides.", "The question is conditional, not universal."),
+    ("What should happen?", "H1–H4 turn the intuition into testable predictions.", "The study can succeed by retaining the benchmark.", "The hypotheses define what counts as evidence."),
+    ("What can GA change?", "The target is fixed; only the estimator recipe evolves.", "Simplex weights keep the recipe interpretable.", "Valid weights are not proof of better performance."),
+    ("When can it win?", "A mixture wins only through a favourable bias–variance trade-off.", "Variance reduction must pay for squared bias.", "Improvement is conditional and must pass the gate."),
 )
 
 
-def _t(x, y, value, cls="body", anchor="start"):
-    return f'<text x="{x}" y="{y}" text-anchor="{anchor}" class="{cls}">{value}</text>'
+def _css() -> str:
+    return """
+    <style>
+      *{box-sizing:border-box}
+      body{margin:0;background:#081525;color:#e9f4ff;font-family:Arial,sans-serif}
+      .page{padding:28px 32px 38px;background:#081525}
+      .kicker{font-size:14px;font-weight:900;letter-spacing:.13em;color:#72cfff;margin-bottom:9px}
+      .title{font-size:39px;line-height:1.14;font-weight:900;color:#fff;margin-bottom:10px}
+      .subtitle{font-size:19px;line-height:1.5;color:#bfd0e2;margin-bottom:25px;max-width:1280px}
+      .section{font-size:21px;font-weight:900;color:#f3c743;letter-spacing:.05em;margin:30px 0 14px}
+      .story{background:#0f2b47;border:1px solid #3c7198;border-left:7px solid #72cfff;border-radius:14px;padding:19px 21px;margin:17px 0;font-size:18px;line-height:1.5;color:#eef6ff}
+      .takeaway{background:#12354a;border:1px solid #58aee8;border-left:7px solid #f3c743;border-radius:14px;padding:21px 23px;margin:24px 0 4px;font-size:20px;line-height:1.45;font-weight:850;color:#fff}
+      .warn{background:#342b12;border:1px solid #f3c743;border-left:7px solid #f3c743;color:#fff2b8;border-radius:14px;padding:18px 20px;font-size:17px;line-height:1.48;margin:20px 0}
+      .good{background:#10372e;border:1px solid #54c786;border-left:7px solid #54c786;color:#d7ffe5;border-radius:14px;padding:18px 20px;font-size:17px;line-height:1.48;margin:18px 0}
+      .two{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+      .three{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+      .four{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+      .card{display:grid;grid-template-columns:96px 1fr;gap:20px;align-items:center;background:linear-gradient(145deg,#0e2945,#0a1d32);border:1px solid #356e99;border-radius:15px;padding:21px 23px;margin-bottom:16px;min-height:150px}
+      .icon{width:78px;height:78px;border-radius:19px;background:#10253a;border:1px solid #3c7198;display:flex;align-items:center;justify-content:center;font-size:39px;margin:auto}
+      .label{font-size:13px;font-weight:900;letter-spacing:.11em;color:#72cfff;margin-bottom:6px}
+      .headline{font-size:26px;font-weight:900;line-height:1.18;color:#fff;margin-bottom:8px}
+      .copy{font-size:17px;line-height:1.49;color:#dce9f8}
+      .mini{font-size:15px;line-height:1.44;color:#b9c8d9;margin-top:8px}
+      .formula-card{background:#0b2138;border:1px solid #356e99;border-left:6px solid #f3c743;border-radius:14px;padding:19px 21px;margin:15px 0}
+      .formula-label{font-size:13px;font-weight:900;letter-spacing:.11em;color:#72cfff;margin-bottom:7px}
+      .formula{font-family:Georgia,serif;font-size:30px;font-weight:800;line-height:1.35;color:#f7d768;margin-bottom:9px}
+      .formula-copy{font-size:17px;line-height:1.48;color:#dce9f8}
+      .flow{display:flex;align-items:stretch;gap:9px;margin:17px 0;flex-wrap:wrap}
+      .flowbox{flex:1;min-width:150px;background:#10253a;border:1px solid #356e99;border-radius:12px;padding:15px;text-align:center}
+      .flowbox .ficon{font-size:30px;margin-bottom:7px}.flowbox .fh{font-size:17px;font-weight:900;color:#fff;margin-bottom:5px}.flowbox .fc{font-size:14px;line-height:1.37;color:#bfd0e2}
+      .flowarrow{display:flex;align-items:center;justify-content:center;color:#72cfff;font-size:28px;font-weight:900}
+      .hyp{background:#0d2239;border:1px solid #356e99;border-radius:14px;padding:18px;min-height:255px;display:flex;flex-direction:column}
+      .hyp .hn{font-size:31px;font-weight:900;color:#f3c743;margin-bottom:7px}.hyp .hh{font-size:20px;font-weight:900;color:#fff;margin-bottom:8px}.hyp .hc{font-size:15px;line-height:1.43;color:#dce9f8}.hyp .role{margin-top:auto;padding-top:12px;border-top:1px solid #315879;font-size:13px;font-weight:900;letter-spacing:.08em;color:#72cfff}
+      .builder{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:17px 0}
+      .weight-card{background:#10253a;border:1px solid #356e99;border-radius:13px;padding:16px 17px}.weight-name{font-size:16px;font-weight:900;color:#fff;margin-bottom:9px}.bar{height:18px;background:#071525;border:1px solid #315879;border-radius:9px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,#58aee8,#a777e3)}.weight-value{font-size:14px;color:#bfd0e2;margin-top:7px;text-align:right}
+      .balance{display:grid;grid-template-columns:1fr 90px 1fr;gap:16px;align-items:center;margin:18px 0}.balance-box{background:#10253a;border:1px solid #356e99;border-radius:14px;padding:20px;text-align:center}.balance-box .bh{font-size:23px;font-weight:900;color:#fff;margin-bottom:7px}.balance-box .bc{font-size:16px;line-height:1.44;color:#dce9f8}.balance-mid{text-align:center;font-size:44px;color:#f3c743;font-weight:900}
+      .condition{background:#10372e;border:1px solid #54c786;border-radius:14px;padding:20px 22px;margin:17px 0}.condition .ch{font-size:20px;font-weight:900;color:#d7ffe5;margin-bottom:8px}.condition .cc{font-size:18px;line-height:1.47;color:#e9fff0}
+      @media(max-width:1050px){.two,.three,.four,.builder{grid-template-columns:1fr 1fr}.balance{grid-template-columns:1fr}.balance-mid{font-size:30px}.card{grid-template-columns:78px 1fr}.flowarrow{display:none}}
+    </style>
+    """
 
 
-def _wrap_text(value: str, max_chars: int = 31):
-    """Split SVG copy into short lines so it never escapes its card."""
-    words = str(value).split()
-    if not words:
-        return []
-    lines, current = [], words[0]
-    for word in words[1:]:
-        candidate = f"{current} {word}"
-        if len(candidate) <= max_chars:
-            current = candidate
-        else:
-            lines.append(current)
-            current = word
-    lines.append(current)
-    return lines
+def _problem() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>01 · RESEARCH LOGIC · WHY A PROBLEM?</div>
+      <div class='title'>The target stays fixed. The statistical environment does not.</div>
+      <div class='subtitle'>The opening problem is not “which estimator is best?” It is “does the best choice change when the data-generating regime changes?”</div>
+
+      <div class='two'>
+        <div class='card'><div class='icon'>🎯</div><div><div class='label'>WHAT STAYS FIXED</div><div class='headline'>The population mean</div><div class='copy'>Every estimator is judged against the same type of target: θ(F)=μ<sub>F</sub>=E<sub>F</sub>[X].</div></div></div>
+        <div class='card'><div class='icon'>🌦️</div><div><div class='label'>WHAT CAN CHANGE</div><div class='headline'>The sampling environment</div><div class='copy'>Family, contamination, outlier severity, mechanism and sample size change finite-sample risk.</div></div></div>
+      </div>
+
+      <div class='section'>TWO SIMPLE WORLDS</div>
+      <div class='two'>
+        <div class='card'><div class='icon'>🔔</div><div><div class='headline'>Clean / near-symmetric</div><div class='copy'>The sample mean can be very efficient. There may be little room for a composite to improve.</div><div class='mini'>Audience inference: if the mean is already strong, replacement should be difficult.</div></div></div>
+        <div class='card'><div class='icon'>🌪️</div><div><div class='headline'>Skewed / contaminated</div><div class='copy'>Extreme observations can change the error distribution. Robust estimators may move less and the ranking can change.</div><div class='mini'>Audience inference: different regimes can create different opportunities.</div></div></div>
+      </div>
+
+      <div class='flow'><div class='flowbox'><div class='ficon'>🔄</div><div class='fh'>Change regime</div><div class='fc'>Change the data-generating environment.</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='ficon'>📉</div><div class='fh'>Change risk</div><div class='fc'>Bias, variance and difficult-case error can move.</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='ficon'>🏆</div><div class='fh'>Change ranking</div><div class='fc'>The best admissible estimator may change.</div></div></div>
+
+      <div class='takeaway'>TAKE-HOME: no universal winner is assumed. The thesis asks which estimator is justified inside a defined regime.</div>
+    </div>"""
+
+
+def _question() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>01 · RESEARCH LOGIC · WHAT ARE WE ASKING?</div>
+      <div class='title'>Can evolutionary search find an interpretable improvement that survives independent evidence?</div>
+      <div class='subtitle'>This separates the optimization problem from the scientific claim. A promising candidate is not yet a result.</div>
+
+      <div class='section'>THE RESEARCH PROGRAMME IN ONE LINE</div>
+      <div class='flow'><div class='flowbox'><div class='ficon'>🔎</div><div class='fh'>SEARCH</div><div class='fc'>Propose simplex weight vectors.</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='ficon'>🧊</div><div class='fh'>FREEZE</div><div class='fc'>Lock the candidate recipe.</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='ficon'>🥊</div><div class='fh'>CHALLENGE</div><div class='fc'>Use fresh evidence and stronger comparators.</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='ficon'>🚪</div><div class='fh'>ACCEPT / ABSTAIN</div><div class='fc'>Replace only if the gate supports it.</div></div></div>
+
+      <div class='section'>FOUR QUESTIONS, ONE LOGIC</div>
+      <div class='two'>
+        <div class='card'><div class='icon'>1</div><div><div class='label'>RQ1 · DISCOVERY</div><div class='headline'>Where can a composite improve?</div><div class='copy'>Search controlled regimes for promising interpretable mixtures.</div></div></div>
+        <div class='card'><div class='icon'>2</div><div><div class='label'>RQ2 · CONFIRMATION</div><div class='headline'>Do the gains survive frozen weights?</div><div class='copy'>Retest the same recipe on independent evidence without retraining.</div></div></div>
+        <div class='card'><div class='icon'>3</div><div><div class='label'>RQ3 · EXPANDED BASIS</div><div class='headline'>What changes when the search basis becomes stronger?</div><div class='copy'>Reopen the search from 10 to 26 learnable components.</div></div></div>
+        <div class='card'><div class='icon'>4</div><div><div class='label'>RQ4 · TRANSFER</div><div class='headline'>Do validated specialists travel?</div><div class='copy'>Test related regimes and external empirical data without changing the frozen recipe.</div></div></div>
+      </div>
+
+      <div class='good'><b>Success is deliberately two-sided:</b> a supported specialist is useful evidence, but justified benchmark retention is also a valid scientific outcome.</div>
+      <div class='takeaway'>TAKE-HOME: search proposes. Validation decides. The question is “when is replacement justified?” — not “can the GA always win?”</div>
+    </div>"""
+
+
+def _hypotheses() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>01 · RESEARCH LOGIC · WHAT SHOULD HAPPEN?</div>
+      <div class='title'>H1–H4 make the expected pattern explicit before looking at results.</div>
+      <div class='subtitle'>The hypotheses form one reasoning chain: scope → regime dependence → selective opportunity → claim control.</div>
+
+      <div class='four'>
+        <div class='hyp'><div class='hn'>H1</div><div class='hh'>No universal estimator</div><div class='hc'>Different regimes can have different winners.</div><div class='role'>SCOPE</div></div>
+        <div class='hyp'><div class='hn'>H2</div><div class='hh'>Performance depends on regime</div><div class='hc'>Finite-sample risk changes with F<sub>ℛ</sub> and n.</div><div class='role'>MECHANISM</div></div>
+        <div class='hyp'><div class='hn'>H3</div><div class='hh'>GA helps selectively</div><div class='hc'>Only some regimes should create enough opportunity for replacement.</div><div class='role'>OPPORTUNITY</div></div>
+        <div class='hyp'><div class='hn'>H4</div><div class='hh'>The gate controls claims</div><div class='hc'>Unsupported candidates must return to the benchmark.</div><div class='role'>CLAIM CONTROL</div></div>
+      </div>
+
+      <div class='flow'><div class='flowbox'><div class='fh'>H1</div><div class='fc'>No universal winner</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='fh'>H2</div><div class='fc'>Risk depends on regime</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='fh'>H3</div><div class='fc'>Opportunity should be selective</div></div><div class='flowarrow'>→</div><div class='flowbox'><div class='fh'>H4</div><div class='fc'>Evidence can reject replacement</div></div></div>
+
+      <div class='story'><b>What should the audience infer?</b> If the final results show only a few narrow winners and many benchmark-retained cases, that pattern is compatible with the hypotheses — it is not a failed GA story.</div>
+      <div class='takeaway'>TAKE-HOME: the expected result is selective improvement under explicit claim control, not widespread GA dominance.</div>
+    </div>"""
+
+
+def _target_simplex() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>01 · RESEARCH LOGIC · WHAT CAN THE GA CHANGE?</div>
+      <div class='title'>The GA evolves the estimator recipe — never the scientific target.</div>
+      <div class='subtitle'>This separates the estimand from the estimator and keeps every candidate inspectable.</div>
+
+      <div class='section'>1 · FIXED TARGET</div>
+      <div class='formula-card'><div class='formula-label'>ESTIMAND</div><div class='formula'>θ(F) = μ<sub>F</sub> = E<sub>F</sub>[X]</div><div class='formula-copy'>Every candidate estimates the population mean. The target is not moved to make the problem easier.</div></div>
+
+      <div class='section'>2 · EVOLVING RECIPE</div>
+      <div class='formula-card'><div class='formula-label'>COMPOSITE ESTIMATOR</div><div class='formula'>θ̂<sub>w,n</sub> = Σ<sub>j=1</sub><sup>L</sup> wⱼTⱼ,n</div><div class='formula-copy'>Each GA individual is a vector of weights over named base estimators.</div></div>
+      <div class='builder'>
+        <div class='weight-card'><div class='weight-name'>Mean</div><div class='bar'><div class='fill' style='width:18%'></div></div><div class='weight-value'>18%</div></div>
+        <div class='weight-card'><div class='weight-name'>Median</div><div class='bar'><div class='fill' style='width:27%'></div></div><div class='weight-value'>27%</div></div>
+        <div class='weight-card'><div class='weight-name'>Huber</div><div class='bar'><div class='fill' style='width:24%'></div></div><div class='weight-value'>24%</div></div>
+        <div class='weight-card'><div class='weight-name'>Biweight</div><div class='bar'><div class='fill' style='width:31%'></div></div><div class='weight-value'>31%</div></div>
+      </div>
+
+      <div class='section'>3 · SIMPLEX RULE</div>
+      <div class='formula-card'><div class='formula-label'>INTERPRETABLE SEARCH SPACE</div><div class='formula'>w ∈ Δ<sub>L</sub>, &nbsp; wⱼ ≥ 0, &nbsp; Σwⱼ = 1</div><div class='formula-copy'>No negative weights. All weights add to 100%. The final recipe remains a convex mixture of named estimators.</div></div>
+
+      <div class='warn'><b>Important distinction:</b> a simplex-valid vector is interpretable, but it is not automatically robust, admissible on every support, or better than the benchmark.</div>
+      <div class='takeaway'>TAKE-HOME: the estimand never moves. Only the estimator recipe evolves, and evidence must still prove lower finite-sample risk.</div>
+    </div>"""
+
+
+def _why_win() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>01 · RESEARCH LOGIC · WHEN CAN A MIXTURE WIN?</div>
+      <div class='title'>Only when variance reduction is large enough to pay for squared bias.</div>
+      <div class='subtitle'>This is the statistical reason a composite can help in some regimes and still lose in others.</div>
+
+      <div class='section'>FINITE-SAMPLE RISK</div>
+      <div class='formula-card'><div class='formula-label'>MSE DECOMPOSITION</div><div class='formula'>MSE<sub>F,n</sub>(θ̂<sub>w,n</sub>) = B<sub>n</sub>(w,F)² + V<sub>n</sub>(w,F)</div><div class='formula-copy'>MSE is squared bias plus variance. Robust components may introduce some bias but can reduce sampling variability or sensitivity to extremes.</div></div>
+
+      <div class='balance'>
+        <div class='balance-box'><div class='bh'>Squared bias cost</div><div class='bc'>Moving weight away from the sample mean can move the expected estimate away from μ<sub>F</sub>.</div></div>
+        <div class='balance-mid'>⚖️</div>
+        <div class='balance-box'><div class='bh'>Variance reduction</div><div class='bc'>Robust components can reduce instability created by skew, tails or contamination.</div></div>
+      </div>
+
+      <div class='condition'><div class='ch'>WHEN DOES IT BEAT THE SAMPLE MEAN?</div><div class='cc'>B<sub>n</sub>(w,F)² + V<sub>n</sub>(w,F) &lt; Var<sub>F</sub>(X̄<sub>n</sub>)</div></div>
+
+      <div class='two'>
+        <div class='card'><div class='icon'>🔔</div><div><div class='headline'>Clean light-tailed symmetry</div><div class='copy'>The sample mean is already highly efficient. There may be little variance reduction available to justify added bias.</div></div></div>
+        <div class='card'><div class='icon'>🌪️</div><div><div class='headline'>Skew / tails / contamination</div><div class='copy'>Extremes can increase finite-sample instability. A robust mixture may sometimes reduce risk enough to compensate for bias.</div></div></div>
+      </div>
+
+      <div class='story'><b>And the thesis is stricter than this equation:</b> the final candidate must beat the strongest admissible benchmark on both mean MSE and q95 MSE.</div>
+      <div class='takeaway'>TAKE-HOME: a composite can win, but only conditionally. Validity creates a candidate; the bias–variance trade-off creates opportunity; the gate decides the claim.</div>
+    </div>"""
 
 
 def research_logic_svg(panel: int) -> str:
-    """Render five distinct research-logic scenes in one defense canvas."""
+    """Return the current didactic HTML for one of the five Layer 1 views."""
     panel = max(0, min(int(panel), 4))
-    headings = (
-        "PROBLEM",
-        "OBJECTIVE / RESEARCH QUESTIONS",
-        "H1–H4: CAUSAL HYPOTHESIS CHAIN",
-        "TARGET / SIMPLEX",
-        "WHY A COMPOSITE CAN WIN",
-    )
-    claims = (
-        "No single admissible estimator remains uniformly reliable across changing regimes.",
-        "Can evolutionary search find credible, interpretable improvement in the fixed target μ_F = E_F[X]?",
-        "No universal winner → regime dependence → selective GA opportunity → benchmark-gated claims.",
-        "The target stays fixed at θ(F) = μ_F = E_F[X]; the GA learns inspectable simplex weights.",
-        "Lower MSE is possible only when variance reduction exceeds the squared bias cost.",
-    )
-    p = [
-        '<rect x="20" y="16" width="1560" height="904" rx="18" class="canvas"/>',
-        _t(48, 56, "01 · RESEARCH LOGIC", "kicker"),
-        _t(48, 100, headings[panel], "title"),
-        _t(48, 137, claims[panel], "claim"),
-    ]
-
-    def card(x, y, w, h, title, lines, cls="card"):
-        p.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="14" class="{cls}"/>')
-        p.append(_t(x + 20, y + 32, title, "head"))
-        p.extend(_t(x + 20, y + 62 + i * 22, line, "body") for i, line in enumerate(lines))
-
-    def rail(lines, why, next_=None):
-        """Right-side interpretation rail. NEXT is intentionally omitted."""
-        card(1260, 170, 300, 705, "WHAT THIS MEANS", lines, "rail")
-        p.append(_t(1280, 310, "WHY IT MATTERS", "kicker"))
-        for i, line in enumerate(_wrap_text(why, 31)):
-            p.append(_t(1280, 340 + i * 22, line, "railtext"))
-
-    if panel == 0:
-        card(48, 185, 520, 350, "CLEAN / NEAR-SYMMETRIC", [
-            "Mean is close to the target.",
-            "Mean — efficient here.",
-        ], "scene")
-        p.extend([
-            '<path d="M100 435 C180 275 350 275 520 435" class="curve"/>',
-            '<path d="M310 268 V465" class="target"/>',
-            '<circle cx="310" cy="382" r="10" class="mean"/>',
-            _t(310, 495, "target  μ_F", "small", "middle"),
-            '<path d="M590 355 L750 355" class="bigarrow" marker-end="url(#arrow)"/>',
-        ])
-        card(800, 185, 400, 350, "SKEWED / CONTAMINATED", [
-            "Extremes can pull the sample mean.",
-            "Robust estimators may move less.",
-        ], "warn")
-        p.extend([
-            '<path d="M840 435 C900 285 980 300 1020 415 C1100 440 1140 350 1175 250" class="curvewarn"/>',
-            '<path d="M965 268 V465" class="target"/>',
-            '<circle cx="1080" cy="382" r="10" class="mean"/>',
-            '<circle cx="985" cy="382" r="10" class="robust"/>',
-            _t(1080, 415, "Mean", "small", "middle"),
-            _t(985, 415, "Robust", "small", "middle"),
-            _t(624, 590, "Change regime  →  change risk  →  change ranking", "gold", "middle"),
-        ])
-        rail(
-            ["The target is still μ_F.", "What changes is estimator risk."],
-            "The best estimator can depend on F_ℛ.",
-        )
-
-    elif panel == 1:
-        card(48, 175, 1150, 100, "AIM", [
-            "Identify regime-conditional, interpretable improvements in μ_F that remain credible after frozen validation."
-        ], "hero")
-        for i, (name, desc) in enumerate((
-            ("SEARCH", "Propose simplex weight vectors"),
-            ("CHALLENGE", "Freeze; test fresh evidence"),
-            ("ACCEPT / ABSTAIN", "Gate decides replacement"),
-        )):
-            x = 65 + i * 380
-            card(x, 320, 315, 105, name, [desc], "step")
-            if i < 2:
-                p.append(f'<path d="M{x+325} 372 L{x+360} 372" class="arrow" marker-end="url(#arrow)"/>')
-        rqs = (
-            ("RQ1 · Discovery", "Where can a composite improve?", "Discovery + held-out gate."),
-            ("RQ2 · Confirmation", "Do gains survive frozen weights?", "Independent confirmation."),
-            ("RQ3 · Expanded basis", "What changes from 10 to 26?", "Expanded rediscovery."),
-            ("RQ4 · Transfer", "Do specialists transfer?", "External evidence."),
-        )
-        for i, (label, q, stage) in enumerate(rqs):
-            card(48 + i * 290, 480, 270, 165, label, [q, stage], "rqactive" if i == 0 else "card")
-        rail(
-            ["Search and evidence are separate.", "A candidate is not yet a result."],
-            "The framework is allowed to retain the benchmark.",
-        )
-
-    elif panel == 2:
-        data = (
-            ("H1", "No universal estimator.", "Different regimes can have different winners.", "Scope"),
-            ("H2", "Performance depends on regime.", "Conditional risk changes with F_ℛ.", "Mechanism"),
-            ("H3", "GA helps only selectively.", "Only some regimes should support replacement.", "Opportunity"),
-            ("H4", "The gate controls claims.", "Unsupported candidates return to benchmark.", "Claim control"),
-        )
-        for i, (h, statement, prediction, role) in enumerate(data):
-            x = 48 + i * 292
-            p.append(f'<rect x="{x}" y="195" width="268" height="355" rx="14" class="hyp"/>')
-            p.append(_t(x + 20, 227, h, "head"))
-            statement_lines = _wrap_text(statement, 28)
-            for line_i, line in enumerate(statement_lines):
-                p.append(_t(x + 20, 260 + line_i * 22, line, "hypbody"))
-            p.append(_t(x + 20, 320, "PREDICTION", "hypsection"))
-            prediction_lines = _wrap_text(prediction, 28)
-            for line_i, line in enumerate(prediction_lines):
-                p.append(_t(x + 20, 348 + line_i * 22, line, "hypbody"))
-            p.append(_t(x + 20, 430, "ROLE IN THE STUDY", "hypsection"))
-            p.append(_t(x + 20, 458, role, "hypbody"))
-            if i < 3:
-                p.append(f'<path d="M{x+272} 375 L{x+286} 375" class="arrow" marker-end="url(#arrow)"/>')
-        p.extend([
-            _t(620, 635, "H1  →  H2  →  H3  →  H4", "chain", "middle"),
-            _t(620, 670, "A reasoning chain: scope → regime dependence → opportunity → evidence control.", "body", "middle"),
-        ])
-        rail(
-            ["These are pre-result predictions.", "They bound what counts as success."],
-            "Benchmark retention is a valid scientific outcome.",
-        )
-
-    elif panel == 3:
-        card(48, 190, 300, 335, "FIXED TARGET", [
-            "Population mean.",
-            "Every candidate estimates μ_F.",
-        ], "scene")
-        p.extend([
-            '<path d="M100 440 C175 285 270 285 325 440" class="curve"/>',
-            '<path d="M210 268 V460" class="target"/>',
-            _t(210, 490, "θ(F) = μ_F = E_F[X]", "gold", "middle"),
-        ])
-        card(400, 190, 410, 335, "CANDIDATE RECIPE", [
-            "Each GA individual is a weight vector.",
-            "Named components remain inspectable.",
-        ], "scene")
-        for i, (name, w) in enumerate(zip(("Mean", "Median", "Huber", "Biweight"), (18, 27, 24, 31))):
-            y = 325 + i * 44
-            p.extend([
-                _t(430, y, name, "small"),
-                f'<rect x="525" y="{y-17}" width="{w*6}" height="20" rx="4" class="weight"/>',
-                _t(735, y, f"{w}%", "small", "end"),
-            ])
-        p.extend([
-            _t(605, 510, "weights sum to 100%", "gold", "middle"),
-            '<path d="M835 355 L920 355" class="bigarrow" marker-end="url(#arrow)"/>',
-            '<rect x="930" y="255" width="270" height="190" rx="14" class="hero"/>',
-            _t(950, 287, "INTERPRETABLE", "head"),
-            _t(950, 312, "MIXTURE", "head"),
-            _t(950, 345, "θ̂_w,n = Σⱼ₌₁ᴸ wⱼTⱼ,n", "body"),
-            _t(950, 367, "w ∈ Δ_L", "body"),
-            _t(950, 389, "wⱼ ≥ 0  ·  Σwⱼ = 1", "body"),
-        ])
-        rail(
-            ["The estimand never moves.", "Only the estimator recipe evolves."],
-            "Simplex weights are interpretable, not proof of superiority.",
-        )
-
-    else:
-        card(48, 180, 1150, 100, "FINITE-SAMPLE TRADE-OFF", [
-            "A composite is useful only when its lower variance compensates for any bias introduced by robust components."
-        ], "hero")
-        p.extend([
-            _t(90, 345, "Composite MSE", "head"),
-            _t(90, 392, "MSE_F,n(θ̂_w,n) = B_n(w,F)² + V_n(w,F)", "formula"),
-            _t(90, 495, "Dominance over the sample mean", "head"),
-            _t(90, 542, "B_n(w,F)² + V_n(w,F)  <  Var_F(X̄_n)", "formula2"),
-        ])
-        card(800, 330, 400, 250, "INTERPRETATION", [
-            "Clean light-tailed symmetry:",
-            "little variance is available to give up.",
-            "",
-            "Skew / tails / contamination:",
-            "robust mixtures may reduce finite-sample risk.",
-        ], "scene")
-        rail(
-            ["MSE = squared bias + variance.", "Improvement is conditional,", "never guaranteed."],
-            "The benchmark gate must confirm both mean MSE and q0.95 MSE.",
-        )
-
-    technical = (
-        (
-            ("REGIME", "ℛ = (F₀, γ, c, m, n)", "Family, rate, scale, mechanism, and sample size."),
-            ("INDUCED DISTRIBUTION", "F_ℛ = (1−γ)F₀ + γG_{m,c}(F₀)", "The regime determines the distribution used for sampling."),
-            ("FIXED TARGET", "θ(F) = μ_F = E_F[X]", "All estimators are judged against the same population mean."),
-        ),
-        (
-            ("TARGET", "θ(F) = μ_F = E_F[X]", "The estimand is fixed throughout the programme."),
-            ("CANDIDATE", "θ̂_w,n = Σⱼ₌₁ᴸ wⱼTⱼ,n", "Evolutionary search proposes an interpretable estimator recipe."),
-            ("CLAIM CONTROL", "mean MSE + q₀.₉₅ MSE gate", "Improvement on only one criterion is insufficient."),
-        ),
-        (
-            ("H1", "No universal estimator", "Do not expect one winner across incompatible regimes."),
-            ("H2 → H3", "regime dependence → selective opportunity", "Changing F can change the bias–variance trade-off."),
-            ("H4", "benchmark-gated acceptance", "Discovery signals must survive independent evidence."),
-        ),
-        (
-            ("COMPOSITE", "θ̂_w,n = Σⱼ₌₁ᴸ wⱼTⱼ,n", "A weighted recipe of named location estimators."),
-            ("SIMPLEX", "Δ_L = {w ∈ [0,1]ᴸ : Σwⱼ = 1}", "Non-negative proportions that sum to one."),
-            ("TARGET", "θ(F) = μ_F = E_F[X]", "Validity of weights is separate from evidence of lower risk."),
-        ),
-        (
-            ("MSE DECOMPOSITION", "MSE_F,n(θ̂_w,n) = B_n(w,F)² + V_n(w,F)", "Finite-sample risk splits into squared bias and variance."),
-            ("BIAS", "B_n(w,F) = Σwⱼ{E_F[Tⱼ,n] − μ_F}", "Robust components can buy stability at a bias cost."),
-            ("DOMINANCE", "B_n(w,F)² + V_n(w,F) < Var_F(X̄_n)", "Exact condition for lower MSE than the sample mean."),
-        ),
-    )[panel]
-
-    p += [
-        '<rect x="48" y="720" width="1150" height="140" rx="14" class="technical"/>',
-        _t(72, 752, "STATISTICAL SUPPORT — notation for the speaker", "kicker"),
-    ]
-    for i, (label, formula, note) in enumerate(technical):
-        x = 72 + i * 370
-        p += [
-            _t(x, 783, label, "techlabel"),
-            _t(x, 812, formula, "techtext"),
-            _t(x, 840, note, "technote"),
-        ]
-
-    css = '''body{margin:0;background:#081525;font-family:Arial,sans-serif}svg{width:100%;height:940px}.canvas{fill:#091a2e;stroke:#2d6d9c;stroke-width:1.5}.kicker{font-size:14px;font-weight:800;letter-spacing:1.5px;fill:#72cfff}.title{font-size:33px;font-weight:800;fill:#f5f9ff}.claim{font-size:20px;font-weight:700;fill:#dceaff}.body{font-size:17px;fill:#dce9f8}.small{font-size:14px;fill:#bdd0e2}.gold{font-size:16px;font-weight:800;fill:#f3c743}.head{font-size:18px;font-weight:800;fill:#f5f9ff}.card,.scene,.step,.hyp{fill:#0d2741;stroke:#397daa;stroke-width:1.4}.warn{fill:#382335;stroke:#ff825f;stroke-width:1.8}.hero,.rqactive{fill:#102d4b;stroke:#f3c743;stroke-width:1.8}.rail{fill:#0b2138;stroke:#4b84ad;stroke-width:1.3}.technical{fill:#0a1c31;stroke:#2d6d9c;stroke-width:1.3}.railtext{font-size:15px;fill:#dce9f8}.hypbody{font-size:15.5px;fill:#dce9f8}.hypsection{font-size:15px;font-weight:800;fill:#f5f9ff}.techlabel{font-size:12px;font-weight:800;letter-spacing:1px;fill:#72cfff}.techtext{font-family:Georgia,serif;font-size:15px;fill:#f3c743}.technote{font-size:12.5px;fill:#bdd0e2}.curve{stroke:#58aee8;stroke-width:4;fill:none}.curvewarn{stroke:#ff825f;stroke-width:4;fill:none}.target{stroke:#f3c743;stroke-width:3;stroke-dasharray:7 5}.mean{fill:#ff825f}.robust{fill:#63dfa2}.arrow,.bigarrow{stroke:#72cfff;stroke-width:3;fill:none}.bigarrow{stroke-width:5}.chain{font-size:27px;font-weight:800;fill:#f3c743}.weight{fill:#58aee8}.formula{font-family:Georgia,serif;font-size:25px;fill:#f3c743}.formula2{font-family:Georgia,serif;font-size:22px;fill:#eaf4ff}'''
-    return f'<html><style>{css}</style><svg viewBox="0 0 1600 940"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L9,4z" fill="#dceaff"/></marker></defs>{"".join(p)}</svg></html>'
+    return (_problem, _question, _hypotheses, _target_simplex, _why_win)[panel]()
