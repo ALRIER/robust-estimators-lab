@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after the didactic Layer 6 GA architecture redesign.
+# Runtime refresh: rebuild Streamlit Cloud after merging Layer 9 GA operator visuals into Layer 6.
 streamlit
 plotly
 pandas
