@@ -1,9 +1,9 @@
 """Layer 4 · Monte Carlo measurement, validation, and trust.
 
-This layer keeps the original thesis evidence and validation facts but presents them
-as a simple defense-time story: measure repeated-sampling risk, validate the world,
-show the four validation stages, then show the safeguards that separate search from
-scientific acceptance. It never reruns the thesis GA.
+Layer 2 now explains why known-truth simulation is needed. Layer 4 owns the full
+Monte Carlo sequence: the same five-step didactic flow that previously appeared in
+Layer 2, followed by the thesis-specific risk summaries, validation stages and trust
+safeguards. It never reruns the thesis GA.
 """
 
 import streamlit as st
@@ -49,6 +49,9 @@ def _css() -> str:
       .step-title{font-size:21px;font-weight:900;color:#fff;margin-bottom:5px}
       .step-copy{font-size:17px;line-height:1.46;color:#dce9f8}
       .arrow{text-align:center;font-size:31px;color:#72cfff;font-weight:900;line-height:1;margin:3px 0}
+      .connector{display:grid;grid-template-columns:1fr 72px 1fr;gap:14px;align-items:center;margin:19px 0}
+      .connector-box{background:#10253a;border:1px solid #356e99;border-radius:13px;padding:18px;text-align:center;min-height:122px;display:flex;flex-direction:column;justify-content:center}
+      .connector-box .ch{font-size:20px;font-weight:900;color:#fff;margin-bottom:6px}.connector-box .cc{font-size:15px;line-height:1.42;color:#dce9f8}.connector-arrow{text-align:center;font-size:32px;color:#72cfff;font-weight:900}
       .metricrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:17px 0 23px}
       .metric{background:#10253a;border:1px solid #356e99;border-radius:12px;padding:17px 12px;text-align:center}
       .metric .v{font-size:33px;font-weight:900;color:#f3c743;line-height:1.08}
@@ -64,7 +67,7 @@ def _css() -> str:
       .flowarrow{display:flex;align-items:center;justify-content:center;color:#72cfff;font-size:28px;font-weight:900}
       .guard{background:#0d2239;border:1px solid #356e99;border-radius:14px;padding:18px;min-height:185px;display:flex;flex-direction:column}
       .guard .gi{font-size:34px;margin-bottom:8px}.guard .gh{font-size:19px;font-weight:900;color:#fff;margin-bottom:7px}.guard .gc{font-size:15px;line-height:1.44;color:#dce9f8}.guard .why{margin-top:auto;padding-top:11px;border-top:1px solid #315879;font-size:13px;font-weight:900;letter-spacing:.06em;color:#72cfff}
-      @media(max-width:1050px){.two,.four,.metricrow{grid-template-columns:1fr 1fr}.card{grid-template-columns:78px 1fr}.flowarrow{display:none}}
+      @media(max-width:1050px){.two,.four,.metricrow{grid-template-columns:1fr 1fr}.card{grid-template-columns:78px 1fr}.flowarrow{display:none}.connector{grid-template-columns:1fr}.connector-arrow{transform:rotate(90deg)}}
     </style>
     """
 
@@ -73,21 +76,28 @@ def _measurement() -> str:
     return _css() + """
     <div class='page'>
       <div class='kicker'>04 · MONTE CARLO · MEASURE REPEATED RISK</div>
-      <div class='title'>One sample gives an estimate. Repeated samples reveal risk.</div>
-      <div class='subtitle'>Layer 3 showed one generated sample. Layer 4 repeats that experiment many times so estimator performance becomes measurable rather than anecdotal.</div>
+      <div class='title'>How Monte Carlo turns known truth into estimator evidence.</div>
+      <div class='subtitle'>This is now the single full explanation of the repeated-sampling engine. Layer 2 only establishes why known-truth simulation is needed.</div>
 
-      <div class='section'>THE MEASUREMENT ENGINE</div>
-      <div class='step'><div class='stepno'>1</div><div><div class='step-title'>Fix one regime ℛ</div><div class='step-copy'>Choose family, contamination settings and sample size. The statistical environment is now fixed.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>2</div><div><div class='step-title'>Compute the known target θ = E[X]</div><div class='step-copy'>The population mean comes from the generating distribution. The GA does not create or learn this target.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>3</div><div><div class='step-title'>Generate B independent samples</div><div class='step-copy'>Repeated samples from the same regime reveal sampling variability.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>4</div><div><div class='step-title'>Apply the full estimator bank to each sample</div><div class='step-copy'>Inside one replicate, every estimator receives the same sample path.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>5</div><div><div class='step-title'>Compute squared error</div><div class='step-copy'>For estimator Tⱼ in replicate r, error is measured against the same known θ.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>6</div><div><div class='step-title'>Aggregate the repeated errors</div><div class='step-copy'>Mean MSE describes average risk. q95 describes difficult upper-tail risk.</div></div></div>
+      <div class='section'>THE SAME FIVE STEPS, NOW IN THEIR FINAL HOME</div>
+      <div class='step'><div class='stepno'>1</div><div><div class='step-title'>Choose one regime</div><div class='step-copy'>Fix the family, contamination conditions and sample size.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>2</div><div><div class='step-title'>Generate one synthetic sample</div><div class='step-copy'>Draw observations from the chosen regime.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>3</div><div><div class='step-title'>Apply every estimator to the same sample</div><div class='step-copy'>This keeps the comparison fair inside that replicate.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>4</div><div><div class='step-title'>Compare every estimate with known θ</div><div class='step-copy'>Squared error measures how far each estimator is from the same population mean.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>5</div><div><div class='step-title'>Repeat many times</div><div class='step-copy'>Repeated errors become average risk and difficult-case risk.</div></div></div>
+
+      <div class='section'>WHAT LAYER 4 ADDS</div>
+      <div class='connector'>
+        <div class='connector-box'><div class='ch'>Repeated replicate losses</div><div class='cc'>For every estimator Tⱼ and replicate r, compare the estimate with the same known θ.</div></div>
+        <div class='connector-arrow'>→</div>
+        <div class='connector-box'><div class='ch'>Risk summaries</div><div class='cc'>Aggregate those repeated losses into mean MSE and q95.</div></div>
+      </div>
 
       <div class='formula-card'><div class='formula-label'>REPLICATE-LEVEL LOSS</div><div class='formula'>(Tⱼ(x⁽ʳ⁾) − θ)²</div><div class='formula-copy'>Every estimator is put on the same loss scale because every estimate is compared with the same known population mean.</div></div>
-      <div class='formula-card'><div class='formula-label'>MONTE CARLO SUMMARY</div><div class='formula'>MSE ≈ (1/B) Σᵣ (Tⱼ(x⁽ʳ⁾) − θ)² &nbsp;&nbsp; · &nbsp;&nbsp; q95 = Q₀.₉₅[(Tⱼ−θ)²]</div><div class='formula-copy'>MSE summarizes typical squared error. q95 summarizes the difficult-case end of the error distribution.</div></div>
+      <div class='formula-card'><div class='formula-label'>MONTE CARLO SUMMARY</div><div class='formula'>MSE ≈ (1/B) Σᵣ (Tⱼ(x⁽ʳ⁾) − θ)² &nbsp;&nbsp; · &nbsp;&nbsp; q95 = Q₀.₉₅[(Tⱼ−θ)²]</div><div class='formula-copy'>MSE summarizes average squared error. q95 summarizes the difficult upper-tail part of the error distribution.</div></div>
 
-      <div class='takeaway'>TAKE-HOME: one regime, one known target, many repeated samples. This is how Monte Carlo makes estimator risk measurable.</div>
+      <div class='story'><b>Important connection:</b> Step 3 gives every estimator the same sample path; Step 4 puts them on the same known-truth loss scale; Step 5 creates the repeated error distribution summarized by MSE and q95.</div>
+      <div class='takeaway'>TAKE-HOME: choose one regime → generate a sample → apply every estimator → compare with known θ → repeat → summarize risk.</div>
     </div>"""
 
 
@@ -184,6 +194,6 @@ def render_monte_carlo_layer() -> None:
     st.markdown('</div>', unsafe_allow_html=True)
 
     docs = (_measurement, _why_validate, _validation_stages, _fairness)
-    heights = (2050, 1500, 2300, 1650)
+    heights = (2150, 1500, 2300, 1650)
     view = st.session_state.monte_carlo_didactic_view
     components.html(docs[view](), height=heights[view], scrolling=False)
