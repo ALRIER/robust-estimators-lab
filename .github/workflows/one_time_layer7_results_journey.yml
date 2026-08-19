@@ -22,6 +22,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Correct patch target
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/patch_layer7_results_journey.py')
+          s = p.read_text(encoding='utf-8')
+          old = "results_start = text.index('if active_section == \"07 · Results journey\":\\n')"
+          new = "results_start = text.index('\\nif active_section == \"07 · Results journey\":\\n') + 1"
+          if old not in s:
+              raise SystemExit('Layer 7 patch target hotfix not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
+
       - name: Apply and verify Layer 7 patch
         shell: bash
         run: |
@@ -46,7 +59,7 @@ jobs:
         run: |
           git rm scripts/patch_layer7_results_journey.py
           git rm .github/workflows/one_time_layer7_results_journey.yml
-          rm -f layer7_patch_error.txt layer7_debug_streamlit.py
+          git rm -f layer7_patch_error.txt layer7_debug_streamlit.py 2>/dev/null || true
 
       - name: Commit Layer 7 implementation
         run: |
