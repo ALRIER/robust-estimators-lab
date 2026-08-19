@@ -1,12 +1,11 @@
-"""Single presentation router for the final defense pages.
+"""Single presentation router for the modular defense pages.
 
-This is the only compatibility router kept for the historical monolithic
-``streamlit_app.py``. It intercepts the first legacy render call for Layers 7–9
-and delegates to the current modular pages.
+The historical ``streamlit_app.py`` is still monolithic, so this is the one and only
+compatibility router. It now keeps Layer 2 and Layers 7–9 synchronized with their
+current modules. Target modules are reloaded from disk so Streamlit hot-reload cannot
+serve an old page implementation after a Git push.
 
-Important: the target page module is reloaded from disk on every routed render.
-That prevents Streamlit hot-reload from serving stale Python module objects after
-a Git push. No thesis evidence is recomputed here.
+No thesis evidence is recomputed here.
 """
 
 from __future__ import annotations
@@ -16,10 +15,11 @@ import importlib
 import streamlit as st
 import streamlit.components.v1 as components
 
+_LAYER2 = "02 · Data-generating world"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v2-disk-reload"
+_VERSION = "single-defense-runtime-v3-layer2-appendix"
 
 
 def _load_notes():
@@ -28,22 +28,28 @@ def _load_notes():
     return module.FINAL_PRESENTER_NOTES
 
 
-def _render_current(module_name: str, function_name: str) -> None:
-    """Reload the current page module from disk, then render it."""
+def _load_module(module_name: str):
     module = importlib.import_module(module_name)
-    module = importlib.reload(module)
+    return importlib.reload(module)
+
+
+def _render_current(module_name: str, function_name: str) -> None:
+    module = _load_module(module_name)
     getattr(module, function_name)()
 
 
 def _current_note_key(active: str) -> str | None:
+    if active == _LAYER2:
+        view = max(0, min(int(st.session_state.get("data_world_view", 0)), 2))
+        return ("data_world_why_simulation", "data_world_regime", "data_world_validity")[view]
     if active == _LAYER7:
         stage = max(0, min(int(st.session_state.get("results_stage", 0)), 4))
         return f"results_stage_{stage}"
     if active == _LAYER8:
         return "conclusions_contrib" if st.session_state.get("conclusion_view", "claims") == "contrib" else "conclusions_claims"
     if active == _LAYER9:
-        section = max(0, min(int(st.session_state.get("appendix_section", 0)), 5))
-        return f"appendix_{'ABCDEF'[section]}"
+        section = max(0, min(int(st.session_state.get("appendix_section", 0)), 3))
+        return f"appendix_{'ABCD'[section]}"
     return None
 
 
@@ -56,11 +62,11 @@ def _note_html(key: str) -> str:
       [data-testid="stAppViewContainer"]{{background:#071525!important}}
       .block-container{{max-width:1180px!important;padding:2.6rem 3.2rem!important}}
       .final-note{{font-family:Arial,sans-serif;color:#f4f8ff}}
-      .final-note h1{{font-size:2.2rem!important;color:#72cfff!important;margin-bottom:1.7rem!important}}
-      .final-note .box{{background:#0b2138;border:1px solid #356e99;border-left:5px solid #f3c743;border-radius:12px;padding:1.2rem 1.45rem;margin-bottom:1.2rem}}
-      .final-note h2{{font-size:1rem!important;letter-spacing:.1em;color:#f3c743!important;margin:0 0 .8rem!important}}
-      .final-note li{{font-size:1.35rem;line-height:1.48;margin:.7rem 0}}
-      .final-note .transition{{font-size:1.15rem;line-height:1.45;color:#c7d8e8}}
+      .final-note h1{{font-size:2.3rem!important;color:#72cfff!important;margin-bottom:1.7rem!important}}
+      .final-note .box{{background:#0b2138;border:1px solid #356e99;border-left:5px solid #f3c743;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.25rem}}
+      .final-note h2{{font-size:1rem!important;letter-spacing:.1em;color:#f3c743!important;margin:0 0 .85rem!important}}
+      .final-note li{{font-size:1.38rem;line-height:1.5;margin:.72rem 0}}
+      .final-note .transition{{font-size:1.18rem;line-height:1.48;color:#c7d8e8}}
     </style>
     <div class="final-note"><h1>{html.escape(title)}</h1>
       <div class="box"><h2>HELP</h2><ul>{lis}</ul></div>
@@ -70,7 +76,7 @@ def _note_html(key: str) -> str:
 
 
 def install_defense_runtime() -> None:
-    """Install the single audience/presenter router for Layers 7–9."""
+    """Install the single audience/presenter router for Layer 2 and Layers 7–9."""
     if getattr(st, "_single_defense_runtime_version", None) == _VERSION:
         return
     st._single_defense_runtime_version = _VERSION
@@ -89,15 +95,18 @@ def install_defense_runtime() -> None:
         text = str(body)
 
         # Keep the presenter window synchronized with the exact visible subview.
-        if active in (_LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
+        if active in (_LAYER2, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
             key = _current_note_key(active)
             if key:
-                text = text.replace("section=results", f"section={key}")
-                text = text.replace("section=conclusions", f"section={key}")
-                text = text.replace("section=technical", f"section={key}")
+                old_keys = (
+                    "data_world", "data_world_families", "data_world_certification",
+                    "results", "conclusions", "technical",
+                )
+                for old in old_keys:
+                    text = text.replace(f"section={old}", f"section={key}")
             return base_markdown(text, *args, **kwargs)
 
-        # First legacy call of Layer 7: replace the entire page and stop the old block.
+        # First legacy call of Layer 7: replace the old page and stop the old block.
         if active == _LAYER7 and "RESULTS JOURNEY — precomputed thesis evidence" in text:
             rendering = True
             try:
@@ -106,7 +115,7 @@ def install_defense_runtime() -> None:
                 rendering = False
             st.stop()
 
-        # First legacy call of Layer 9: replace all repeated historical blocks at once.
+        # First legacy call of Layer 9: replace all historical technical blocks at once.
         if active == _LAYER9 and (
             "THESIS RESULTS — precomputed research output" in text
             or "THESIS RESULTS — external evidence" in text
@@ -124,11 +133,22 @@ def install_defense_runtime() -> None:
         nonlocal rendering
         if rendering:
             return base_html(body, *args, **kwargs)
+
         active = st.session_state.get("defense_section")
         text = str(body)
 
-        # Layer 8 legacy entry point is the old defense_scene_svg(6). Reload the
-        # current Conclusions module from disk before every audience render.
+        # Layer 2: always replace the historical SVG with the current didactic view.
+        # This also replaces the old Experimental Grid scene used by view 0.
+        if active == _LAYER2:
+            module = _load_module("src.data_world")
+            view = max(0, min(int(st.session_state.get("data_world_view", 0)), 2))
+            heights = (1780, 2150, 1900)
+            current_html = module.data_world_detail_svg(view)
+            kwargs["height"] = heights[view]
+            kwargs["scrolling"] = False
+            return base_html(current_html, *args, **kwargs)
+
+        # Layer 8 legacy entry point is the old defense_scene_svg(6).
         if active == _LAYER8 and "WHAT DID WE LEARN?" in text and "No Free Lunch, made operational." in text:
             rendering = True
             try:
@@ -136,6 +156,7 @@ def install_defense_runtime() -> None:
             finally:
                 rendering = False
             st.stop()
+
         return base_html(body, *args, **kwargs)
 
     def warning(body, *args, **kwargs):
