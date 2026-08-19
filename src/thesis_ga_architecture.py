@@ -80,20 +80,37 @@ def thesis_ga_architecture_svg() -> str:
       .output-card{{display:flex;flex-direction:column;justify-content:center;text-align:center}}
       .output-card .formula{{font-size:34px}}
 
-      /* Section 2 */
-      .evo-track{{display:grid;grid-template-columns:1fr 52px 1fr 52px 1fr 52px 1fr 52px 1fr;align-items:start;gap:4px;margin:18px 0}}
-      .node-wrap{{text-align:center}}
-      .node{{width:140px;height:140px;border-radius:50%;margin:0 auto;background:#143552;border:3px solid #58aee8;display:flex;flex-direction:column;align-items:center;justify-content:center}}
-      .node .num{{font-size:31px;font-weight:900;color:#f3c743;line-height:1}}
-      .node .name{{font-size:14px;font-weight:900;color:#fff;margin-top:8px}}
-      .node-copy{{font-size:15px;line-height:1.42;color:#dce9f8;margin-top:12px;min-height:65px}}
-      .arrow{{font-size:40px;color:#dceaff;text-align:center;padding-top:45px}}
-      .mini-viz{{height:95px;margin-top:10px;display:flex;align-items:flex-end;justify-content:center;gap:8px}}
-      .bar{{width:16px;border-radius:3px;background:#58aee8}} .ghost{{width:22px;height:22px;border-radius:50%;background:#45627a}} .sel{{width:22px;height:22px;border-radius:50%;background:#54c786;border:2px solid #b7ffca}}
-      .parentA,.parentB,.child{{height:14px;border-radius:4px}} .parentA{{width:52px;background:#58aee8}} .parentB{{width:52px;background:#a777e3}} .child{{width:65px;background:#f3c743}}
-      .mutA{{width:16px;background:#5f7892;border-radius:3px}} .mutB{{width:16px;background:#63dfa2;border-radius:3px}}
-      .dotgold{{width:28px;height:28px;border-radius:50%;background:#f3c743}} .dotimm{{width:28px;height:28px;border-radius:50%;background:#72cfff;border:2px solid #e8f8ff}}
-      .loopline{{margin:24px auto 0;border-top:3px dashed #a777e3;max-width:930px;text-align:center;color:#c5aaf0;padding-top:13px;font-size:15px;font-weight:800}}
+      /* Section 2 · merged Layer 6 + Layer 9 visual language */
+      .evo-track{{display:grid;grid-template-columns:1fr 46px 1fr 46px 1fr 46px 1fr 46px 1fr;align-items:start;gap:7px;margin:18px 0 8px}}
+      .node-wrap{{text-align:center;min-width:0}}
+      .node{{width:176px;height:176px;border-radius:50%;margin:0 auto;background:radial-gradient(circle at 50% 36%,#183f61,#102b45 72%);border:3px solid #58aee8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:13px 12px;box-shadow:0 0 0 5px rgba(88,174,232,.05)}}
+      .node .topline{{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px}}
+      .node .num{{width:27px;height:27px;border-radius:50%;background:#0b2138;border:1px solid #72cfff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#f3c743}}
+      .node .icon{{font-size:31px;line-height:1}}
+      .node .name{{font-size:14px;font-weight:900;color:#fff;letter-spacing:.02em;margin:2px 0 7px}}
+      .node .micro-caption{{font-size:10.5px;line-height:1.25;color:#bcd0e2;margin-top:6px;min-height:26px;display:flex;align-items:center;justify-content:center}}
+      .node-copy{{font-size:15px;line-height:1.42;color:#dce9f8;margin:13px auto 0;min-height:67px;max-width:190px}}
+      .arrow{{font-size:38px;color:#72cfff;text-align:center;padding-top:65px;font-weight:900}}
+      .node-micro{{height:45px;display:flex;align-items:flex-end;justify-content:center;gap:5px;width:118px}}
+      .mbar{{width:13px;border-radius:3px 3px 2px 2px;background:#58aee8}}
+      .mdot{{width:16px;height:16px;border-radius:50%;background:#45627a}}
+      .mdot.selected{{background:#54c786;border:2px solid #b7ffca;width:19px;height:19px}}
+      .parents{{height:45px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:17px 22px;gap:3px 7px;align-items:center;width:108px}}
+      .pa,.pb,.kid{{height:11px;border-radius:4px}}
+      .pa{{background:#58aee8}} .pb{{background:#a777e3}} .kid{{background:#f3c743;grid-column:1/3;width:68px;justify-self:center}}
+      .mut-micro{{height:45px;display:grid;grid-template-columns:40px 20px 40px;align-items:end;justify-content:center;gap:4px}}
+      .mutset{{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:39px}}
+      .mutset span{{width:9px;border-radius:2px}}
+      .mutset.before span{{background:#5f7892}} .mutset.after span{{background:#63dfa2}}
+      .micro-arrow{{align-self:center;font-size:18px;color:#dceaff;margin-bottom:8px}}
+      .div-micro{{height:45px;display:flex;align-items:center;justify-content:center;gap:7px}}
+      .gold-dot{{width:20px;height:20px;border-radius:50%;background:#f3c743}}
+      .imm-dot{{width:20px;height:20px;border-radius:50%;background:#72cfff;border:2px solid #e8f8ff}}
+      .loopline{{margin:26px auto 2px;border-top:3px dashed #a777e3;max-width:1030px;text-align:center;color:#c5aaf0;padding-top:13px;font-size:15px;font-weight:800}}
+      .operator-strip{{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin:18px 0 2px}}
+      .operator-note{{background:#10253a;border:1px solid #356e99;border-radius:12px;padding:13px 12px;text-align:center}}
+      .operator-note b{{display:block;font-size:13px;color:#72cfff;margin-bottom:5px;letter-spacing:.05em}}
+      .operator-note span{{font-size:13px;line-height:1.35;color:#dce9f8}}
 
       /* Section 3 */
       .claim-flow{{max-width:690px;margin:0 auto;display:flex;flex-direction:column;align-items:center}}
@@ -115,7 +132,15 @@ def thesis_ga_architecture_svg() -> str:
       .configlab{{font-size:12px;font-weight:900;letter-spacing:.09em;color:#72cfff}}
       .configval{{font-size:21px;font-weight:900;color:#fff;margin:7px 0}}
       .configcopy{{font-size:14px;line-height:1.42;color:#b9ccdf}}
-      @media(max-width:1050px){{.three,.two,.config-grid{{grid-template-columns:1fr 1fr}}.matrix-wrap{{grid-template-columns:1fr}}.times,.big-arrow{{transform:rotate(90deg)}}.evo-track{{grid-template-columns:1fr}}.arrow{{padding:0;transform:rotate(90deg)}}.claim-band{{grid-template-columns:1fr}}}}
+      @media(max-width:1050px){{
+        .three,.two,.config-grid{{grid-template-columns:1fr 1fr}}
+        .matrix-wrap{{grid-template-columns:1fr}}
+        .times,.big-arrow{{transform:rotate(90deg)}}
+        .evo-track{{grid-template-columns:1fr}}
+        .arrow{{padding:0;transform:rotate(90deg)}}
+        .operator-strip{{grid-template-columns:1fr 1fr}}
+        .claim-band{{grid-template-columns:1fr}}
+      }}
     </style>
     <div class='page'>
       <div class='kicker'>06 · THESIS GA ARCHITECTURE</div>
@@ -147,27 +172,74 @@ def thesis_ga_architecture_svg() -> str:
       <div class='section'>
         <div class='kicker'>2 · SIMPLEX-SAFE EVOLUTION LOOP</div>
         <div class='section-title'>Then the GA evolves valid weight vectors across generations and folds.</div>
-        <div class='section-sub'>The original loop is preserved, but each operator now has one simple job: create valid candidates, prefer promising ones, combine them, explore nearby recipes, and protect diversity.</div>
+        <div class='section-sub'>This panel now combines the clean five-stage Layer 6 loop with the more intuitive operator graphics used in the technical appendix. The pictures show what each operator does while the circles preserve the overall evolutionary sequence.</div>
         <div class='visual'>
           <div class='evo-track'>
-            <div class='node-wrap'><div class='node'><div class='num'>1</div><div class='name'>DIRICHLET INIT</div></div><div class='node-copy'>Start with valid simplex proportions.</div><div class='mini-viz'><span class='bar' style='height:45px'></span><span class='bar' style='height:24px'></span><span class='bar' style='height:70px'></span><span class='bar' style='height:37px'></span></div></div>
+            <div class='node-wrap'>
+              <div class='node'>
+                <div class='topline'><span class='num'>1</span><span class='icon'>🎲</span></div>
+                <div class='name'>DIRICHLET INIT</div>
+                <div class='node-micro'><span class='mbar' style='height:22px'></span><span class='mbar' style='height:38px'></span><span class='mbar' style='height:29px'></span><span class='mbar' style='height:43px'></span></div>
+                <div class='micro-caption'>valid simplex weights</div>
+              </div>
+              <div class='node-copy'>Generate valid non-negative proportions that already sum to one.</div>
+            </div>
             <div class='arrow'>→</div>
-            <div class='node-wrap'><div class='node'><div class='num'>2</div><div class='name'>SELECTION</div></div><div class='node-copy'>Tournament 2 / 3 gives better candidates more chances to reproduce.</div><div class='mini-viz'><span class='ghost'></span><span class='sel'></span><span class='ghost'></span><span class='sel'></span></div></div>
+            <div class='node-wrap'>
+              <div class='node'>
+                <div class='topline'><span class='num'>2</span><span class='icon'>🏁</span></div>
+                <div class='name'>SELECTION</div>
+                <div class='node-micro' style='align-items:center'><span class='mdot'></span><span class='mdot selected'></span><span class='mdot'></span><span class='mdot selected'></span></div>
+                <div class='micro-caption'>better candidates reproduce more</div>
+              </div>
+              <div class='node-copy'>Tournament 2 / 3 gives stronger candidates more chances to become parents.</div>
+            </div>
             <div class='arrow'>→</div>
-            <div class='node-wrap'><div class='node'><div class='num'>3</div><div class='name'>CROSSOVER</div></div><div class='node-copy'>Convex blending combines promising parent recipes.</div><div class='mini-viz' style='flex-wrap:wrap'><span class='parentA'></span><span class='parentB'></span><span class='child'></span></div></div>
+            <div class='node-wrap'>
+              <div class='node'>
+                <div class='topline'><span class='num'>3</span><span class='icon'>🔀</span></div>
+                <div class='name'>CROSSOVER</div>
+                <div class='parents'><span class='pa'></span><span class='pb'></span><span class='kid'></span></div>
+                <div class='micro-caption'>parents → convex child</div>
+              </div>
+              <div class='node-copy'>Blend promising parent recipes while keeping the child inside the simplex.</div>
+            </div>
             <div class='arrow'>→</div>
-            <div class='node-wrap'><div class='node'><div class='num'>4</div><div class='name'>MUTATION</div></div><div class='node-copy'>A Dirichlet nudge explores a nearby simplex direction.</div><div class='mini-viz'><span class='mutA' style='height:35px'></span><span class='mutA' style='height:58px'></span><span class='mutA' style='height:29px'></span><span style='font-size:26px;color:#dceaff'>→</span><span class='mutB' style='height:49px'></span><span class='mutB' style='height:37px'></span><span class='mutB' style='height:65px'></span></div></div>
+            <div class='node-wrap'>
+              <div class='node'>
+                <div class='topline'><span class='num'>4</span><span class='icon'>🧬</span></div>
+                <div class='name'>MUTATION</div>
+                <div class='mut-micro'><div class='mutset before'><span style='height:20px'></span><span style='height:34px'></span><span style='height:15px'></span></div><div class='micro-arrow'>→</div><div class='mutset after'><span style='height:28px'></span><span style='height:23px'></span><span style='height:37px'></span></div></div>
+                <div class='micro-caption'>small Dirichlet nudge</div>
+              </div>
+              <div class='node-copy'>Explore a nearby recipe without turning the candidate into an unconstrained vector.</div>
+            </div>
             <div class='arrow'>→</div>
-            <div class='node-wrap'><div class='node'><div class='num'>5</div><div class='name'>DIVERSITY</div></div><div class='node-copy'>Elitism keeps strong candidates; immigration adds fresh ones.</div><div class='mini-viz'><span class='dotgold'></span><span class='dotgold'></span><span class='dotimm'></span></div></div>
+            <div class='node-wrap'>
+              <div class='node'>
+                <div class='topline'><span class='num'>5</span><span class='icon'>⭐🌱</span></div>
+                <div class='name'>DIVERSITY</div>
+                <div class='div-micro'><span class='gold-dot'></span><span class='gold-dot'></span><span class='imm-dot'></span></div>
+                <div class='micro-caption'>elitism + immigration</div>
+              </div>
+              <div class='node-copy'>Keep strong candidates and inject fresh ones so the population does not collapse too early.</div>
+            </div>
           </div>
           <div class='loopline'>repeat across generations / folds ↺</div>
+          <div class='operator-strip'>
+            <div class='operator-note'><b>START VALID</b><span>Dirichlet creates legal simplex recipes.</span></div>
+            <div class='operator-note'><b>PREFER SIGNAL</b><span>Selection gives stronger candidates more reproductive chances.</span></div>
+            <div class='operator-note'><b>RECOMBINE</b><span>Crossover blends useful parent structure.</span></div>
+            <div class='operator-note'><b>EXPLORE LOCALLY</b><span>Mutation nudges weights toward a fresh direction.</span></div>
+            <div class='operator-note'><b>PROTECT DIVERSITY</b><span>Elitism preserves; immigration refreshes.</span></div>
+          </div>
         </div>
         <div class='three'>
-          <div class='support'><div class='lab'>WHY DIRICHLET?</div><div class='head'>Valid mixtures from the start</div><div class='copy'>Candidates begin inside the simplex, so weights remain interpretable proportions rather than unconstrained coefficients.</div></div>
-          <div class='support'><div class='lab'>WHY MUTATION + IMMIGRATION?</div><div class='head'>Search without collapsing too early</div><div class='copy'>Mutation explores nearby recipes while immigration injects fresh candidates. The purpose is diversity, not evidence generation.</div></div>
-          <div class='support'><div class='lab'>WHAT DOES NOT CHANGE?</div><div class='head'>The target and the evidence matrix</div><div class='copy'>Evolution changes w. It does not change the known target θ or the Monte Carlo outputs already stored in C.</div></div>
+          <div class='support'><div class='lab'>WHY SIMPLEX-SAFE?</div><div class='head'>Interpretability survives evolution</div><div class='copy'>Every candidate remains a convex mixture of named estimators. The loop explores recipes without turning the problem into an unconstrained black-box search.</div></div>
+          <div class='support'><div class='lab'>WHY MUTATION + IMMIGRATION?</div><div class='head'>Search without collapsing too early</div><div class='copy'>Mutation explores nearby recipes while immigration injects fresh candidates. These operators protect exploration; they do not create scientific evidence.</div></div>
+          <div class='support'><div class='lab'>WHAT DOES NOT CHANGE?</div><div class='head'>The target and evidence matrix</div><div class='copy'>Evolution changes w. It does not change the known target θ or the Monte Carlo outputs already stored in C.</div></div>
         </div>
-        <div class='take'>READ IT THIS WAY: valid candidates → selective reproduction → controlled variation → preserved diversity → repeat.</div>
+        <div class='take'>READ IT THIS WAY: start with valid recipes → prefer stronger ones → combine → nudge → preserve diversity → repeat.</div>
       </div>
 
       <div class='section'>
