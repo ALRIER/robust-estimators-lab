@@ -5,7 +5,8 @@ Three didactic views used in the timed defense:
 2) how one regime is built,
 3) why the simulator is trustworthy.
 
-The content is explanatory only. It does not run the GA or recompute thesis evidence.
+The full repeated-sampling Monte Carlo engine now lives in Layer 4. Layer 2 only
+establishes why known-truth simulation is needed and hands the story forward.
 """
 
 DATA_WORLD_VIEWS = (
@@ -40,11 +41,9 @@ def _css() -> str:
       .formula-label{font-size:13px;font-weight:900;letter-spacing:.11em;color:#72cfff;margin-bottom:7px}
       .formula{font-family:Georgia,serif;font-size:31px;font-weight:800;line-height:1.35;color:#f7d768;margin-bottom:9px}
       .formula-copy{font-size:17px;line-height:1.48;color:#dce9f8}
-      .step{display:grid;grid-template-columns:66px 1fr;gap:17px;align-items:start;background:#0d2239;border:1px solid #356e99;border-radius:13px;padding:18px 19px;margin:10px 0}
-      .stepno{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#173a59;border:1px solid #72cfff;color:#72cfff;font-size:21px;font-weight:900}
-      .step-title{font-size:21px;font-weight:900;color:#fff;margin-bottom:5px}
-      .step-copy{font-size:17px;line-height:1.46;color:#dce9f8}
-      .arrow{text-align:center;font-size:31px;color:#72cfff;font-weight:900;line-height:1;margin:3px 0}
+      .bridge{display:grid;grid-template-columns:1fr 65px 1fr 65px 1fr;gap:10px;align-items:center;margin:18px 0}
+      .bridge-box{background:#10253a;border:1px solid #356e99;border-radius:13px;padding:20px 16px;text-align:center;min-height:145px;display:flex;flex-direction:column;justify-content:center}
+      .bridge-icon{font-size:34px;margin-bottom:8px}.bridge-title{font-size:20px;font-weight:900;color:#fff;margin-bottom:6px}.bridge-copy{font-size:15px;line-height:1.42;color:#bfd0e2}.bridge-arrow{text-align:center;font-size:30px;color:#72cfff;font-weight:900}
       .builder{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;align-items:stretch;margin:17px 0}
       .builder-box{background:#10253a;border:1px solid #356e99;border-radius:12px;padding:15px 10px;text-align:center;min-height:116px;display:flex;flex-direction:column;justify-content:center}
       .builder-box b{font-size:23px;color:#fff;margin-bottom:6px}.builder-box span{font-size:14px;color:#bfd0e2;line-height:1.36}
@@ -63,7 +62,7 @@ def _css() -> str:
       .check-title{font-size:23px;font-weight:900;color:#fff;margin-bottom:6px}
       .check-copy{font-size:16px;line-height:1.46;color:#dce9f8}
       .check-why{font-size:15px;line-height:1.42;color:#b9c8d9;margin-top:7px}
-      @media(max-width:1050px){.two,.three,.metricrow,.builder,.family-grid{grid-template-columns:1fr 1fr}.card{grid-template-columns:78px 1fr}}
+      @media(max-width:1050px){.two,.three,.metricrow,.builder,.family-grid{grid-template-columns:1fr 1fr}.bridge{grid-template-columns:1fr}.bridge-arrow{transform:rotate(90deg)}.card{grid-template-columns:78px 1fr}}
     </style>
     """
 
@@ -85,14 +84,16 @@ def _why_simulation() -> str:
       <div class='section'>THE FIXED TARGET</div>
       <div class='formula-card'><div class='formula-label'>POPULATION-MEAN ESTIMAND</div><div class='formula'>θ(F) = μ<sub>F</sub> = E<sub>F</sub>[X]</div><div class='formula-copy'>The type of target stays the same throughout the thesis: the population mean. What changes is the data-generating regime around that target.</div></div>
 
-      <div class='section'>HOW MONTE CARLO TURNS TRUTH INTO EVIDENCE</div>
-      <div class='step'><div class='stepno'>1</div><div><div class='step-title'>Choose one regime</div><div class='step-copy'>Fix the family, contamination conditions and sample size.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>2</div><div><div class='step-title'>Generate one synthetic sample</div><div class='step-copy'>Draw observations from the chosen regime.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>3</div><div><div class='step-title'>Apply every estimator to the same sample</div><div class='step-copy'>This keeps the comparison fair inside that replicate.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>4</div><div><div class='step-title'>Compare every estimate with known θ</div><div class='step-copy'>Squared error measures how far each estimator is from the same population mean.</div></div></div><div class='arrow'>↓</div>
-      <div class='step'><div class='stepno'>5</div><div><div class='step-title'>Repeat many times</div><div class='step-copy'>Repeated errors become average risk and difficult-case risk in the Monte Carlo layer.</div></div></div>
+      <div class='section'>FROM KNOWN TRUTH TO MEASURABLE RISK</div>
+      <div class='bridge'>
+        <div class='bridge-box'><div class='bridge-icon'>🎯</div><div class='bridge-title'>Known truth</div><div class='bridge-copy'>Simulation defines θ before scoring.</div></div>
+        <div class='bridge-arrow'>→</div>
+        <div class='bridge-box'><div class='bridge-icon'>🔁</div><div class='bridge-title'>Repeated samples</div><div class='bridge-copy'>Layer 4 repeats sampling from the same regime.</div></div>
+        <div class='bridge-arrow'>→</div>
+        <div class='bridge-box'><div class='bridge-icon'>📊</div><div class='bridge-title'>Measurable risk</div><div class='bridge-copy'>Repeated errors become MSE and q95.</div></div>
+      </div>
 
-      <div class='takeaway'>TAKE-HOME: simulation gives known truth; repeated sampling turns that truth into a fair comparison of estimator risk.</div>
+      <div class='takeaway'>TAKE-HOME: Layer 2 explains why known-truth simulation is needed. Layer 4 shows exactly how repeated sampling turns that truth into evidence.</div>
     </div>"""
 
 
