@@ -1,4 +1,4 @@
-# Runtime refresh: force a clean Streamlit Cloud rebuild after consolidating Layers 7-9.
+# Runtime refresh: clean Streamlit Cloud rebuild after final disk-reload router.
 streamlit
 plotly
 pandas
