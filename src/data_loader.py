@@ -10,6 +10,7 @@ from src.layer7_force_renderer import install_force_layer7_renderer
 from src.layer7_readability import install_layer7_readability
 from src.layer7_clean_renderer import install_layer7_clean_renderer
 from src.layer89_pages_runtime import install_layer89_pages
+from src.layer89_authoritative import install_layer89_authoritative
 
 install_layer7_runtime_hooks()
 install_layer7_stage_navigation()
@@ -18,8 +19,10 @@ install_force_layer7_renderer()
 install_layer7_readability()
 # Install this last for Layer 7. It unwraps stale Plotly closures left by hot reload.
 install_layer7_clean_renderer()
-# Layer 8/9 final defense pages are rendered after the sidebar and stop the legacy blocks.
+# Keep the presenter-note helper, then install an authoritative Layer 8/9 override
+# that intercepts the exact legacy page entry points in streamlit_app.py.
 install_layer89_pages()
+install_layer89_authoritative()
 
 ROOT = Path(__file__).resolve().parents[1]
 
