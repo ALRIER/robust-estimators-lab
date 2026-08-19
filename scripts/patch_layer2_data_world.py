@@ -142,6 +142,7 @@ new_research_return = '''        return keys[int(st.session_state.get("research_
 replace_once(old_research_return, new_research_return, "Layer 2 presenter key resolver")
 
 monte_marker = '''if active_section == "04 · Monte Carlo engine":
+    st.markdown("""<style>
 '''
 layer2_block = '''if active_section == "02 · Data-generating world":
     st.markdown("""<style>
@@ -172,7 +173,7 @@ layer2_block = '''if active_section == "02 · Data-generating world":
 
 '''
 if text.count(monte_marker) != 1:
-    raise RuntimeError(f"Monte Carlo marker count is {text.count(monte_marker)}")
+    raise RuntimeError(f"Monte Carlo render marker count is {text.count(monte_marker)}")
 text = text.replace(monte_marker, layer2_block + monte_marker, 1)
 
 old_scene_map = '''DEFENSE_SCENE_SECTION = {
