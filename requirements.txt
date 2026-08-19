@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after consolidating the canonical Monte Carlo flow into Layer 4.
+# Runtime refresh: rebuild Streamlit Cloud after the didactic Layer 6 GA architecture redesign.
 streamlit
 plotly
 pandas
