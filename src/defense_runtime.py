@@ -22,7 +22,7 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v5-layer4-validation"
+_VERSION = "single-defense-runtime-v6-monte-carlo-consolidation"
 
 
 def _load_notes():
@@ -30,10 +30,13 @@ def _load_notes():
     final_module = importlib.reload(final_module)
     research_module = importlib.import_module("src.research_presenter_notes")
     research_module = importlib.reload(research_module)
+    data_module = importlib.import_module("src.data_world_presenter_notes")
+    data_module = importlib.reload(data_module)
     monte_module = importlib.import_module("src.monte_carlo_presenter_notes")
     monte_module = importlib.reload(monte_module)
     notes = dict(final_module.FINAL_PRESENTER_NOTES)
     notes.update(research_module.RESEARCH_PRESENTER_NOTES)
+    notes.update(data_module.DATA_WORLD_PRESENTER_NOTES)
     notes.update(monte_module.MONTE_CARLO_PRESENTER_NOTES)
     return notes
 
@@ -131,6 +134,7 @@ def install_defense_runtime() -> None:
         direct_note_keys = {
             "research_problem", "research_objective", "research_hypotheses",
             "research_target", "research_why_win",
+            "data_world_why_simulation", "data_world_regime", "data_world_validity",
             "monte_carlo_measurement", "monte_carlo_why_validate",
             "monte_carlo_validation_stages", "monte_carlo_fairness",
         }
@@ -206,7 +210,7 @@ def install_defense_runtime() -> None:
         if active == _LAYER2:
             module = _load_module("src.data_world")
             view = max(0, min(int(st.session_state.get("data_world_view", 0)), 2))
-            heights = (1780, 2150, 1900)
+            heights = (1250, 2150, 1900)
             current_html = module.data_world_detail_svg(view)
             kwargs["height"] = heights[view]
             kwargs["scrolling"] = False
