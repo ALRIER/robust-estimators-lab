@@ -2,23 +2,24 @@ from functools import lru_cache
 from pathlib import Path
 import pandas as pd
 
-# Layer 7 is presentation-only: install its visual/help hooks as soon as this
-# already-imported dashboard module loads. The hooks never recompute evidence.
+# Presentation-only hooks: these never rerun or alter thesis evidence.
 from src.layer7_runtime import install_layer7_runtime_hooks
 from src.layer7_stage_nav import install_layer7_stage_navigation
 from src.layer7_force_visuals import install_layer7_force_visuals
 from src.layer7_force_renderer import install_force_layer7_renderer
 from src.layer7_readability import install_layer7_readability
 from src.layer7_clean_renderer import install_layer7_clean_renderer
+from src.layer89_pages import install_layer89_pages
 
 install_layer7_runtime_hooks()
 install_layer7_stage_navigation()
 install_layer7_force_visuals()
 install_force_layer7_renderer()
 install_layer7_readability()
-# Install this last. It unwraps any stale Layer 7 Plotly closures left by
-# Streamlit hot-reload and draws directly through the polished renderer.
+# Install this last for Layer 7. It unwraps stale Plotly closures left by hot reload.
 install_layer7_clean_renderer()
+# Layer 8/9 final defense pages are rendered after the sidebar and stop the legacy blocks.
+install_layer89_pages()
 
 ROOT = Path(__file__).resolve().parents[1]
 
