@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# One-time repository consolidation. The workflow deletes this script after success.
 APP = Path("streamlit_app.py")
 text = APP.read_text(encoding="utf-8")
 
