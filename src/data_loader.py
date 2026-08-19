@@ -2,6 +2,12 @@ from functools import lru_cache
 from pathlib import Path
 import pandas as pd
 
+# Single presentation bootstrap for Layers 7–9. This replaces the former stack of
+# force/runtime/clean wrappers and is the only audience-page hook in the repo.
+from src.defense_runtime import install_defense_runtime
+
+install_defense_runtime()
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
