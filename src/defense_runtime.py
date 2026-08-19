@@ -1,9 +1,10 @@
 """Single presentation router for the modular defense pages.
 
 The historical ``streamlit_app.py`` is still monolithic, so this is the one and only
-compatibility router. It keeps Layers 1–2 and Layers 7–9 synchronized with their
-current modular pages and presenter notes. Target modules are reloaded from disk so
-Streamlit hot-reload cannot serve an old page implementation after a Git push.
+compatibility router. It keeps Layers 1–2, Layer 4, and Layers 7–9 synchronized with
+their current modular pages and presenter notes. Target modules are reloaded from
+disk so Streamlit hot-reload cannot serve an old page implementation after a Git
+push.
 
 No thesis evidence is recomputed here.
 """
@@ -17,10 +18,11 @@ import streamlit.components.v1 as components
 
 _LAYER1 = "01 · Research logic"
 _LAYER2 = "02 · Data-generating world"
+_LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v4-layer1-didactic"
+_VERSION = "single-defense-runtime-v5-layer4-validation"
 
 
 def _load_notes():
@@ -28,8 +30,11 @@ def _load_notes():
     final_module = importlib.reload(final_module)
     research_module = importlib.import_module("src.research_presenter_notes")
     research_module = importlib.reload(research_module)
+    monte_module = importlib.import_module("src.monte_carlo_presenter_notes")
+    monte_module = importlib.reload(monte_module)
     notes = dict(final_module.FINAL_PRESENTER_NOTES)
     notes.update(research_module.RESEARCH_PRESENTER_NOTES)
+    notes.update(monte_module.MONTE_CARLO_PRESENTER_NOTES)
     return notes
 
 
@@ -56,6 +61,14 @@ def _current_note_key(active: str) -> str | None:
     if active == _LAYER2:
         view = max(0, min(int(st.session_state.get("data_world_view", 0)), 2))
         return ("data_world_why_simulation", "data_world_regime", "data_world_validity")[view]
+    if active == _LAYER4:
+        view = max(0, min(int(st.session_state.get("monte_carlo_didactic_view", 0)), 3))
+        return (
+            "monte_carlo_measurement",
+            "monte_carlo_why_validate",
+            "monte_carlo_validation_stages",
+            "monte_carlo_fairness",
+        )[view]
     if active == _LAYER7:
         stage = max(0, min(int(st.session_state.get("results_stage", 0)), 4))
         return f"results_stage_{stage}"
@@ -108,31 +121,45 @@ def install_defense_runtime() -> None:
         active = st.session_state.get("defense_section")
         text = str(body)
 
-        # In the separate presenter window, replace the old monolithic Layer-1
-        # cue card with the current simplified note before it is displayed.
+        # In the separate presenter window, replace historical monolithic cue
+        # cards with the current simplified notes before they are displayed.
         try:
             presenter = str(st.query_params.get("presenter_notes", "")) == "1"
             presenter_key = str(st.query_params.get("section", ""))
         except Exception:
             presenter, presenter_key = False, ""
-        research_keys = {
+        direct_note_keys = {
             "research_problem", "research_objective", "research_hypotheses",
             "research_target", "research_why_win",
+            "monte_carlo_measurement", "monte_carlo_why_validate",
+            "monte_carlo_validation_stages", "monte_carlo_fairness",
         }
-        if presenter and presenter_key in research_keys and "presenter-heading" in text:
+        if presenter and presenter_key in direct_note_keys and "presenter-heading" in text:
             return base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
 
         # Keep the presenter window synchronized with the exact visible subview.
-        if active in (_LAYER1, _LAYER2, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
+        if active in (_LAYER1, _LAYER2, _LAYER4, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
             key = _current_note_key(active)
             if key:
                 old_keys = (
                     "data_world", "data_world_families", "data_world_certification",
-                    "results", "conclusions", "technical",
+                    "monte_carlo_engine", "monte_carlo_validation_0",
+                    "monte_carlo_validation_1", "monte_carlo_validation_2",
+                    "monte_carlo_validation_3", "results", "conclusions", "technical",
                 )
                 for old in old_keys:
                     text = text.replace(f"section={old}", f"section={key}")
             return base_markdown(text, *args, **kwargs)
+
+        # First legacy call of Layer 4: replace the old engine/validation tabs
+        # with the current didactic measurement-and-trust page.
+        if active == _LAYER4 and "monte-carlo-tabs" in text:
+            rendering = True
+            try:
+                _render_current("src.monte_carlo_layer", "render_monte_carlo_layer")
+            finally:
+                rendering = False
+            st.stop()
 
         # First legacy call of Layer 7: replace the old page and stop the old block.
         if active == _LAYER7 and "RESULTS JOURNEY — precomputed thesis evidence" in text:
