@@ -1,32 +1,38 @@
 """Single presentation router for the final defense pages.
 
-The historical streamlit_app.py still contains legacy Layer 7-9 blocks. Rather than
-stacking multiple monkey patches, this module installs exactly one routing layer that
-intercepts the first legacy render call and delegates to the current page modules:
+This is the only compatibility router kept for the historical monolithic
+``streamlit_app.py``. It intercepts the first legacy render call for Layers 7–9
+and delegates to the current modular pages.
 
-- src.results_page.render_results_journey
-- src.conclusions.render_conclusions
-- src.technical_appendix.render_technical_appendix
-
-No thesis evidence is recomputed. This module exists only until streamlit_app.py is
-fully modularised; it is intentionally the only presentation hook in the repository.
+Important: the target page module is reloaded from disk on every routed render.
+That prevents Streamlit hot-reload from serving stale Python module objects after
+a Git push. No thesis evidence is recomputed here.
 """
 
 from __future__ import annotations
 
 import html
+import importlib
 import streamlit as st
 import streamlit.components.v1 as components
-
-from src.results_page import render_results_journey
-from src.conclusions import render_conclusions
-from src.technical_appendix import render_technical_appendix
-from src.final_presenter_notes import FINAL_PRESENTER_NOTES
 
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v1"
+_VERSION = "single-defense-runtime-v2-disk-reload"
+
+
+def _load_notes():
+    module = importlib.import_module("src.final_presenter_notes")
+    module = importlib.reload(module)
+    return module.FINAL_PRESENTER_NOTES
+
+
+def _render_current(module_name: str, function_name: str) -> None:
+    """Reload the current page module from disk, then render it."""
+    module = importlib.import_module(module_name)
+    module = importlib.reload(module)
+    getattr(module, function_name)()
 
 
 def _current_note_key(active: str) -> str | None:
@@ -42,7 +48,8 @@ def _current_note_key(active: str) -> str | None:
 
 
 def _note_html(key: str) -> str:
-    title, _source, bullets, transition = FINAL_PRESENTER_NOTES[key]
+    notes = _load_notes()
+    title, _source, bullets, transition = notes[key]
     lis = "".join(f"<li>{html.escape(str(item))}</li>" for item in bullets)
     return f"""
     <style>
@@ -63,7 +70,7 @@ def _note_html(key: str) -> str:
 
 
 def install_defense_runtime() -> None:
-    """Install one and only one audience/presenter router for Layers 7-9."""
+    """Install the single audience/presenter router for Layers 7–9."""
     if getattr(st, "_single_defense_runtime_version", None) == _VERSION:
         return
     st._single_defense_runtime_version = _VERSION
@@ -94,7 +101,7 @@ def install_defense_runtime() -> None:
         if active == _LAYER7 and "RESULTS JOURNEY — precomputed thesis evidence" in text:
             rendering = True
             try:
-                render_results_journey()
+                _render_current("src.results_page", "render_results_journey")
             finally:
                 rendering = False
             st.stop()
@@ -106,7 +113,7 @@ def install_defense_runtime() -> None:
         ):
             rendering = True
             try:
-                render_technical_appendix()
+                _render_current("src.technical_appendix", "render_technical_appendix")
             finally:
                 rendering = False
             st.stop()
@@ -119,11 +126,13 @@ def install_defense_runtime() -> None:
             return base_html(body, *args, **kwargs)
         active = st.session_state.get("defense_section")
         text = str(body)
-        # Layer 8 legacy entry point is the old defense_scene_svg(6).
+
+        # Layer 8 legacy entry point is the old defense_scene_svg(6). Reload the
+        # current Conclusions module from disk before every audience render.
         if active == _LAYER8 and "WHAT DID WE LEARN?" in text and "No Free Lunch, made operational." in text:
             rendering = True
             try:
-                render_conclusions()
+                _render_current("src.conclusions", "render_conclusions")
             finally:
                 rendering = False
             st.stop()
@@ -135,7 +144,8 @@ def install_defense_runtime() -> None:
             key = str(st.query_params.get("section", ""))
         except Exception:
             presenter, key = False, ""
-        if presenter and key in FINAL_PRESENTER_NOTES and "No hay notas configuradas" in str(body):
+        notes = _load_notes() if presenter else {}
+        if presenter and key in notes and "No hay notas configuradas" in str(body):
             return base_markdown(_note_html(key), unsafe_allow_html=True)
         return base_warning(body, *args, **kwargs)
 
