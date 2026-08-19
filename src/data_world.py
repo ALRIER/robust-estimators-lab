@@ -1,131 +1,167 @@
-"""Additional presentation views for Layer 2: Data-generating world."""
+"""Layer 2 · Data-generating world.
+
+Three didactic views used in the timed defense:
+1) why simulation is needed,
+2) how one regime is built,
+3) why the simulator is trustworthy.
+
+The content is explanatory only. It does not run the GA or recompute thesis evidence.
+"""
 
 DATA_WORLD_VIEWS = (
-    "Experimental Grid",
-    "Six Families",
-    "Simulator Certification",
+    "Why simulation?",
+    "Build a regime",
+    "Trust the simulator",
 )
 
 
-def _t(x, y, value, cls="body", anchor="start"):
-    return f'<text x="{x}" y="{y}" text-anchor="{anchor}" class="{cls}">{value}</text>'
+def _css() -> str:
+    return """
+    <style>
+      *{box-sizing:border-box}
+      body{margin:0;background:#081525;color:#e9f4ff;font-family:Arial,sans-serif}
+      .page{padding:28px 32px 36px;background:#081525}
+      .kicker{font-size:14px;font-weight:900;letter-spacing:.13em;color:#72cfff;margin-bottom:9px}
+      .title{font-size:38px;line-height:1.14;font-weight:900;color:#fff;margin-bottom:10px}
+      .subtitle{font-size:19px;line-height:1.5;color:#bfd0e2;margin-bottom:25px;max-width:1280px}
+      .section{font-size:21px;font-weight:900;color:#f3c743;letter-spacing:.05em;margin:30px 0 14px}
+      .story{background:#0f2b47;border:1px solid #3c7198;border-left:7px solid #72cfff;border-radius:14px;padding:19px 21px;margin:17px 0;font-size:18px;line-height:1.5;color:#eef6ff}
+      .takeaway{background:#12354a;border:1px solid #58aee8;border-left:7px solid #f3c743;border-radius:14px;padding:21px 23px;margin:24px 0 4px;font-size:20px;line-height:1.45;font-weight:850;color:#fff}
+      .warn{background:#342b12;border:1px solid #f3c743;border-left:7px solid #f3c743;color:#fff2b8;border-radius:14px;padding:18px 20px;font-size:17px;line-height:1.48;margin:20px 0}
+      .two{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+      .three{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+      .card{display:grid;grid-template-columns:96px 1fr;gap:20px;align-items:center;background:linear-gradient(145deg,#0e2945,#0a1d32);border:1px solid #356e99;border-radius:15px;padding:21px 23px;margin-bottom:16px;min-height:150px}
+      .icon{width:78px;height:78px;border-radius:19px;background:#10253a;border:1px solid #3c7198;display:flex;align-items:center;justify-content:center;font-size:39px;margin:auto}
+      .label{font-size:13px;font-weight:900;letter-spacing:.11em;color:#72cfff;margin-bottom:6px}
+      .headline{font-size:26px;font-weight:900;line-height:1.18;color:#fff;margin-bottom:8px}
+      .copy{font-size:17px;line-height:1.49;color:#dce9f8}
+      .mini{font-size:15px;line-height:1.44;color:#b9c8d9;margin-top:8px}
+      .formula-card{background:#0b2138;border:1px solid #356e99;border-left:6px solid #f3c743;border-radius:14px;padding:19px 21px;margin:15px 0}
+      .formula-label{font-size:13px;font-weight:900;letter-spacing:.11em;color:#72cfff;margin-bottom:7px}
+      .formula{font-family:Georgia,serif;font-size:31px;font-weight:800;line-height:1.35;color:#f7d768;margin-bottom:9px}
+      .formula-copy{font-size:17px;line-height:1.48;color:#dce9f8}
+      .step{display:grid;grid-template-columns:66px 1fr;gap:17px;align-items:start;background:#0d2239;border:1px solid #356e99;border-radius:13px;padding:18px 19px;margin:10px 0}
+      .stepno{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#173a59;border:1px solid #72cfff;color:#72cfff;font-size:21px;font-weight:900}
+      .step-title{font-size:21px;font-weight:900;color:#fff;margin-bottom:5px}
+      .step-copy{font-size:17px;line-height:1.46;color:#dce9f8}
+      .arrow{text-align:center;font-size:31px;color:#72cfff;font-weight:900;line-height:1;margin:3px 0}
+      .builder{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;align-items:stretch;margin:17px 0}
+      .builder-box{background:#10253a;border:1px solid #356e99;border-radius:12px;padding:15px 10px;text-align:center;min-height:116px;display:flex;flex-direction:column;justify-content:center}
+      .builder-box b{font-size:23px;color:#fff;margin-bottom:6px}.builder-box span{font-size:14px;color:#bfd0e2;line-height:1.36}
+      .builder-box.result{border-color:#54c786;background:#10372e}
+      .metricrow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:17px 0 23px}
+      .metric{background:#10253a;border:1px solid #356e99;border-radius:12px;padding:17px 12px;text-align:center}
+      .metric .v{font-size:33px;font-weight:900;color:#f3c743;line-height:1.08}
+      .metric .l{font-size:14px;color:#c4d3e3;margin-top:7px;font-weight:800}
+      .family-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+      .family{background:#0d2239;border:1px solid #356e99;border-radius:13px;padding:17px 18px;min-height:128px}
+      .family .name{font-size:20px;font-weight:900;color:#fff;margin-bottom:5px}
+      .family .shape{font-size:13px;font-weight:900;letter-spacing:.08em;color:#72cfff;margin-bottom:7px}
+      .family .desc{font-size:15px;line-height:1.43;color:#dce9f8}
+      .check{display:grid;grid-template-columns:88px 1fr;gap:18px;align-items:center;background:linear-gradient(145deg,#0e2945,#0a1d32);border:1px solid #356e99;border-radius:15px;padding:20px 22px;margin-bottom:15px}
+      .check-icon{width:70px;height:70px;border-radius:18px;background:#10253a;border:1px solid #3c7198;display:flex;align-items:center;justify-content:center;font-size:35px}
+      .check-title{font-size:23px;font-weight:900;color:#fff;margin-bottom:6px}
+      .check-copy{font-size:16px;line-height:1.46;color:#dce9f8}
+      .check-why{font-size:15px;line-height:1.42;color:#b9c8d9;margin-top:7px}
+      @media(max-width:1050px){.two,.three,.metricrow,.builder,.family-grid{grid-template-columns:1fr 1fr}.card{grid-template-columns:78px 1fr}}
+    </style>
+    """
 
 
-def _wrap(value: str, max_chars: int = 40):
-    words = str(value).split()
-    if not words:
-        return []
-    lines, current = [], words[0]
-    for word in words[1:]:
-        candidate = f"{current} {word}"
-        if len(candidate) <= max_chars:
-            current = candidate
-        else:
-            lines.append(current)
-            current = word
-    lines.append(current)
-    return lines
+def _why_simulation() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>02 · DATA-GENERATING WORLD · WHY SIMULATION?</div>
+      <div class='title'>To measure estimator error, we first need to know the truth.</div>
+      <div class='subtitle'>Real data are essential later, but they do not reveal the true population mean. Simulation gives a controlled target before any estimator is tested.</div>
+
+      <div class='two'>
+        <div class='card'><div class='icon'>🌍</div><div><div class='label'>REAL DATA</div><div class='headline'>The population mean is hidden</div><div class='copy'>We observe a dataset, but we do not directly observe the true population mean θ. That makes exact estimator error impossible to know.</div></div></div>
+        <div class='card'><div class='icon'>🧪</div><div><div class='label'>SIMULATION</div><div class='headline'>The target is known before scoring</div><div class='copy'>The generating distribution defines θ first. Every estimator can then be compared with the same known target.</div></div></div>
+      </div>
+
+      <div class='story'><b>Simple idea:</b> simulation is a measurement tool. It gives known truth for validation; it does not replace the external real-data stage.</div>
+
+      <div class='section'>THE FIXED TARGET</div>
+      <div class='formula-card'><div class='formula-label'>POPULATION-MEAN ESTIMAND</div><div class='formula'>θ(F) = μ<sub>F</sub> = E<sub>F</sub>[X]</div><div class='formula-copy'>The type of target stays the same throughout the thesis: the population mean. What changes is the data-generating regime around that target.</div></div>
+
+      <div class='section'>HOW MONTE CARLO TURNS TRUTH INTO EVIDENCE</div>
+      <div class='step'><div class='stepno'>1</div><div><div class='step-title'>Choose one regime</div><div class='step-copy'>Fix the family, contamination conditions and sample size.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>2</div><div><div class='step-title'>Generate one synthetic sample</div><div class='step-copy'>Draw observations from the chosen regime.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>3</div><div><div class='step-title'>Apply every estimator to the same sample</div><div class='step-copy'>This keeps the comparison fair inside that replicate.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>4</div><div><div class='step-title'>Compare every estimate with known θ</div><div class='step-copy'>Squared error measures how far each estimator is from the same population mean.</div></div></div><div class='arrow'>↓</div>
+      <div class='step'><div class='stepno'>5</div><div><div class='step-title'>Repeat many times</div><div class='step-copy'>Repeated errors become average risk and difficult-case risk in the Monte Carlo layer.</div></div></div>
+
+      <div class='takeaway'>TAKE-HOME: simulation gives known truth; repeated sampling turns that truth into a fair comparison of estimator risk.</div>
+    </div>"""
 
 
-def _multiline(x, y, value, cls="body", max_chars=40, line_height=23, anchor="start"):
-    return [
-        _t(x, y + i * line_height, line, cls, anchor)
-        for i, line in enumerate(_wrap(value, max_chars))
-    ]
+def _build_regime() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>02 · DATA-GENERATING WORLD · BUILD A REGIME</div>
+      <div class='title'>A regime is one complete statistical environment.</div>
+      <div class='subtitle'>The target remains the population mean, while family, contamination and sample size create different finite-sample risk environments.</div>
+
+      <div class='section'>WHAT DEFINES ONE REGIME?</div>
+      <div class='builder'>
+        <div class='builder-box'><b>F₀</b><span>baseline family</span></div>
+        <div class='builder-box'><b>γ</b><span>contamination rate</span></div>
+        <div class='builder-box'><b>c</b><span>outlier scale</span></div>
+        <div class='builder-box'><b>m</b><span>contamination mechanism</span></div>
+        <div class='builder-box'><b>n</b><span>sample size</span></div>
+        <div class='builder-box result'><b>ℛ</b><span>one complete regime</span></div>
+      </div>
+      <div class='formula-card'><div class='formula-label'>REGIME</div><div class='formula'>ℛ = (F₀, γ, c, m, n)</div><div class='formula-copy'>Change any one of these ingredients and the sampling environment can change.</div></div>
+      <div class='formula-card'><div class='formula-label'>INDUCED DISTRIBUTION</div><div class='formula'>F<sub>ℛ</sub> = (1−γ)F₀ + γG<sub>m,c</sub>(F₀)</div><div class='formula-copy'>The first term is the clean baseline. The second term adds the designed contamination process.</div></div>
+
+      <div class='section'>SIX STRUCTURAL FAMILIES</div>
+      <div class='family-grid'>
+        <div class='family'><div class='name'>Normal</div><div class='shape'>SYMMETRIC BASELINE</div><div class='desc'>A clean reference world where the sample mean is difficult to improve.</div></div>
+        <div class='family'><div class='name'>Lognormal</div><div class='shape'>POSITIVE RIGHT-SKEW</div><div class='desc'>Strong asymmetry and an upper tail create a different bias–variance problem.</div></div>
+        <div class='family'><div class='name'>Weibull</div><div class='shape'>FLEXIBLE POSITIVE SHAPE</div><div class='desc'>A survival-like family with changing shape and tail behaviour.</div></div>
+        <div class='family'><div class='name'>Inverse Gaussian</div><div class='shape'>ASYMMETRIC DURATION</div><div class='desc'>A positive duration family with pronounced asymmetry.</div></div>
+        <div class='family'><div class='name'>Ex-Gaussian</div><div class='shape'>REACTION-TIME-LIKE TAIL</div><div class='desc'>A Gaussian component plus an exponential tail produces reaction-time-like skew.</div></div>
+        <div class='family'><div class='name'>Ex-Wald</div><div class='shape'>FIRST-PASSAGE PROCESS</div><div class='desc'>A positive first-passage family used to stress a different tail structure.</div></div>
+      </div>
+
+      <div class='section'>CONTROLLED COVERAGE</div>
+      <div class='metricrow'><div class='metric'><div class='v'>6</div><div class='l'>distribution families</div></div><div class='metric'><div class='v'>5</div><div class='l'>sample sizes</div></div><div class='metric'><div class='v'>576</div><div class='l'>profiles per family</div></div><div class='metric'><div class='v'>2,880</div><div class='l'>regimes per family</div></div></div>
+
+      <div class='story'><b>Why this matters:</b> change the regime → change finite-sample risk → potentially change the estimator ranking. This is why the thesis tests conditional performance rather than a universal winner.</div>
+      <div class='takeaway'>TAKE-HOME: the regime changes the sampling environment; θ(F)=E[X] remains the population-mean target.</div>
+    </div>"""
+
+
+def _trust_simulator() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>02 · DATA-GENERATING WORLD · VALIDITY</div>
+      <div class='title'>The simulated world was audited before the GA evidence was trusted.</div>
+      <div class='subtitle'>The generator must first show that it behaves as designed. These checks are independent of whether the GA later wins or loses.</div>
+
+      <div class='metricrow'><div class='metric'><div class='v'>125</div><div class='l'>validation conditions</div></div><div class='metric'><div class='v' style='color:#54c786'>0</div><div class='l'>hard failures</div></div><div class='metric'><div class='v'>29</div><div class='l'>explainable warnings</div></div><div class='metric'><div class='v'>0.976%</div><div class='l'>maximum mean error</div></div></div>
+
+      <div class='story'><b>Validation order:</b> first test the simulator, then interpret estimator performance, and only later interpret GA evidence.</div>
+
+      <div class='section'>FOUR CHECKS</div>
+      <div class='check'><div class='check-icon'>🎯</div><div><div class='label'>1 · MOMENT FIDELITY</div><div class='check-title'>Does the generator recover the intended mean?</div><div class='check-copy'>Large generated populations are compared with the analytic mean. Maximum relative mean error was 0.976%, below the 1% hard threshold.</div><div class='check-why'><b>Why it matters:</b> the error surface must be centred on the correct target.</div></div></div>
+      <div class='check'><div class='check-icon'>🧫</div><div><div class='label'>2 · CONTAMINATION FIDELITY</div><div class='check-title'>Does the sample contain the stress condition we asked for?</div><div class='check-copy'>Realised contamination rate, direction and MAD-based distance are checked after injection.</div><div class='check-why'><b>Why it matters:</b> regime labels must match what was actually generated.</div></div></div>
+      <div class='check'><div class='check-icon'>📐</div><div><div class='label'>3 · THEORY RECOVERY</div><div class='check-title'>Do expected statistical patterns reappear?</div><div class='check-copy'>Known robust-statistics behaviour is checked before new GA conclusions are interpreted.</div><div class='check-why'><b>Why it matters:</b> a pipeline that cannot recover known behaviour should not support new claims.</div></div></div>
+      <div class='check'><div class='check-icon'>🌐</div><div><div class='label'>4 · EMPIRICAL ANCHORING</div><div class='check-title'>Is the synthetic world structurally relevant?</div><div class='check-copy'>Real datasets are used as structural anchors. They are not treated as training targets or known population truth.</div><div class='check-why'><b>Why it matters:</b> realism can be checked without pretending that real-data θ is known.</div></div></div>
+
+      <div class='section'>FAIRNESS AND REPRODUCIBILITY</div>
+      <div class='two'>
+        <div class='card'><div class='icon'>⚖️</div><div><div class='headline'>Same sample path</div><div class='copy'>Inside each Monte Carlo replicate, every estimator sees the same generated sample.</div></div></div>
+        <div class='card'><div class='icon'>🔁</div><div><div class='headline'>Fixed seeds and logged regimes</div><div class='copy'>The conditions can be reproduced and audited instead of reconstructed from memory.</div></div></div>
+      </div>
+
+      <div class='warn'><b>29 warnings ≠ 29 failures.</b> Warnings are retained diagnostic cases. They can reflect natural 3-MAD flags, dilution, masking, scale effects or empirical anchoring mismatch. Hard failures are counted separately, and there were zero.</div>
+      <div class='takeaway'>TAKE-HOME: the simulator is validated independently of the GA. The search is allowed to start only after the data-generating world is credible.</div>
+    </div>"""
 
 
 def data_world_detail_svg(view: int) -> str:
-    """Render Layer 2 support views 1 and 2; view 0 remains the original scene."""
-    view = max(1, min(int(view), 2))
-    w, h = 1600, 850
-    body = [f'<rect x="28" y="25" width="1544" height="800" rx="18" class="canvas"/>']
-
-    if view == 1:
-        body += [
-            _t(90, 100, "DATA-GENERATING WORLD · STRUCTURAL COVERAGE", "kicker"),
-            _t(90, 153, "Six families create qualitatively different risk environments.", "title"),
-            _t(90, 194, "Same population-mean estimand; different symmetry, skewness, tail and hazard structure.", "subtitle"),
-        ]
-        families = (
-            ("NORMAL", "SYMMETRIC BASELINE", "Classical reference world", "classical inference"),
-            ("LOGNORMAL", "POSITIVE RIGHT-SKEW", "Strong asymmetry and upper tail", "income / expenditure"),
-            ("WEIBULL", "SURVIVAL-LIKE POSITIVE SHAPE", "Flexible shape and hazard", "survival / reliability"),
-            ("INVERSE GAUSSIAN", "ASYMMETRIC DURATION", "Positive asymmetric duration tail", "duration processes"),
-            ("EX-GAUSSIAN", "REACTION-TIME-LIKE TAIL", "Skew plus exponential tail", "reaction times"),
-            ("EX-WALD", "FIRST-PASSAGE POSITIVE PROCESS", "First-passage dynamics", "cognitive RT"),
-        )
-        for i, (name, structure, meaning, domain) in enumerate(families):
-            row, col = divmod(i, 3)
-            x = 92 + col * 505
-            y = 245 + row * 245
-            body.append(f'<rect x="{x}" y="{y}" width="455" height="205" rx="14" class="card"/>')
-            body.append(_t(x + 25, y + 42, name, "family"))
-            body.extend(_multiline(x + 25, y + 78, structure, "structure", 34, 21))
-            body.extend(_multiline(x + 25, y + 126, meaning, "body", 38, 22))
-            body.append(_t(x + 25, y + 177, domain, "domain"))
-        body += [
-            '<rect x="105" y="742" width="1390" height="55" rx="10" class="takeaway"/>',
-            _t(800, 777, "F₀ changes the sampling environment; θ(F) = μ_F = E_F[X] remains the population-mean target.", "gold", "middle"),
-        ]
-    else:
-        body += [
-            _t(90, 100, "DATA-GENERATING WORLD · SIMULATOR CERTIFICATION", "kicker"),
-            _t(90, 153, "Four checks run before any GA result is trusted.", "title"),
-            _t(90, 194, "Certification tests the simulated world independently of the algorithm's conclusions.", "subtitle"),
-        ]
-        metrics = (
-            ("125", "VALIDATION CONDITIONS"),
-            ("0", "HARD FAILURES"),
-            ("29", "EXPLAINABLE WARNINGS"),
-        )
-        for i, (number, label) in enumerate(metrics):
-            x = 150 + i * 475
-            body += [
-                f'<rect x="{x}" y="235" width="400" height="145" rx="14" class="metric"/>',
-                _t(x + 200, 300, number, "number", "middle"),
-                _t(x + 200, 347, label, "metriclabel", "middle"),
-            ]
-        checks = (
-            ("1", "MOMENT FIDELITY", "Max mean error 0.976%, below the 1% threshold."),
-            ("2", "CONTAMINATION FIDELITY", "Rate, direction and MAD distance behave as designed."),
-            ("3", "THEORY RECOVERY", "Median/mean ratios and Huber behaviour match classical expectations."),
-            ("4", "EMPIRICAL ANCHORING", "Real datasets are structural anchors, not training targets."),
-        )
-        for i, (n, title, detail) in enumerate(checks):
-            col = i % 2
-            row = i // 2
-            x = 105 + col * 760
-            y = 430 + row * 145
-            body += [
-                f'<rect x="{x}" y="{y}" width="705" height="118" rx="12" class="check"/>',
-                _t(x + 30, y + 48, n, "checknum"),
-                _t(x + 82, y + 42, title, "checktitle"),
-            ]
-            body.extend(_multiline(x + 82, y + 73, detail, "body", 66, 20))
-        body += [
-            '<rect x="105" y="738" width="1390" height="58" rx="10" class="takeaway"/>',
-            _t(800, 766, "Warnings are diagnostic, not failures: they reflect expected variance, dilution, masking or anchoring mismatch.", "gold", "middle"),
-            _t(800, 787, "The simulator is certified before the GA is allowed to support a scientific claim.", "smallgold", "middle"),
-        ]
-
-    return f'''<html><style>
-body{{margin:0;background:#081525;font-family:Arial,sans-serif}}
-svg{{width:100%;height:{h}px}}
-.canvas{{fill:#091a2e;stroke:#2d6d9c;stroke-width:1.5}}
-.kicker{{font-size:15px;font-weight:800;letter-spacing:1.8px;fill:#72cfff}}
-.title{{font-size:32px;font-weight:800;fill:#f5f9ff}}
-.subtitle{{font-size:18px;fill:#bdd0e2}}
-.card,.check{{fill:#0d2741;stroke:#397daa;stroke-width:1.4}}
-.family{{font-size:20px;font-weight:800;fill:#f5f9ff}}
-.structure{{font-size:13px;font-weight:800;letter-spacing:1px;fill:#72cfff}}
-.body{{font-size:16px;fill:#dce9f8}}
-.domain{{font-size:14px;font-style:italic;fill:#9fb8cf}}
-.takeaway{{fill:#102d4b;stroke:#f3c743;stroke-width:1.6}}
-.gold{{font-size:16px;font-weight:800;fill:#f3c743}}
-.smallgold{{font-size:13px;fill:#e7cf78}}
-.metric{{fill:#102d4b;stroke:#4b84ad;stroke-width:1.5}}
-.number{{font-size:46px;font-weight:800;fill:#f3c743}}
-.metriclabel{{font-size:13px;font-weight:800;letter-spacing:1.2px;fill:#72cfff}}
-.checknum{{font-size:31px;font-weight:800;fill:#f3c743}}
-.checktitle{{font-size:16px;font-weight:800;fill:#f5f9ff}}
-</style><svg viewBox="0 0 {w} {h}">{''.join(body)}</svg></html>'''
+    """Return the current didactic HTML for one of the three Layer 2 views."""
+    view = max(0, min(int(view), 2))
+    return (_why_simulation, _build_regime, _trust_simulator)[view]()
