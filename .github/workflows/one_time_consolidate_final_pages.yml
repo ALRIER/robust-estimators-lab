@@ -1,0 +1,37 @@
+name: one-time-consolidate-final-pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  consolidate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Consolidate final defense pages
+        run: python scripts/cleanup_final_pages.py
+      - name: Syntax check
+        run: |
+          python -m py_compile streamlit_app.py
+          python -m py_compile src/results_page.py
+          python -m py_compile src/conclusions.py
+          python -m py_compile src/technical_appendix.py
+          python -m py_compile src/final_presenter_notes.py
+          python -m py_compile src/data_loader.py
+      - name: Commit consolidated app
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add streamlit_app.py
+          if git diff --cached --quiet; then
+            echo "No consolidation changes to commit"
+          else
+            git commit -m "Consolidate Layers 7-9 into direct renderers"
+            git push
+          fi
