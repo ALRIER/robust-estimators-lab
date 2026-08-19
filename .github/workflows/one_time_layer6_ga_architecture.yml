@@ -36,3 +36,5 @@ jobs:
           git add streamlit_app.py src/thesis_ga_architecture.py src/experiment_pipeline.py
           git commit -m "Implement Layer 6 thesis GA architecture and evidence facts"
           git push
+
+# explicit trigger
