@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after cover framing and presenter-note polish.
+# Runtime refresh: rebuild Streamlit Cloud after fixing the full-width cover and adding Question & Objective.
 streamlit
 plotly
 pandas
