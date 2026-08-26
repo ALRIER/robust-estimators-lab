@@ -1,19 +1,19 @@
-"""Simple HELP notes for the redesigned defense cover."""
+"""Simple HELP notes for the cinematic defense cover."""
 
 COVER_PRESENTER_NOTES = {
     "cover": (
         "Opening · Building Better Estimators",
-        "Defense cover · four-step preview",
+        "Defense cover · study-at-a-glance path",
         [
-            "Open with the bounded problem: estimating the population mean becomes harder when the sampling environment changes through skewness, tails or contamination.",
-            "State the scope immediately: this thesis is about conditional estimator discovery and validation, not universal GA superiority.",
-            "Use the four cards as the audience's mental map for the defense.",
-            "First, Question and Objective define what is being estimated, why regime dependence matters, and what the thesis is trying to establish.",
-            "Second, the Monte Carlo world creates controlled regimes with known population truth and repeated-sampling risk.",
-            "Third, the GA search design looks for interpretable simplex mixtures and freezes promising candidate recipes.",
-            "Fourth, the tournament of evidence challenges those frozen candidates through staged validation and organizes the surviving evidence into a taxonomy.",
-            "Do not explain the full methods here. The purpose of the cover is orientation: question, controlled world, search, and evidence.",
+            "Use this cover as a map, not as a methods slide. The audience only needs to understand where the defense is going.",
+            "First, Question and Objective frame the statistical problem, the fixed population-mean target, and the bounded objective of the thesis.",
+            "Second, the Monte Carlo world creates controlled regimes with known population truth so repeated-sampling risk can be measured fairly.",
+            "Third, the GA search design looks for interpretable simplex mixtures and produces promising weight vectors rather than final claims.",
+            "Fourth, the Tournament of Evidence challenges frozen candidates through staged validation, stronger benchmarks, transfer checks, and explicit benchmark retention.",
+            "Fifth, Results and Taxonomy organize what survives: supported specialists and transfer signals, together with near-gate cases and benchmark-retained outcomes.",
+            "State the scope early: this thesis is about conditional estimator discovery and validation, not universal GA superiority.",
             "Supervisor: Debarati Chakraborty, Ph.D.",
+            "A simple sentence to say here is: question, controlled truth, search, challenge, and interpretation.",
         ],
         "Start with the research logic: what problem are we solving, what is the objective, and why should estimator rankings change by regime?",
     ),
