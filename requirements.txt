@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after fixing the full-width cover and adding Question & Objective.
+# Runtime refresh: rebuild Streamlit Cloud after rendering the cover in an isolated HTML component.
 streamlit
 plotly
 pandas
