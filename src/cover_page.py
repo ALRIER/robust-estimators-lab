@@ -201,7 +201,7 @@ html,body{{margin:0;padding:0;background:#06111f;color:#eef6ff;font-family:Arial
   </div>
 
   <div class="footer">
-    <div class="foot"><div class="foot-icon">▣</div><div class="foot-copy"><b>AUGUST 2026</b>Master's Thesis Defense</div></div>
+    <div class="foot"><div class="foot-icon">▣</div><div class="foot-copy"><b>2026</b>Master's Thesis Defense</div></div>
     <div class="foot"><div class="foot-icon">♙</div><div class="foot-copy"><b>SUPERVISOR</b>Debarati Chakraborty, Ph.D.</div></div>
     <div class="foot"><div class="foot-icon">⚗</div><div class="foot-copy"><b>RESEARCH LAB</b>Robust Estimators Lab</div></div>
     <div class="foot"><div class="foot-icon">◎</div><div class="foot-copy"><b>PUBLIC APP</b>robust-estimators-lab.streamlit.app</div></div>
