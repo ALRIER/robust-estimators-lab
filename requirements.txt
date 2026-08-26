@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after merging Layer 9 GA operator visuals into Layer 6.
+# Runtime refresh: rebuild Streamlit Cloud after the redesigned thesis defense cover.
 streamlit
 plotly
 pandas
