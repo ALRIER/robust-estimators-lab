@@ -1,10 +1,10 @@
 """Single presentation router for the modular defense pages.
 
 The historical ``streamlit_app.py`` is still monolithic, so this is the one and only
-compatibility router. It keeps Layers 1–2, Layer 4, and Layers 7–9 synchronized with
-their current modular pages and presenter notes. Target modules are reloaded from
-disk so Streamlit hot-reload cannot serve an old page implementation after a Git
-push.
+compatibility router. It keeps the redesigned cover, Layers 1–2, Layer 4, and
+Layers 7–9 synchronized with their current modular pages and presenter notes.
+Target modules are reloaded from disk so Streamlit hot-reload cannot serve an old
+page implementation after a Git push.
 
 No thesis evidence is recomputed here.
 """
@@ -16,18 +16,21 @@ import importlib
 import streamlit as st
 import streamlit.components.v1 as components
 
+_COVER = "00 · Cover"
 _LAYER1 = "01 · Research logic"
 _LAYER2 = "02 · Data-generating world"
 _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v6-monte-carlo-consolidation"
+_VERSION = "single-defense-runtime-v7-redesigned-cover"
 
 
 def _load_notes():
     final_module = importlib.import_module("src.final_presenter_notes")
     final_module = importlib.reload(final_module)
+    cover_module = importlib.import_module("src.cover_presenter_notes")
+    cover_module = importlib.reload(cover_module)
     research_module = importlib.import_module("src.research_presenter_notes")
     research_module = importlib.reload(research_module)
     data_module = importlib.import_module("src.data_world_presenter_notes")
@@ -35,6 +38,7 @@ def _load_notes():
     monte_module = importlib.import_module("src.monte_carlo_presenter_notes")
     monte_module = importlib.reload(monte_module)
     notes = dict(final_module.FINAL_PRESENTER_NOTES)
+    notes.update(cover_module.COVER_PRESENTER_NOTES)
     notes.update(research_module.RESEARCH_PRESENTER_NOTES)
     notes.update(data_module.DATA_WORLD_PRESENTER_NOTES)
     notes.update(monte_module.MONTE_CARLO_PRESENTER_NOTES)
@@ -52,6 +56,8 @@ def _render_current(module_name: str, function_name: str) -> None:
 
 
 def _current_note_key(active: str) -> str | None:
+    if active == _COVER:
+        return "cover"
     if active == _LAYER1:
         panel = max(0, min(int(st.session_state.get("research_panel", 0)), 4))
         return (
@@ -113,6 +119,7 @@ def install_defense_runtime() -> None:
 
     base_markdown = st.markdown
     base_warning = st.warning
+    base_image = st.image
     base_html = components.html
     rendering = False
 
@@ -132,6 +139,7 @@ def install_defense_runtime() -> None:
         except Exception:
             presenter, presenter_key = False, ""
         direct_note_keys = {
+            "cover",
             "research_problem", "research_objective", "research_hypotheses",
             "research_target", "research_why_win",
             "data_world_why_simulation", "data_world_regime", "data_world_validity",
@@ -142,7 +150,7 @@ def install_defense_runtime() -> None:
             return base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
 
         # Keep the presenter window synchronized with the exact visible subview.
-        if active in (_LAYER1, _LAYER2, _LAYER4, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
+        if active in (_COVER, _LAYER1, _LAYER2, _LAYER4, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
             key = _current_note_key(active)
             if key:
                 old_keys = (
@@ -187,6 +195,21 @@ def install_defense_runtime() -> None:
             st.stop()
 
         return base_markdown(body, *args, **kwargs)
+
+    def image(image, *args, **kwargs):
+        nonlocal rendering
+        if rendering:
+            return base_image(image, *args, **kwargs)
+
+        active = st.session_state.get("defense_section")
+        if active == _COVER and "university_of_hull_logo" in str(image):
+            rendering = True
+            try:
+                _render_current("src.cover_page", "render_cover_page")
+            finally:
+                rendering = False
+            st.stop()
+        return base_image(image, *args, **kwargs)
 
     def html_component(body, *args, **kwargs):
         nonlocal rendering
@@ -240,4 +263,5 @@ def install_defense_runtime() -> None:
 
     st.markdown = markdown
     st.warning = warning
+    st.image = image
     components.html = html_component
