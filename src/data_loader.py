@@ -2,11 +2,14 @@ from functools import lru_cache
 from pathlib import Path
 import pandas as pd
 
-# Single presentation bootstrap plus the small Layer 6 compatibility hook.
+# Single presentation bootstrap plus small compatibility hooks for the
+# redesigned full-width cover and Layer 6 architecture page.
 from src.defense_runtime import install_defense_runtime
+from src.cover_runtime import install_cover_runtime
 from src.layer6_runtime import install_layer6_runtime
 
 install_defense_runtime()
+install_cover_runtime()
 install_layer6_runtime()
 
 ROOT = Path(__file__).resolve().parents[1]
