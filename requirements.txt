@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after the redesigned thesis defense cover.
+# Runtime refresh: rebuild Streamlit Cloud after cover framing and presenter-note polish.
 streamlit
 plotly
 pandas
