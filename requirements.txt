@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after restoring the cinematic full-width thesis cover.
+# Runtime refresh: rebuild Streamlit Cloud after updating the thesis cover year.
 streamlit
 plotly
 pandas
