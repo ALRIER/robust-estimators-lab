@@ -23,7 +23,7 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v7-redesigned-cover"
+_VERSION = "single-defense-runtime-v8-cover-framing"
 
 
 def _load_notes():
@@ -117,11 +117,28 @@ def install_defense_runtime() -> None:
         return
     st._single_defense_runtime_version = _VERSION
 
+    # Ensure the very first app render already knows that the presentation opens
+    # on the cover. This lets the cover suppress the generic app heading cleanly.
+    if "defense_section" not in st.session_state:
+        st.session_state.defense_section = _COVER
+
     base_markdown = st.markdown
     base_warning = st.warning
     base_image = st.image
+    base_title = st.title
+    base_caption = st.caption
     base_html = components.html
     rendering = False
+
+    def title(body, *args, **kwargs):
+        if st.session_state.get("defense_section") == _COVER and str(body) == "Robust Estimators Lab":
+            return None
+        return base_title(body, *args, **kwargs)
+
+    def caption(body, *args, **kwargs):
+        if st.session_state.get("defense_section") == _COVER and str(body).startswith("Defense Mode · a visual thesis narrative"):
+            return None
+        return base_caption(body, *args, **kwargs)
 
     def markdown(body, *args, **kwargs):
         nonlocal rendering
@@ -261,6 +278,8 @@ def install_defense_runtime() -> None:
             return base_markdown(_note_html(key), unsafe_allow_html=True)
         return base_warning(body, *args, **kwargs)
 
+    st.title = title
+    st.caption = caption
     st.markdown = markdown
     st.warning = warning
     st.image = image
