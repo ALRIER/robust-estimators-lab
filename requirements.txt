@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after rendering the cover in an isolated HTML component.
+# Runtime refresh: rebuild Streamlit Cloud after restoring the cinematic full-width thesis cover.
 streamlit
 plotly
 pandas
