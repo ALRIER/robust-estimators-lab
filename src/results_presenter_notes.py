@@ -45,8 +45,9 @@ RESULTS_PRESENTER_NOTES = {
         [
             "FUNNEL|264 requested → 228 loaded → 120 evaluated → 43 eligible parents.",
             "BREADTH|26/43 parents had at least one corrected specialist win.",
-            "DEPTH|255 profile-matched confirmations survived FDR control.",
-            "CAUTION|255 profiles are not 255 independent datasets.",
+            "MATCHED PROFILES|Test the specialist only where the real-data subgroup resembles its validated profile.",
+            "DEPTH|255 subgroup wins remained after correcting for many simultaneous tests.",
+            "CAUTION|255 subgroup results are not 255 independent datasets.",
             "MEANING|External transfer support — not known-θ population proof.",
         ],
         "Next: audit whether benchmark retention could simply reflect weak GA search.",
