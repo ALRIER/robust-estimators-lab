@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after removing all presenter cues from the cover.
+# Runtime refresh: rebuild Streamlit Cloud after accessible Layer 2 presenter cue-card redesign.
 streamlit
 plotly
 pandas
