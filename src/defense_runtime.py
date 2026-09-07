@@ -23,8 +23,14 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v10-accessible-cues"
-_ACCESSIBLE_CUE_KEYS = {"research_problem", "research_objective"}
+_VERSION = "single-defense-runtime-v11-accessible-layer1"
+_ACCESSIBLE_CUE_KEYS = {
+    "research_problem",
+    "research_objective",
+    "research_hypotheses",
+    "research_target",
+    "research_why_win",
+}
 
 
 def _load_notes():
@@ -92,13 +98,16 @@ def _current_note_key(active: str) -> str | None:
 
 def _accessible_note_html(title: str, bullets, transition: str) -> str:
     rows = []
+    emphasis_anchors = {
+        "MAIN QUESTION", "KEY IDEA", "CONCLUSION", "WIN CONDITION", "FINAL GATE"
+    }
     for item in bullets:
         raw = str(item)
         if "|" in raw:
             anchor, copy = raw.split("|", 1)
         else:
             anchor, copy = "", raw
-        emphasis = " cue-emphasis" if anchor in {"MAIN QUESTION", "KEY IDEA", "CONCLUSION"} else ""
+        emphasis = " cue-emphasis" if anchor in emphasis_anchors else ""
         rows.append(
             f'<div class="cue-row{emphasis}">'
             f'<div class="cue-anchor">{html.escape(anchor)}</div>'
@@ -165,8 +174,6 @@ def install_defense_runtime() -> None:
         return
     st._single_defense_runtime_version = _VERSION
 
-    # Ensure the very first app render already knows that the presentation opens
-    # on the cover. This lets the cover suppress the generic app heading cleanly.
     if "defense_section" not in st.session_state:
         st.session_state.defense_section = _COVER
 
@@ -196,8 +203,6 @@ def install_defense_runtime() -> None:
         active = st.session_state.get("defense_section")
         text = str(body)
 
-        # In the separate presenter window, replace historical monolithic cue
-        # cards with the current simplified notes before they are displayed.
         try:
             presenter = str(st.query_params.get("presenter_notes", "")) == "1"
             presenter_key = str(st.query_params.get("section", ""))
@@ -213,12 +218,8 @@ def install_defense_runtime() -> None:
         }
         if presenter and presenter_key in direct_note_keys and "presenter-heading" in text:
             base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
-            # The historical presenter renderer can emit the same note again later
-            # in the same script. Stop immediately after the modular note is drawn
-            # so each presenter card appears exactly once.
             st.stop()
 
-        # Keep the presenter window synchronized with the exact visible subview.
         if active in (_COVER, _LAYER1, _LAYER2, _LAYER4, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
             key = _current_note_key(active)
             if key:
@@ -232,8 +233,6 @@ def install_defense_runtime() -> None:
                     text = text.replace(f"section={old}", f"section={key}")
             return base_markdown(text, *args, **kwargs)
 
-        # First legacy call of Layer 4: replace the old engine/validation tabs
-        # with the current didactic measurement-and-trust page.
         if active == _LAYER4 and "monte-carlo-tabs" in text:
             rendering = True
             try:
@@ -242,7 +241,6 @@ def install_defense_runtime() -> None:
                 rendering = False
             st.stop()
 
-        # First legacy call of Layer 7: replace the old page and stop the old block.
         if active == _LAYER7 and "RESULTS JOURNEY — precomputed thesis evidence" in text:
             rendering = True
             try:
@@ -251,7 +249,6 @@ def install_defense_runtime() -> None:
                 rendering = False
             st.stop()
 
-        # First legacy call of Layer 9: replace all historical technical blocks at once.
         if active == _LAYER9 and (
             "THESIS RESULTS — precomputed research output" in text
             or "THESIS RESULTS — external evidence" in text
@@ -288,7 +285,6 @@ def install_defense_runtime() -> None:
         active = st.session_state.get("defense_section")
         text = str(body)
 
-        # Layer 1: replace the historical SVG with the current question-led view.
         if active == _LAYER1:
             module = _load_module("src.research_logic")
             panel = max(0, min(int(st.session_state.get("research_panel", 0)), 4))
@@ -298,7 +294,6 @@ def install_defense_runtime() -> None:
             kwargs["scrolling"] = False
             return base_html(current_html, *args, **kwargs)
 
-        # Layer 2: always replace the historical view with the current didactic view.
         if active == _LAYER2:
             module = _load_module("src.data_world")
             view = max(0, min(int(st.session_state.get("data_world_view", 0)), 2))
@@ -308,7 +303,6 @@ def install_defense_runtime() -> None:
             kwargs["scrolling"] = False
             return base_html(current_html, *args, **kwargs)
 
-        # Layer 8 legacy entry point is the old defense_scene_svg(6).
         if active == _LAYER8 and "WHAT DID WE LEARN?" in text and "No Free Lunch, made operational." in text:
             rendering = True
             try:
