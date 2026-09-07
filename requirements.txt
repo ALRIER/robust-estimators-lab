@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after adding the parallel Presenter Companion and Hull-logo launcher.
+# Runtime refresh: rebuild Streamlit Cloud after removing all presenter cues from the cover.
 streamlit
 plotly
 pandas
