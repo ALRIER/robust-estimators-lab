@@ -2,9 +2,8 @@
 
 The companion must not become a second source of truth. Current modular note
 files override the historical notes embedded in ``streamlit_app.py``. Legacy
-entries are read from the source file so Simulation Lab, GA Search and the five
-evidence-pipeline stages remain available until they are migrated to dedicated
-note modules.
+entries are read from the source file so Simulation Lab and GA Search remain
+available until they are migrated to dedicated note modules.
 """
 
 from __future__ import annotations
@@ -19,6 +18,7 @@ from src.data_world_presenter_notes import DATA_WORLD_PRESENTER_NOTES
 from src.monte_carlo_presenter_notes import MONTE_CARLO_PRESENTER_NOTES
 from src.final_presenter_notes import FINAL_PRESENTER_NOTES
 from src.thesis_ga_presenter_notes import THESIS_GA_PRESENTER_NOTES
+from src.results_presenter_notes import RESULTS_PRESENTER_NOTES
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,6 +130,7 @@ def all_presenter_notes() -> dict:
     notes.update(DATA_WORLD_PRESENTER_NOTES)
     notes.update(MONTE_CARLO_PRESENTER_NOTES)
     notes.update(THESIS_GA_PRESENTER_NOTES)
+    notes.update(RESULTS_PRESENTER_NOTES)
     return notes
 
 
