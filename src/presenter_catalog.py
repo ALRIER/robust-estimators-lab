@@ -1,10 +1,10 @@
 """Shared catalog for the defense Presenter Companion.
 
-The companion must not become a second source of truth.  Current modular note
-files override the historical notes embedded in ``streamlit_app.py``.  Legacy
-entries are read from the source file with ``ast.literal_eval`` so Simulation
-Lab, GA Search and the five evidence-pipeline stages remain available until they
-are migrated to dedicated note modules.
+The companion must not become a second source of truth. Current modular note
+files override the historical notes embedded in ``streamlit_app.py``. Legacy
+entries are read from the source file so Simulation Lab, GA Search and the five
+evidence-pipeline stages remain available until they are migrated to dedicated
+note modules.
 """
 
 from __future__ import annotations
@@ -25,10 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 PRESENTER_SEQUENCE = (
-    (
-        "00 · Cover",
-        (("cover", "Cover"),),
-    ),
+    ("00 · Cover", (("cover", "Cover"),)),
     (
         "01 · Research logic",
         (
@@ -47,10 +44,7 @@ PRESENTER_SEQUENCE = (
             ("data_world_validity", "Trust the simulator"),
         ),
     ),
-    (
-        "03 · Simulation lab",
-        (("simulation_lab", "Simulation lab"),),
-    ),
+    ("03 · Simulation lab", (("simulation_lab", "Simulation lab"),)),
     (
         "04 · Monte Carlo engine",
         (
@@ -60,10 +54,7 @@ PRESENTER_SEQUENCE = (
             ("monte_carlo_fairness", "Fairness & order of trust"),
         ),
     ),
-    (
-        "05 · GA search",
-        (("ga_search", "GA search"),),
-    ),
+    ("05 · GA search", (("ga_search", "GA search"),)),
     (
         "06 · Experiment pipeline",
         (
@@ -105,14 +96,29 @@ PRESENTER_SEQUENCE = (
 
 
 def _legacy_presenter_notes() -> dict:
-    """Read the historical literal PRESENTER_NOTES without importing the app."""
+    """Read literal legacy note entries without importing the Streamlit app."""
     source = (ROOT / "streamlit_app.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
     for node in tree.body:
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == "PRESENTER_NOTES":
-                    return ast.literal_eval(node.value)
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(isinstance(t, ast.Name) and t.id == "PRESENTER_NOTES" for t in node.targets):
+            continue
+        if not isinstance(node.value, ast.Dict):
+            return {}
+
+        notes = {}
+        for key_node, value_node in zip(node.value.keys, node.value.values):
+            try:
+                key = ast.literal_eval(key_node)
+                value = ast.literal_eval(value_node)
+            except Exception:
+                # One unusual historical entry should never break the whole
+                # Presenter Companion. Modular notes can still override it.
+                continue
+            if isinstance(key, str):
+                notes[key] = value
+        return notes
     return {}
 
 
