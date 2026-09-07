@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after updating the thesis cover year.
+# Runtime refresh: rebuild Streamlit Cloud after simplifying Layer 1 presenter notes and removing duplicate presenter rendering.
 streamlit
 plotly
 pandas
