@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after adding ultra-concise Layer 7 results cue cards.
+# Runtime refresh: rebuild Streamlit Cloud after clarifying matched-profile and multiple-testing language in Layer 7.
 streamlit
 plotly
 pandas
