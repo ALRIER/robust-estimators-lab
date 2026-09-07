@@ -1,4 +1,9 @@
-"""Replace the historical per-slide presenter link with one companion launcher."""
+"""Replace the historical per-slide presenter link with the parallel companion.
+
+Each HELP launcher preserves the exact presenter-note key so the companion opens
+on the same slide/view as the audience presentation. The companion then owns its
+own Previous/Next state independently.
+"""
 
 from __future__ import annotations
 
@@ -6,7 +11,7 @@ import re
 import streamlit as st
 
 
-_VERSION = "presenter-launcher-v1"
+_VERSION = "presenter-launcher-v2-current-card"
 
 
 def install_presenter_launcher_runtime() -> None:
@@ -21,13 +26,13 @@ def install_presenter_launcher_runtime() -> None:
         marker = 'title="Open presenter notes in the presenter window"'
         if marker in text and "presenter_notes=1" in text:
             text = re.sub(
-                r'href="\?presenter_notes=1&amp;section=[^"]+"',
-                'href="?presenter_companion=1"',
+                r'href="\?presenter_notes=1&amp;section=([^"]+)"',
+                r'href="?presenter_companion=1&amp;card=\1"',
                 text,
             )
             text = text.replace(
                 marker,
-                'title="Open Presenter Companion"',
+                'title="Open Presenter Companion at this cue"',
             )
             text = text.replace(
                 "robust_estimators_presenter_notes",
