@@ -23,7 +23,7 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v13-accessible-layer4"
+_VERSION = "single-defense-runtime-v14-accessible-final-layers"
 _ACCESSIBLE_CUE_KEYS = {
     "research_problem",
     "research_objective",
@@ -37,6 +37,17 @@ _ACCESSIBLE_CUE_KEYS = {
     "monte_carlo_why_validate",
     "monte_carlo_validation_stages",
     "monte_carlo_fairness",
+    "results_stage_0",
+    "results_stage_1",
+    "results_stage_2",
+    "results_stage_3",
+    "results_stage_4",
+    "conclusions_claims",
+    "conclusions_contrib",
+    "appendix_A",
+    "appendix_B",
+    "appendix_C",
+    "appendix_D",
 }
 
 
@@ -51,11 +62,21 @@ def _load_notes():
     data_module = importlib.reload(data_module)
     monte_module = importlib.import_module("src.monte_carlo_presenter_notes")
     monte_module = importlib.reload(monte_module)
+    results_module = importlib.import_module("src.results_presenter_notes")
+    results_module = importlib.reload(results_module)
+    conclusions_module = importlib.import_module("src.conclusions_presenter_notes")
+    conclusions_module = importlib.reload(conclusions_module)
+    technical_module = importlib.import_module("src.technical_presenter_notes")
+    technical_module = importlib.reload(technical_module)
+
     notes = dict(final_module.FINAL_PRESENTER_NOTES)
     notes.update(cover_module.COVER_PRESENTER_NOTES)
     notes.update(research_module.RESEARCH_PRESENTER_NOTES)
     notes.update(data_module.DATA_WORLD_PRESENTER_NOTES)
     notes.update(monte_module.MONTE_CARLO_PRESENTER_NOTES)
+    notes.update(results_module.RESULTS_PRESENTER_NOTES)
+    notes.update(conclusions_module.CONCLUSIONS_PRESENTER_NOTES)
+    notes.update(technical_module.TECHNICAL_PRESENTER_NOTES)
     return notes
 
 
@@ -107,7 +128,9 @@ def _accessible_note_html(title: str, bullets, transition: str) -> str:
     rows = []
     emphasis_anchors = {
         "MAIN QUESTION", "KEY IDEA", "CONCLUSION", "WIN CONDITION", "FINAL GATE",
-        "PROBLEM", "SUMMARY", "PURPOSE", "5 STEPS", "6 STAGES", "ORDER"
+        "PROBLEM", "SUMMARY", "PURPOSE", "5 STEPS", "6 STAGES", "ORDER",
+        "AI SEARCH MODEL", "AI USE", "NOVELTY", "STRONGEST", "MAIN CONTRIBUTION",
+        "CLAIM", "GATE", "MEANING",
     }
     for item in bullets:
         raw = str(item)
@@ -223,6 +246,9 @@ def install_defense_runtime() -> None:
             "data_world_why_simulation", "data_world_regime", "data_world_validity",
             "monte_carlo_measurement", "monte_carlo_why_validate",
             "monte_carlo_validation_stages", "monte_carlo_fairness",
+            "results_stage_0", "results_stage_1", "results_stage_2", "results_stage_3", "results_stage_4",
+            "conclusions_claims", "conclusions_contrib",
+            "appendix_A", "appendix_B", "appendix_C", "appendix_D",
         }
         if presenter and presenter_key in direct_note_keys and "presenter-heading" in text:
             base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
