@@ -23,7 +23,7 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v12-accessible-layer2"
+_VERSION = "single-defense-runtime-v13-accessible-layer4"
 _ACCESSIBLE_CUE_KEYS = {
     "research_problem",
     "research_objective",
@@ -33,6 +33,10 @@ _ACCESSIBLE_CUE_KEYS = {
     "data_world_why_simulation",
     "data_world_regime",
     "data_world_validity",
+    "monte_carlo_measurement",
+    "monte_carlo_why_validate",
+    "monte_carlo_validation_stages",
+    "monte_carlo_fairness",
 }
 
 
@@ -103,7 +107,7 @@ def _accessible_note_html(title: str, bullets, transition: str) -> str:
     rows = []
     emphasis_anchors = {
         "MAIN QUESTION", "KEY IDEA", "CONCLUSION", "WIN CONDITION", "FINAL GATE",
-        "PROBLEM", "SUMMARY", "PURPOSE"
+        "PROBLEM", "SUMMARY", "PURPOSE", "5 STEPS", "6 STAGES", "ORDER"
     }
     for item in bullets:
         raw = str(item)
