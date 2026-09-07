@@ -23,7 +23,7 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v8-cover-framing"
+_VERSION = "single-defense-runtime-v9-presenter-dedup"
 
 
 def _load_notes():
@@ -164,7 +164,11 @@ def install_defense_runtime() -> None:
             "monte_carlo_validation_stages", "monte_carlo_fairness",
         }
         if presenter and presenter_key in direct_note_keys and "presenter-heading" in text:
-            return base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
+            base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
+            # The historical presenter renderer can emit the same note again later
+            # in the same script. Stop immediately after the modular note is drawn
+            # so each presenter card appears exactly once.
+            st.stop()
 
         # Keep the presenter window synchronized with the exact visible subview.
         if active in (_COVER, _LAYER1, _LAYER2, _LAYER4, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
