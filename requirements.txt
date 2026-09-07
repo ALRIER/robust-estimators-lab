@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after nesting each Layer 4 validation stage into description then result.
+# Runtime refresh: rebuild Streamlit Cloud after expanding Layer 4 validation procedures and warning explanation.
 streamlit
 plotly
 pandas
