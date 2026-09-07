@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after accessible Layer 2 presenter cue-card redesign.
+# Runtime refresh: rebuild Streamlit Cloud after accessible numeric cue-card redesign for Layer 4 and exact HELP-to-Companion synchronization.
 streamlit
 plotly
 pandas
