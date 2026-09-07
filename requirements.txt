@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after simplifying all Layer 6 presenter cues and migrating pipeline stages to modular notes.
+# Runtime refresh: rebuild Streamlit Cloud after clarifying how Cw evaluation fits inside the Layer 6 evolutionary cycle.
 streamlit
 plotly
 pandas
