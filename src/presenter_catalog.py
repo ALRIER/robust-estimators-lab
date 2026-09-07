@@ -19,6 +19,8 @@ from src.monte_carlo_presenter_notes import MONTE_CARLO_PRESENTER_NOTES
 from src.final_presenter_notes import FINAL_PRESENTER_NOTES
 from src.thesis_ga_presenter_notes import THESIS_GA_PRESENTER_NOTES
 from src.results_presenter_notes import RESULTS_PRESENTER_NOTES
+from src.conclusions_presenter_notes import CONCLUSIONS_PRESENTER_NOTES
+from src.technical_presenter_notes import TECHNICAL_PRESENTER_NOTES
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -112,8 +114,6 @@ def _legacy_presenter_notes() -> dict:
                 key = ast.literal_eval(key_node)
                 value = ast.literal_eval(value_node)
             except Exception:
-                # One unusual historical entry should never break the whole
-                # Presenter Companion. Modular notes can still override it.
                 continue
             if isinstance(key, str):
                 notes[key] = value
@@ -131,6 +131,8 @@ def all_presenter_notes() -> dict:
     notes.update(MONTE_CARLO_PRESENTER_NOTES)
     notes.update(THESIS_GA_PRESENTER_NOTES)
     notes.update(RESULTS_PRESENTER_NOTES)
+    notes.update(CONCLUSIONS_PRESENTER_NOTES)
+    notes.update(TECHNICAL_PRESENTER_NOTES)
     return notes
 
 
