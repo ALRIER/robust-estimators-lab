@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after clarifying how Cw evaluation fits inside the Layer 6 evolutionary cycle.
+# Runtime refresh: rebuild Streamlit Cloud after shortening Layer 6 evolution cues for accessible presenter mode.
 streamlit
 plotly
 pandas
