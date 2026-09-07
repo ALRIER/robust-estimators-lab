@@ -23,7 +23,8 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v9-presenter-dedup"
+_VERSION = "single-defense-runtime-v10-accessible-cues"
+_ACCESSIBLE_CUE_KEYS = {"research_problem", "research_objective"}
 
 
 def _load_notes():
@@ -89,9 +90,56 @@ def _current_note_key(active: str) -> str | None:
     return None
 
 
+def _accessible_note_html(title: str, bullets, transition: str) -> str:
+    rows = []
+    for item in bullets:
+        raw = str(item)
+        if "|" in raw:
+            anchor, copy = raw.split("|", 1)
+        else:
+            anchor, copy = "", raw
+        emphasis = " cue-emphasis" if anchor in {"MAIN QUESTION", "KEY IDEA", "CONCLUSION"} else ""
+        rows.append(
+            f'<div class="cue-row{emphasis}">'
+            f'<div class="cue-anchor">{html.escape(anchor)}</div>'
+            f'<div class="cue-copy">{html.escape(copy)}</div>'
+            '</div>'
+        )
+    return f"""
+    <style>
+      [data-testid="stAppViewContainer"]{{background:#071525!important}}
+      .block-container{{max-width:1120px!important;padding:2.1rem 3rem 2.8rem!important}}
+      .cue-note{{font-family:Arial,sans-serif;color:#f6f9ff}}
+      .cue-note h1{{font-size:2.65rem!important;line-height:1.12!important;color:#72cfff!important;margin:0 0 1.7rem!important;font-weight:900!important}}
+      .cue-label{{font-size:.95rem;font-weight:900;letter-spacing:.16em;color:#91abc3;margin-bottom:.9rem}}
+      .cue-row{{display:grid;grid-template-columns:230px 1fr;gap:28px;align-items:center;background:#0b2138;border:1px solid #32688f;border-left:6px solid #4ea9e8;border-radius:13px;padding:1.15rem 1.35rem;margin:0 0 1rem}}
+      .cue-row.cue-emphasis{{border-left-color:#f3c743;background:#102941}}
+      .cue-anchor{{font-size:1.08rem;line-height:1.25;font-weight:900;letter-spacing:.08em;color:#f3c743;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}}
+      .cue-copy{{font-size:1.86rem;line-height:1.32;font-weight:750;color:#fff;letter-spacing:.005em}}
+      .cue-transition{{margin-top:1.65rem;padding-top:1rem;border-top:1px solid #294f6d;color:#bcd0e2;font-size:1.16rem;line-height:1.4}}
+      .cue-transition b{{color:#72cfff;letter-spacing:.08em;font-size:.9rem;margin-right:.55rem}}
+      @media(max-width:850px){{
+        .block-container{{padding:1.5rem 1.2rem 2rem!important}}
+        .cue-note h1{{font-size:2.2rem!important}}
+        .cue-row{{grid-template-columns:1fr;gap:.65rem;padding:1rem 1.1rem}}
+        .cue-copy{{font-size:1.55rem}}
+      }}
+    </style>
+    <div class="cue-note">
+      <h1>{html.escape(title)}</h1>
+      <div class="cue-label">EMERGENCY CUES · ONE IDEA PER LINE</div>
+      {''.join(rows)}
+      <div class="cue-transition"><b>NEXT</b>{html.escape(transition)}</div>
+    </div>
+    """
+
+
 def _note_html(key: str) -> str:
     notes = _load_notes()
     title, _source, bullets, transition = notes[key]
+    if key in _ACCESSIBLE_CUE_KEYS:
+        return _accessible_note_html(title, bullets, transition)
+
     lis = "".join(f"<li>{html.escape(str(item))}</li>" for item in bullets)
     return f"""
     <style>
