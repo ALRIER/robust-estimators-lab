@@ -1,6 +1,6 @@
 """Parallel cue-card interface for the thesis defense.
 
-This view is intentionally independent from the audience presentation state.  It
+This view is intentionally independent from the audience presentation state. It
 uses the same note sources and the same layer/view names, but presents one large
 cue card at a time with direct Previous/Next navigation.
 """
@@ -40,8 +40,6 @@ def _cue_parts(raw: str, number: int) -> tuple[str, str]:
         anchor, copy = text.split("|", 1)
         return anchor.strip(), copy.strip()
 
-    # Existing notes often begin with a useful spoken label such as Main idea,
-    # Step 1, H1, Formula, Important, or Key sentence. Reuse it when concise.
     if ":" in text:
         prefix, rest = text.split(":", 1)
         if 1 <= len(prefix.strip()) <= 28:
@@ -61,6 +59,7 @@ def _cue_html(title: str, cues: list[str], transition: str, layer: str, label: s
         emphasis = anchor in {
             "MAIN QUESTION", "KEY IDEA", "CONCLUSION", "FINAL GATE",
             "WIN CONDITION", "TAKE-HOME", "IMPORTANT", "MAIN IDEA",
+            "SUMMARY", "5 STEPS", "6 STAGES", "ORDER",
         }
         rows.append(
             f'<div class="cue-row{" emphasis" if emphasis else ""}">'
@@ -106,6 +105,20 @@ def render_presenter_companion() -> None:
     sequence = flat_sequence()
     notes = all_presenter_notes()
     total = len(sequence)
+
+    # A HELP launcher can pass the exact cue key. Consume a newly arrived key
+    # once, then let Previous/Next navigation proceed independently.
+    try:
+        requested_card = str(st.query_params.get("card", "")).strip()
+    except Exception:
+        requested_card = ""
+
+    if requested_card and st.session_state.get("companion_url_card") != requested_card:
+        for index, (_layer, key, _label) in enumerate(sequence):
+            if key == requested_card:
+                st.session_state.companion_index = index
+                st.session_state.companion_url_card = requested_card
+                break
 
     if "companion_index" not in st.session_state:
         st.session_state.companion_index = 0
