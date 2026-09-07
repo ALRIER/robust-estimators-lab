@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after completing accessible presenter cue cards for all Layer 1 slides.
+# Runtime refresh: rebuild Streamlit Cloud after adding the parallel Presenter Companion and Hull-logo launcher.
 streamlit
 plotly
 pandas
