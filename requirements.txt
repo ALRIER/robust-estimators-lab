@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after expanding Layer 4 validation procedures and warning explanation.
+# Runtime refresh: rebuild Streamlit Cloud after simplifying all Layer 6 presenter cues and migrating pipeline stages to modular notes.
 streamlit
 plotly
 pandas
