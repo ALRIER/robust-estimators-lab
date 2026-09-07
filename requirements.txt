@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after simplifying Layer 1 presenter notes and removing duplicate presenter rendering.
+# Runtime refresh: rebuild Streamlit Cloud after accessible low-density cue-card redesign for Layer 1 presenter notes.
 streamlit
 plotly
 pandas
