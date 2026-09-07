@@ -25,7 +25,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 PRESENTER_SEQUENCE = (
-    ("00 · Cover", (("cover", "Cover"),)),
     (
         "01 · Research logic",
         (
