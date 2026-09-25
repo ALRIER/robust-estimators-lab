@@ -23,7 +23,7 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v14-accessible-final-layers"
+_VERSION = "single-defense-runtime-v15-technical-ef"
 _ACCESSIBLE_CUE_KEYS = {
     "research_problem",
     "research_objective",
@@ -48,6 +48,8 @@ _ACCESSIBLE_CUE_KEYS = {
     "appendix_B",
     "appendix_C",
     "appendix_D",
+    "appendix_E",
+    "appendix_F",
 }
 
 
@@ -119,8 +121,8 @@ def _current_note_key(active: str) -> str | None:
     if active == _LAYER8:
         return "conclusions_contrib" if st.session_state.get("conclusion_view", "claims") == "contrib" else "conclusions_claims"
     if active == _LAYER9:
-        section = max(0, min(int(st.session_state.get("appendix_section", 0)), 3))
-        return f"appendix_{'ABCD'[section]}"
+        section = max(0, min(int(st.session_state.get("appendix_section", 0)), 5))
+        return f"appendix_{'ABCDEF'[section]}"
     return None
 
 
@@ -248,7 +250,7 @@ def install_defense_runtime() -> None:
             "monte_carlo_validation_stages", "monte_carlo_fairness",
             "results_stage_0", "results_stage_1", "results_stage_2", "results_stage_3", "results_stage_4",
             "conclusions_claims", "conclusions_contrib",
-            "appendix_A", "appendix_B", "appendix_C", "appendix_D",
+            "appendix_A", "appendix_B", "appendix_C", "appendix_D", "appendix_E", "appendix_F",
         }
         if presenter and presenter_key in direct_note_keys and "presenter-heading" in text:
             base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
