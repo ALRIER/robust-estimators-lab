@@ -57,9 +57,12 @@ TECHNICAL_PRESENTER_NOTES = {
             "NOVELTY?|Integrated AI search + interpretable estimator design + frozen claim control.",
             "LIMIT?|Known truth is simulation-based; strongest gains are narrow.",
             "MAIN CONTRIBUTION|A reusable AI search framework with evidence-controlled acceptance.",
+            "HYPERPARAMETERS?|Open Appendix E · Hard numbers.",
+            "ESTIMATORS?|Open Appendix F · Estimator bases.",
         ],
         "Give the short answer first. Add detail only if the committee asks.",
-    ),    "appendix_E": (
+    ),
+    "appendix_E": (
         "Appendix E · Hard numbers",
         "Technical backup",
         [
