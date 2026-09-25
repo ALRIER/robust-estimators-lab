@@ -201,6 +201,8 @@ def _qa() -> str:
       <div class='qa'><div class='q'>What does the 11/34 Dirichlet signal mean?</div><div class='a'><b>It means some retained cells deserve another look.</b></div><div class='more'>It does not erase the 23/34 no-pass cells, and it does not replace fixed-weight confirmation.</div></div>
       <div class='qa'><div class='q'>What is the strongest contribution?</div><div class='a'><b>A reproducible framework that knows when to claim improvement and when to keep the benchmark.</b></div><div class='more'>The contribution combines statistical targeting, interpretable AI search and explicit claim control.</div></div>
       <div class='qa'><div class='q'>What is the main limitation?</div><div class='a'><b>The strongest known-truth evidence is simulation-based and the confirmed gains are narrow.</b></div><div class='more'>That is why the final claim is conditional rather than universal.</div></div>
+      <div class='qa'><div class='q'>What exact hyperparameters did you use?</div><div class='a'><b>Open Appendix E · Hard numbers.</b></div><div class='more'>It contains the population, operators, mutation, stopping, fitness penalties, HPF budgets and stage-by-stage changes.</div></div>
+      <div class='qa'><div class='q'>Which estimators were learnable in each discovery cycle?</div><div class='a'><b>Open Appendix F · Estimator bases.</b></div><div class='more'>Discovery I used 10 components; Discovery II kept those 10 and added 16 modern robust components.</div></div>
       <div class='qa'><div class='q'>What would you do next?</div><div class='a'><b>I would test prospective transfer in new domains without changing the frozen specialists.</b></div><div class='more'>I would also investigate the Dirichlet-signal cells and seek independent external replications.</div></div>
 
       <div class='takeaway'>Q&A RULE: answer the question first. Then open the exact technical tab — A through F — only if the committee asks for more detail.</div>
@@ -267,7 +269,13 @@ def _hard_numbers() -> str:
         <tr><td>Discovery evaluation</td><td>Monte Carlo R</td><td>40</td><td>Replicates used in the discovery evaluation setting.</td></tr>
         <tr><td>Discovery evaluation</td><td>Final bootstrap B</td><td>100</td><td>Bootstrap resamples at the discovery-stage final check.</td></tr>
         <tr><td>Hold-out</td><td>Regime fraction</td><td>30%</td><td>Regime evidence kept outside fitting.</td></tr>
+        <tr><td>Audit</td><td>Profile-matched exposure</td><td>10%</td><td>Audit exposure matched to the relevant profile.</td></tr>
+        <tr><td>Audit</td><td>Samples / B</td><td>20 / 40</td><td>Audit sampling and bootstrap budget.</td></tr>
+        <tr><td>Audit</td><td>Interfamily targets</td><td>max. 3 per winner</td><td>Caps cross-family profile audit targets.</td></tr>
+        <tr><td>Parallel</td><td>Reserve / max workers</td><td>3 / 6</td><td>Execution limits used by the final code.</td></tr>
       </table></div>
+
+      <div class='good'><b>Validation seeds:</b> 303 · 404 · 505 · 606 · 707 · 808 · 909 · 1010.</div>
 
       <div class='section'>4 · WHAT CHANGED BY STAGE?</div>
       <div class='table-wrap'><table class='hardtable'>
