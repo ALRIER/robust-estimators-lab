@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after adding Hard Numbers and Estimator Bases technical tabs.
+# Runtime refresh: rebuild Streamlit Cloud after simplifying Hard Numbers and Estimator Bases explanations.
 streamlit
 plotly
 pandas
