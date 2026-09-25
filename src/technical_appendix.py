@@ -24,6 +24,8 @@ APPENDIX_LABELS = (
     "B · Metrics & gate",
     "C · Results",
     "D · Q&A",
+    "E · Hard numbers",
+    "F · Estimator bases",
 )
 
 
@@ -73,7 +75,8 @@ def _css() -> str:
       .pass-panel,.fail-panel{border-radius:12px;padding:17px 18px}.pass-panel{background:#10372e;border:1px solid #54c786}.fail-panel{background:#351f20;border:1px solid #e66d4f}
       .result-title{font-size:18px;font-weight:900;color:#fff;margin-bottom:7px}.result-value{font-size:25px;font-weight:900;margin-bottom:5px}.pass-panel .result-value{color:#54c786}.fail-panel .result-value{color:#ff8669}.result-copy{font-size:14px;line-height:1.4;color:#e7eef7}
       .qa{background:#0b2138;border:1px solid #356e99;border-radius:14px;padding:19px 21px;margin-bottom:14px}.q{font-size:20px;font-weight:900;color:#72cfff;margin-bottom:7px}.a{font-size:18px;line-height:1.48;color:#edf5ff}.more{font-size:15px;line-height:1.44;color:#b9c8d9;margin-top:9px;border-top:1px solid #284c6b;padding-top:9px}
-      @media(max-width:1050px){.two,.three{grid-template-columns:1fr}.gate{grid-template-columns:1fr}.gate-mid{padding:6px}.card{grid-template-columns:78px 1fr}.flowarrow{display:none}.split-result{grid-template-columns:1fr}}
+      .table-wrap{overflow-x:auto;margin:14px 0 22px}.hardtable{width:100%;border-collapse:collapse;background:#0b2138;border:1px solid #356e99}.hardtable th{background:#12354a;color:#f3c743;text-align:left;font-size:14px;letter-spacing:.04em;padding:12px 13px;border-bottom:1px solid #356e99}.hardtable td{font-size:15px;line-height:1.4;color:#e8f2fc;padding:11px 13px;border-bottom:1px solid #244762;vertical-align:top}.hardtable td:nth-child(2){font-weight:850;color:#fff}.hardtable td:nth-child(3){font-weight:850;color:#72cfff;white-space:nowrap}.estimator-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.estimator-card{background:#10253a;border:1px solid #356e99;border-radius:12px;padding:15px 16px}.estimator-card .en{font-size:12px;font-weight:900;color:#f3c743;letter-spacing:.08em;margin-bottom:5px}.estimator-card .eh{font-size:18px;font-weight:900;color:#fff;margin-bottom:5px}.estimator-card .ec{font-size:14px;line-height:1.42;color:#bfd0e2}
+      @media(max-width:1050px){.two,.three,.estimator-grid{grid-template-columns:1fr}.gate{grid-template-columns:1fr}.gate-mid{padding:6px}.card{grid-template-columns:78px 1fr}.flowarrow{display:none}.split-result{grid-template-columns:1fr}}
     </style>
     """
 
@@ -200,8 +203,124 @@ def _qa() -> str:
       <div class='qa'><div class='q'>What is the main limitation?</div><div class='a'><b>The strongest known-truth evidence is simulation-based and the confirmed gains are narrow.</b></div><div class='more'>That is why the final claim is conditional rather than universal.</div></div>
       <div class='qa'><div class='q'>What would you do next?</div><div class='a'><b>I would test prospective transfer in new domains without changing the frozen specialists.</b></div><div class='more'>I would also investigate the Dirichlet-signal cells and seek independent external replications.</div></div>
 
-      <div class='takeaway'>Q&A RULE: answer the question first. Then open Appendix A–C only if the committee asks for the technical evidence behind the answer.</div>
+      <div class='takeaway'>Q&A RULE: answer the question first. Then open the exact technical tab — A through F — only if the committee asks for more detail.</div>
     </div>"""
+
+
+def _hard_numbers() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>TECHNICAL APPENDIX E · HARD NUMBERS</div>
+      <div class='title'>Exact GA settings, fitness and stage changes</div>
+      <div class='subtitle'>Use this page as a lookup sheet when the committee asks for the smallest implementation details. Values reproduce the final thesis tables; this page does not rerun the experiment.</div>
+
+      <div class='section'>1 · CORE GA OPERATORS</div>
+      <div class='table-wrap'><table class='hardtable'>
+        <tr><th>Block</th><th>Parameter</th><th>Value / grid</th><th>What it means</th></tr>
+        <tr><td>Population</td><td>Population size N</td><td>100</td><td>100 candidate weight vectors compete in each population.</td></tr>
+        <tr><td>Population</td><td>Generations per fold G</td><td>20</td><td>Maximum evolutionary updates inside each CV fold.</td></tr>
+        <tr><td>Population</td><td>CV folds K</td><td>3</td><td>Search is repeated across three non-overlapping scenario folds.</td></tr>
+        <tr><td>Population</td><td>Discovery seeds</td><td>101, 202</td><td>Two independent search seeds.</td></tr>
+        <tr><td>Initialisation</td><td>Dirichlet concentration α</td><td>{0.5, 1.0}</td><td>Controls how spread or concentrated the starting simplex weights are.</td></tr>
+        <tr><td>Selection</td><td>Tournament size</td><td>{2, 3}</td><td>Randomly compare 2 or 3 candidates; the better one becomes a parent.</td></tr>
+        <tr><td>Crossover</td><td>Blend coefficient α</td><td>U(0,1)</td><td>Child = α parent 1 + (1−α) parent 2.</td></tr>
+        <tr><td>Elitism</td><td>Elite count e</td><td>{1, 2}</td><td>Keep the best 1 or 2 candidates unchanged.</td></tr>
+        <tr><td>Mutation</td><td>Initial mutation rate μ₀</td><td>{0.12, 0.18}</td><td>12% or 18% starting probability of mutating an offspring.</td></tr>
+        <tr><td>Mutation</td><td>Minimum mutation rate μmin</td><td>0.05</td><td>Mutation never falls below 5%.</td></tr>
+        <tr><td>Mutation</td><td>Dirichlet αmut</td><td>{0.5, 1.0}</td><td>Controls the fresh simplex direction used by mutation.</td></tr>
+        <tr><td>Mutation</td><td>Schedule</td><td>log decay</td><td>Mutation pressure decreases as generations progress.</td></tr>
+        <tr><td>Diversity</td><td>Immigration rate ρ</td><td>{0.05, 0.10}</td><td>Replace 5% or 10% of weak candidates with fresh Dirichlet draws.</td></tr>
+        <tr><td>Diversity</td><td>Immigration frequency</td><td>every 15 gen.</td><td>Periodic diversity refresh.</td></tr>
+        <tr><td>Stopping</td><td>Check frequency</td><td>every 5 gen.</td><td>Check whether validation loss is still improving.</td></tr>
+        <tr><td>Stopping</td><td>Patience p</td><td>3 checkpoints</td><td>Allow three weak-improvement checks before stopping.</td></tr>
+        <tr><td>Stopping</td><td>Minimum improvement δ</td><td>0.005</td><td>Relative improvement below 0.5% counts as insufficient progress.</td></tr>
+      </table></div>
+
+      <div class='section'>2 · HOW THE POPULATION WAS SCORED</div>
+      <div class='formula-card'><div class='formula-label'>PRIMARY MIXED LOSS</div><div class='formula'>0.70 × q95 + 0.30 × maximum loss + regularisation</div><div class='formula-copy'>The fitness function puts most weight on difficult-case error, while penalties discourage unstable, biased or benchmark-dominated recipes.</div></div>
+      <div class='table-wrap'><table class='hardtable'>
+        <tr><th>Fitness term</th><th>Value</th><th>Purpose</th></tr>
+        <tr><td>q95 mixing weight</td><td>0.70</td><td>Main emphasis on upper-tail squared error.</td></tr>
+        <tr><td>Maximum-loss mixing weight</td><td>0.30</td><td>Penalises very poor worst observed losses.</td></tr>
+        <tr><td>Huber threshold δH</td><td>1.0</td><td>Threshold used in the robustified fitness calculation.</td></tr>
+        <tr><td>λinstab</td><td>0.15</td><td>Penalty weight for instability.</td></tr>
+        <tr><td>λentropy</td><td>0.015</td><td>Entropy regularisation weight.</td></tr>
+        <tr><td>λdom / τ</td><td>1.00 / 0.85</td><td>Dominance penalty and its threshold.</td></tr>
+        <tr><td>λbias</td><td>0.25</td><td>Penalty weight for bias.</td></tr>
+        <tr><td>λbench</td><td>1.25</td><td>Penalty weight tied to benchmark performance.</td></tr>
+        <tr><td>Benchmark mix</td><td>(0.35, 0.65)</td><td>MSE / q95 weighting inside the benchmark term.</td></tr>
+        <tr><td>Dominance multiplier</td><td>8.00</td><td>Strength of the dominance penalty.</td></tr>
+      </table></div>
+
+      <div class='section'>3 · DISCOVERY BUDGET</div>
+      <div class='table-wrap'><table class='hardtable'>
+        <tr><th>Step</th><th>Parameter</th><th>Value</th><th>Meaning</th></tr>
+        <tr><td>HPF1</td><td>Configuration fraction</td><td>25%</td><td>Only a quarter of hyperparameter configurations enter the first screen.</td></tr>
+        <tr><td>HPF1</td><td>Scenario exposure</td><td>60%</td><td>First screen uses 60% of the complete 576-scenario grid per fold.</td></tr>
+        <tr><td>HPF1</td><td>Generations / samples / B</td><td>8 / 15 / 40</td><td>Low-cost first screen.</td></tr>
+        <tr><td>HPF2</td><td>Survivor configurations K₂</td><td>8</td><td>Eight configurations move to the stronger screen.</td></tr>
+        <tr><td>HPF2 · Cycle I</td><td>Scenario exposure</td><td>80%</td><td>Initial discovery increases evidence after HPF1.</td></tr>
+        <tr><td>HPF2 · Cycle II</td><td>Scenario exposure</td><td>90%</td><td>Expanded rediscovery uses stronger exposure.</td></tr>
+        <tr><td>HPF2</td><td>Generations / samples / B</td><td>15 / 25 / 60</td><td>More expensive reassessment of survivors.</td></tr>
+        <tr><td>Halving</td><td>Keep fraction</td><td>50%</td><td>Drop the weaker half and focus budget on stronger specialists.</td></tr>
+        <tr><td>Held-out gate</td><td>Candidates evaluated</td><td>5</td><td>Top five finalists face the internal dual benchmark gate.</td></tr>
+        <tr><td>Discovery evaluation</td><td>Monte Carlo R</td><td>40</td><td>Replicates used in the discovery evaluation setting.</td></tr>
+        <tr><td>Discovery evaluation</td><td>Final bootstrap B</td><td>100</td><td>Bootstrap resamples at the discovery-stage final check.</td></tr>
+        <tr><td>Hold-out</td><td>Regime fraction</td><td>30%</td><td>Regime evidence kept outside fitting.</td></tr>
+      </table></div>
+
+      <div class='section'>4 · WHAT CHANGED BY STAGE?</div>
+      <div class='table-wrap'><table class='hardtable'>
+        <tr><th>Stage</th><th>GA?</th><th>Estimator role</th><th>Exposure / precision</th><th>Main change</th></tr>
+        <tr><td>1 · Initial discovery</td><td>YES</td><td>10 learnable</td><td>HPF1 60% → HPF2 80% · seeds 101/202</td><td>Classical discovery basis and internal held-out gate.</td></tr>
+        <tr><td>2 · Frozen confirmation I</td><td>NO</td><td>10-component weights frozen · modern estimators become comparators</td><td>8 new validation seeds · R=500 · B=500</td><td>Original + locked-unseen related regimes; no retraining.</td></tr>
+        <tr><td>3 · Expanded rediscovery</td><td>YES</td><td>26 learnable</td><td>HPF1 60% → HPF2 90% · seeds 101/202</td><td>Modern benchmark pressure from HPF1; CV-019 and CV-010 may enter as warm starts with no bonus.</td></tr>
+        <tr><td>4 · Frozen validation II</td><td>NO</td><td>26-component weights frozen</td><td>8 validation seeds · R=500 · B=500</td><td>Original + locked-unseen modes produce the evidence taxonomy.</td></tr>
+        <tr><td>5A · Real-world battery</td><td>NO</td><td>Frozen specialists only</td><td>264 requested → 228 loaded → 120 evaluated → 43 eligible</td><td>No reoptimisation on public data.</td></tr>
+        <tr><td>5B · Dirichlet audit</td><td>NO GA</td><td>Random vectors on the same 26-component simplex</td><td>4,000 draws × 8 seeds · α=0.30 · R=500</td><td>Independent check of whether benchmark-retained cells hide easy simplex opportunities.</td></tr>
+      </table></div>
+
+      <div class='takeaway'>LOOKUP RULE: search settings create candidates; frozen stages increase evidence precision without changing the weights.</div>
+    </div>"""
+
+
+def _estimator_bases() -> str:
+    return _css() + """
+    <div class='page'>
+      <div class='kicker'>TECHNICAL APPENDIX F · ESTIMATOR BASES</div>
+      <div class='title'>Which estimators could the GA combine?</div>
+      <div class='subtitle'>Discovery I used 10 learnable components. Discovery II retained those 10 and added 16 modern robust alternatives, giving 26 learnable components.</div>
+
+      <div class='section'>1 · DISCOVERY I — INITIAL 10 COMPONENTS</div>
+      <div class='estimator-grid'>
+        <div class='estimator-card'><div class='en'>01</div><div class='eh'>Sample mean</div><div class='ec'>Classical estimator of E[X].</div></div>
+        <div class='estimator-card'><div class='en'>02</div><div class='eh'>Sample median</div><div class='ec'>Robust location statistic.</div></div>
+        <div class='estimator-card'><div class='en'>03</div><div class='eh'>20% trimmed mean</div><div class='ec'>Remove 20% from each tail, then average.</div></div>
+        <div class='estimator-card'><div class='en'>04</div><div class='eh'>Harmonic mean</div><div class='ec'>Used only when all observations are positive.</div></div>
+        <div class='estimator-card'><div class='en'>05</div><div class='eh'>Geometric mean</div><div class='ec'>Used only when all observations are positive.</div></div>
+        <div class='estimator-card'><div class='en'>06</div><div class='eh'>Half-sample mode</div><div class='ec'>Modal estimator based on the narrowest half-sample.</div></div>
+        <div class='estimator-card'><div class='en'>07</div><div class='eh'>Parzen kernel mode</div><div class='ec'>Mode from a kernel-density estimate.</div></div>
+        <div class='estimator-card'><div class='en'>08</div><div class='eh'>Tukey trimean</div><div class='ec'>Quartile-based location summary.</div></div>
+        <div class='estimator-card'><div class='en'>09</div><div class='eh'>Huber location</div><div class='ec'>Robust M-estimator in the original library.</div></div>
+        <div class='estimator-card'><div class='en'>10</div><div class='eh'>Tukey biweight location</div><div class='ec'>Bounded-influence robust location estimator.</div></div>
+      </div>
+
+      <div class='section'>2 · DISCOVERY II — 16 ADDITIONS</div>
+      <div class='two'>
+        <div class='card'><div class='icon'>W</div><div><div class='label'>+3 WINSORISED MEANS</div><div class='headline'>p = 0.05 · 0.10 · 0.20</div><div class='copy'>Clip increasingly large fractions of each tail before averaging.</div></div></div>
+        <div class='card'><div class='icon'>M</div><div><div class='label'>+3 MEDIAN-OF-MEANS</div><div class='headline'>k = 5 · 10 · 20 blocks</div><div class='copy'>Split the sample into blocks, average each block, then take the median.</div></div></div>
+        <div class='card'><div class='icon'>C</div><div><div class='label'>+5 CATONI-TYPE M ESTIMATORS</div><div class='headline'>a = 0.05 · 0.10 · 0.20 · 0.35 · 0.50</div><div class='copy'>Implementation-specific sensitivity settings; larger a gives stronger nonlinear attenuation.</div></div></div>
+        <div class='card'><div class='icon'>H</div><div><div class='label'>+5 TUNED HUBER LOCATIONS</div><div class='headline'>k = 0.75 · 1.00 · 1.345 · 1.75 · 2.00</div><div class='copy'>Five robustness-efficiency tuning levels enter as separate learnable components.</div></div></div>
+      </div>
+
+      <div class='formula-card'><div class='formula-label'>LIBRARY CHANGE</div><div class='formula'>10 original + 16 additions = 26 learnable estimators</div><div class='formula-copy'>The expanded search changes what the GA is able to build. Modern robust estimators become components from HPF1 onward, not merely later comparators.</div></div>
+
+      <div class='warn'><b>Support rule:</b> harmonic and geometric means are excluded when positivity requirements are not satisfied.</div>
+      <div class='story'><b>Important:</b> the five Catoni-type components are the implementation-specific M-estimators defined in the thesis. They are not claimed to inherit Catoni's theoretical finite-sample guarantee.</div>
+
+      <div class='takeaway'>QUESTION TO REMEMBER: Discovery I asks what can be built from 10 components. Discovery II asks whether direct access to a 26-component modern robust library changes the specialist map.</div>
+    </div>"""
+
 
 
 def _read_csv(rel: str) -> pd.DataFrame:
@@ -282,8 +401,8 @@ def render_technical_appendix() -> None:
                       on_click=_set_section, args=(i,))
     st.markdown('</div>', unsafe_allow_html=True)
 
-    docs = (_ga_mechanics, _metrics_gate, _results, _qa)
-    heights = (1800, 1850, 3000, 2200)
+    docs = (_ga_mechanics, _metrics_gate, _results, _qa, _hard_numbers, _estimator_bases)
+    heights = (1800, 1850, 3000, 2200, 4300, 2600)
     sec = st.session_state.appendix_section
     components.html(docs[sec](), height=heights[sec], scrolling=False)
 
