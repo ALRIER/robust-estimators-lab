@@ -223,15 +223,15 @@ def _hard_numbers() -> str:
         <tr><td>Population</td><td>Generations per fold G</td><td>20</td><td>Maximum evolutionary updates inside each CV fold.</td></tr>
         <tr><td>Population</td><td>CV folds K</td><td>3</td><td>Search is repeated across three non-overlapping scenario folds.</td></tr>
         <tr><td>Population</td><td>Discovery seeds</td><td>101, 202</td><td>Two independent search seeds.</td></tr>
-        <tr><td>Initialisation</td><td>Dirichlet concentration α</td><td>{0.5, 1.0}</td><td>Controls how spread or concentrated the starting simplex weights are.</td></tr>
-        <tr><td>Selection</td><td>Tournament size</td><td>{2, 3}</td><td>Randomly compare 2 or 3 candidates; the better one becomes a parent.</td></tr>
+        <tr><td>Initialisation</td><td>Dirichlet concentration α</td><td>{0.5, 1.0}</td><td>Randomly creates valid starting weight recipes. α=0.5 tends to produce more uneven weights; α=1.0 is a neutral uniform draw over the simplex.</td></tr>
+        <tr><td>Selection</td><td>Tournament size</td><td>{2, 3}</td><td>Pick 2 or 3 candidates at random, compare fitness, and let the best one enter the parent pool.</td></tr>
         <tr><td>Crossover</td><td>Blend coefficient α</td><td>U(0,1)</td><td>Child = α parent 1 + (1−α) parent 2.</td></tr>
         <tr><td>Elitism</td><td>Elite count e</td><td>{1, 2}</td><td>Keep the best 1 or 2 candidates unchanged.</td></tr>
-        <tr><td>Mutation</td><td>Initial mutation rate μ₀</td><td>{0.12, 0.18}</td><td>12% or 18% starting probability of mutating an offspring.</td></tr>
+        <tr><td>Mutation</td><td>Initial mutation rate μ₀</td><td>{0.12, 0.18}</td><td>Each child begins with a 12% or 18% chance of receiving a small random change in its weights.</td></tr>
         <tr><td>Mutation</td><td>Minimum mutation rate μmin</td><td>0.05</td><td>Mutation never falls below 5%.</td></tr>
         <tr><td>Mutation</td><td>Dirichlet αmut</td><td>{0.5, 1.0}</td><td>Controls the fresh simplex direction used by mutation.</td></tr>
-        <tr><td>Mutation</td><td>Schedule</td><td>log decay</td><td>Mutation pressure decreases as generations progress.</td></tr>
-        <tr><td>Diversity</td><td>Immigration rate ρ</td><td>{0.05, 0.10}</td><td>Replace 5% or 10% of weak candidates with fresh Dirichlet draws.</td></tr>
+        <tr><td>Mutation</td><td>Schedule</td><td>log decay</td><td>The mutation probability falls slowly over generations toward the 5% floor, allowing more exploration early and more stability later.</td></tr>
+        <tr><td>Diversity</td><td>Immigration rate ρ</td><td>{0.05, 0.10}</td><td>To stop the population becoming too similar, replace the worst 5% or 10% with fresh random recipes.</td></tr>
         <tr><td>Diversity</td><td>Immigration frequency</td><td>every 15 gen.</td><td>Periodic diversity refresh.</td></tr>
         <tr><td>Stopping</td><td>Check frequency</td><td>every 5 gen.</td><td>Check whether validation loss is still improving.</td></tr>
         <tr><td>Stopping</td><td>Patience p</td><td>3 checkpoints</td><td>Allow three weak-improvement checks before stopping.</td></tr>
@@ -239,7 +239,7 @@ def _hard_numbers() -> str:
       </table></div>
 
       <div class='section'>2 · HOW THE POPULATION WAS SCORED</div>
-      <div class='formula-card'><div class='formula-label'>PRIMARY MIXED LOSS</div><div class='formula'>0.70 × q95 + 0.30 × maximum loss + regularisation</div><div class='formula-copy'>The fitness function puts most weight on difficult-case error, while penalties discourage unstable, biased or benchmark-dominated recipes.</div></div>
+      <div class='formula-card'><div class='formula-label'>PRIMARY MIXED LOSS</div><div class='formula'>0.70 × q95 + 0.30 × maximum loss + regularisation</div><div class='formula-copy'>q95 represents difficult-case risk. Maximum loss is the candidate's single worst scenario-level loss among the tested conditions. The extra penalties discourage unstable, biased or benchmark-dominated recipes.</div></div>
       <div class='table-wrap'><table class='hardtable'>
         <tr><th>Fitness term</th><th>Value</th><th>Purpose</th></tr>
         <tr><td>q95 mixing weight</td><td>0.70</td><td>Main emphasis on upper-tail squared error.</td></tr>
@@ -315,18 +315,16 @@ def _estimator_bases() -> str:
 
       <div class='section'>2 · DISCOVERY II — 16 ADDITIONS</div>
       <div class='two'>
-        <div class='card'><div class='icon'>W</div><div><div class='label'>+3 WINSORISED MEANS</div><div class='headline'>p = 0.05 · 0.10 · 0.20</div><div class='copy'>Clip increasingly large fractions of each tail before averaging.</div></div></div>
-        <div class='card'><div class='icon'>M</div><div><div class='label'>+3 MEDIAN-OF-MEANS</div><div class='headline'>k = 5 · 10 · 20 blocks</div><div class='copy'>Split the sample into blocks, average each block, then take the median.</div></div></div>
-        <div class='card'><div class='icon'>C</div><div><div class='label'>+5 CATONI-TYPE M ESTIMATORS</div><div class='headline'>a = 0.05 · 0.10 · 0.20 · 0.35 · 0.50</div><div class='copy'>Implementation-specific sensitivity settings; larger a gives stronger nonlinear attenuation.</div></div></div>
-        <div class='card'><div class='icon'>H</div><div><div class='label'>+5 TUNED HUBER LOCATIONS</div><div class='headline'>k = 0.75 · 1.00 · 1.345 · 1.75 · 2.00</div><div class='copy'>Five robustness-efficiency tuning levels enter as separate learnable components.</div></div></div>
+        <div class='card'><div class='icon'>W</div><div><div class='label'>+3 WINSORIZED MEANS</div><div class='headline'>Winsorized 5% · 10% · 20%</div><div class='copy'>Cap the lowest and highest 5%, 10% or 20% at boundary values, then average. Extreme observations stay in the sample, but their influence is limited.</div></div></div>
+        <div class='card'><div class='icon'>M</div><div><div class='label'>+3 MEDIAN-OF-MEANS</div><div class='headline'>MOM k = 5 · 10 · 20</div><div class='copy'>Split the data into k blocks, compute one mean per block, then take the median of those means. Here k is simply the number of blocks.</div></div></div>
+        <div class='card'><div class='icon'>C</div><div><div class='label'>+5 CATONI-TYPE M ESTIMATORS</div><div class='headline'>Catoni a = 0.05 · 0.10 · 0.20 · 0.35 · 0.50</div><div class='copy'>A robust mean that softens very large deviations instead of letting them dominate. Parameter a controls the strength of that nonlinear response; five levels were tested.</div></div></div>
+        <div class='card'><div class='icon'>H</div><div><div class='label'>+5 TUNED HUBER LOCATIONS</div><div class='headline'>Huber k = 0.75 · 1.00 · 1.345 · 1.75 · 2.00</div><div class='copy'>Huber behaves like a mean near the centre and downweights large deviations. k is the cutoff: smaller k is more robust; larger k is more mean-like.</div></div></div>
       </div>
 
       <div class='formula-card'><div class='formula-label'>LIBRARY CHANGE</div><div class='formula'>10 original + 16 additions = 26 learnable estimators</div><div class='formula-copy'>The expanded search changes what the GA is able to build. Modern robust estimators become components from HPF1 onward, not merely later comparators.</div></div>
 
-      <div class='warn'><b>Support rule:</b> harmonic and geometric means are excluded when positivity requirements are not satisfied.</div>
-      <div class='story'><b>Important:</b> the five Catoni-type components are the implementation-specific M-estimators defined in the thesis. They are not claimed to inherit Catoni's theoretical finite-sample guarantee.</div>
-
-      <div class='takeaway'>QUESTION TO REMEMBER: Discovery I asks what can be built from 10 components. Discovery II asks whether direct access to a 26-component modern robust library changes the specialist map.</div>
+      <div class='warn'><b>Support rule:</b> harmonic and geometric means are intended for positive data. When the distribution can generate zero or negative values, those components are blocked from receiving weight.</div>
+      <div class='story'><b>Catoni precision:</b> these are the implementation-specific Catoni-type M-estimators defined in the thesis. The five a values are tuning levels used in this implementation.</div>
     </div>"""
 
 
