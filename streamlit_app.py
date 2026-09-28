@@ -20,6 +20,7 @@ from src.research_logic import PANELS as RESEARCH_PANELS, research_logic_svg
 from src.data_world import DATA_WORLD_VIEWS, data_world_detail_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
+from src.presenter_sync import publish_current_cue
 
 UNIVERSITY_LOGO_DATA_URI = (
     "data:image/jpeg;base64,"
@@ -695,6 +696,10 @@ with st.sidebar:
     previous.button("← Previous", use_container_width=True, disabled=position == 0, on_click=_navigate, args=(position - 1,))
     following.button("Next →", use_container_width=True, disabled=position == len(DEFENSE_INDEX) - 1, on_click=_navigate, args=(position + 1,))
     st.markdown(_presenter_notes_link(_presenter_note_key(active_section)), unsafe_allow_html=True)
+
+# One-way synchronization: the audience deck publishes its current cue.
+# Presenter Companion can follow it, but never writes back to this presentation.
+publish_current_cue(active_section)
 
 if active_section == "03 · Simulation lab":
     # This is a real, deterministic sample construction, not an analogy.
