@@ -1,11 +1,14 @@
-# 7-day sprint board
+# Stabilization board
 
-| Day | Must finish | Nice to have | Stop condition |
-|---|---|---|---|
-| 1 | Environment, navigation, data preprocessing, Layer 1 base | animations | all tests green |
-| 2 | Layer 1 polished + presentation mode | extra distributions | mockup resemblance |
-| 3 | mini-GA + 3D simplex terrain | step-by-step genetic operators | <5s demo run |
-| 4 | Layer 3 results explorer | fancy transitions | source-accurate pass/fail |
-| 5 | Layer 4 validation/evidence | Dirichlet extra panel | stage distinctions correct |
-| 6 | performance + visual polish + responsive layout | export buttons | offline stable |
-| 7 | freeze, rehearsal, screenshots, video backup | none | no major coding after freeze |
+The original seven-day build sprint is complete. This file now tracks repository stabilization priorities.
+
+| Priority | Task | Completion condition |
+|---|---|---|
+| P0 | Canonicalize deployment | main + streamlit_app.py documented everywhere |
+| P0 | Visible build ID | public app shows current `src/app_meta.py` BUILD_ID |
+| P0 | Reconcile temporary branches | temporary branches point to canonical main or are deleted |
+| P1 | Reconcile documentation | no Dash/4-layer instructions remain in active docs |
+| P1 | Keep scientific sources immutable | no result archive modified |
+| P1 | Reduce duplicated live logic | each defense view has one canonical renderer |
+| P2 | Gradually split `streamlit_app.py` | refactor layer-by-layer without changing behavior |
+| P2 | Remove verified dead modules | only after import/dependency audit |
