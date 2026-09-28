@@ -1,114 +1,87 @@
-# Master plan — 7-day build
+# Master plan — canonical Streamlit defense app
 
 ## Product concept
-`Robust Estimators Lab` is a visual teaching and evidence interface around the thesis. It is not a replacement for the R pipeline and it does not retrain the full GA.
+`Robust Estimators Lab` is the live visual interface for the thesis defense. It teaches the statistical problem, explains the GA search, and presents precomputed thesis evidence without rerunning the full research pipeline.
 
-## Layer 1 — Build the problem
-**Purpose:** teach why estimator ranking changes with the data-generating regime.
+## Canonical runtime
+- Framework: Streamlit + Plotly
+- Branch: `main`
+- Entrypoint: `streamlit_app.py`
+- Runtime data: bundled CSVs under `data/raw/` and `data/processed/`
 
-Controls:
-- distribution family
-- skewness / family parameters when relevant
-- contamination direction / structure
-- contamination rate
-- outlier scale
-- sample size
-- regenerate sample
+## Defense structure
 
-Outputs:
-- clean vs contaminated sample/density
-- Mean, Median, Trimmed Mean, Huber, Biweight markers
-- compact estimator cards
-- comparison panel
-- `No single estimator is uniformly best` teaching note
+### 00 · Cover
+Opening title, thesis framing, and navigation.
 
-Data source: generated live in Python. No thesis claim is made from this synthetic demonstration.
+### 01 · Research logic
+Explains:
+- fixed estimand `E[X]`
+- regime dependence
+- simplex-constrained composite estimators
+- H1–H4 reasoning chain
 
-## Layer 2 — GA search
-**Purpose:** make simplex search and evolution intuitive.
+### 02 · Data-generating world
+Shows the controlled simulation world, distribution families, contamination structures, and validation coverage.
 
-Two modes:
-### A. DEMO MODE
-- lightweight live GA
-- 3–5 estimators
-- ~30–60 individuals
-- ~20–40 generations
-- deterministic seed
-- selection, crossover, mutation, diversity and convergence
-- should complete in seconds
+### 03 · Simulation lab
+Live deterministic pedagogical sample construction. This is teaching output, not thesis evidence.
 
-### B. THESIS RESULTS MODE
-- final real weights and outcomes from R CSVs
-- no invented generational playback
+### 04 · Monte Carlo engine
+Explains how risk is measured and how the data-generating world was validated.
 
-Key visualization:
-- triangular simplex slice with three named estimators
-- 3D geological error landscape (height = error)
-- population dots and path only for DEMO MODE or genuine exported history
-- toggle MSE / q95(MSE) where computationally supported
-- mandatory caption: `Low-dimensional slice of the full 26-dimensional simplex.`
+### 05 · GA search
+Pedagogical mini-GA and simplex visualization. Demo trajectories are clearly separated from precomputed thesis results.
 
-## Layer 3 — Thesis results explorer
-**Purpose:** show what the actual research found.
+### 06 · Experiment pipeline
+Contains two views:
 
-Filters:
-- family
-- regime
-- source seed
-- gate pass/fail
-- final selected type
-- evidence grade when available
+1. **Thesis GA Architecture**
+   - implemented search architecture
+   - fitness, freeze, gate and configuration
 
-Outputs:
-- winner card
-- top-26 weight vector / top weights
-- GA vs best benchmark mean MSE
-- GA vs best benchmark q95(MSE)
-- relative gains
-- regime description
-- explicit pass/fail decision
+2. **Evidence Pipeline**
+   - Stage 1: Initial discovery
+   - Stage 2: Frozen confirmation I
+   - Stage 3: Expanded rediscovery
+   - Stage 4: Frozen validation II
+   - Stage 5: External evidence + abstention audit
 
-Teaching examples to preserve:
-- a clear discovery-stage GA pass, e.g. Ex-Wald REG03 seed101, for explaining specialist discovery
-- a benchmark-retained case, e.g. Ex-Gaussian REG01 seed101, to show the system does not force GA wins
-- do not equate discovery pass with fixed-weight confirmation; Layer 4 handles that distinction
+Stage 5 is the canonical location for the external evidence story.
 
-## Layer 4 — Validation pipeline
-**Purpose:** demonstrate that optimization is not the final evidence.
+### 07 · Conclusions
+Synthesizes bounded claims, contributions and limitations.
 
-Visual pipeline:
-`Discovery → held-out / fixed-weight validation → bootstrap CI → evidence taxonomy → optional Dirichlet/abstain audit`
+### 08 · Technical drill-down
+Backup evidence for committee questions:
+- candidate-level results
+- fixed-weight validation
+- bootstrap intervals
+- evidence taxonomy
+- external evidence details
 
-Outputs:
-- final fixed-weight validation decision
-- seed-level expanded gate
-- bootstrap confidence intervals
-- evidence grade and interpretive note
-- validated specialists table
-- optional Dirichlet/abstain sanity panel
+## Scientific architecture
 
-## Architecture
 ```text
-R research pipeline (read-only archives)
-            │
-            ▼
-curated raw CSVs ──► preprocessing ──► data/processed/*.csv
-                                           │
-                                           ▼
-                                   Python Dash app
-                      ┌──────────┬──────────┬──────────┬──────────┐
-                      │ Layer 1  │ Layer 2  │ Layer 3  │ Layer 4  │
-                      └──────────┴──────────┴──────────┴──────────┘
+read-only research archives / exported results
+                │
+                ▼
+        curated CSV evidence
+                │
+                ▼
+       data/raw + data/processed
+                │
+                ▼
+        Streamlit defense app
+                │
+     ┌──────────┴──────────┐
+     │                     │
+ pedagogical demo      thesis evidence
+     │                     │
+ live Python           precomputed only
 ```
 
-## Seven-day sprint
-**Day 1:** repo boot, data contracts, navigation, visual system, Layer 1 skeleton.  
-**Day 2:** finish Layer 1; presentation mode; tests.  
-**Day 3:** mini-GA + 2D/3D simplex landscape; clear DEMO badge.  
-**Day 4:** Layer 3 real-results explorer and winner weights.  
-**Day 5:** Layer 4 fixed-weight validation + evidence taxonomy.  
-**Day 6:** visual polish, responsiveness, performance, offline packaging.  
-**Day 7:** rehearsal mode, backup screenshots/video, bug fixes, freeze.
+## Change discipline
+Audience-facing changes must be made in the renderer actually called by `streamlit_app.py`. Do not create alternate implementations of the same defense layer.
 
-## Remaining eight days before defense
-Do not add major features. Use them for video recording, defense integration, supervisor feedback, typography fixes, and contingency.
+Deployment-facing changes must advance the build identifier in `src/app_meta.py`.
