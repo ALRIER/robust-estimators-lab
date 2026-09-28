@@ -30,7 +30,7 @@ UNIVERSITY_LOGO_DATA_URI = (
 
 # Presenter notes are a rehearsal aid, not a source of new thesis claims.  Each
 # Deployment refresh: Cycle II expanded-rediscovery evidence synchronized 2026-09-28.
-# Visual refresh: larger Cycle II family cards for defense readability.\n# Layout restore: evidence-pipeline SVG uses the stable Streamlit component renderer.
+# Visual refresh: larger Cycle II family cards for defense readability.\n# Layout restore: evidence-pipeline SVG uses the stable Streamlit component renderer.\n# Stage 5 refresh: external evidence + abstention audit unified into one narrative screen.
 # entry below is condensed from the defense deck, thesis, and final KBS notation.
 PRESENTER_NOTES = {
     "cover": ("Opening", "Defense deck · title slide", [
@@ -187,16 +187,26 @@ PRESENTER_NOTES = {
         ]),
         ("POSSIBLE QUESTIONS", [("What does locked-unseen mean?", "It is a structurally related regime that was unavailable during the discovery cycle, so it tests transfer without allowing retraining."), ("Why use an evidence taxonomy?", "The gate decision is binary, but the taxonomy records how broad or local the supported evidence is without changing the gate itself.")]),
     ], "Move from controlled synthetic evidence to external calibration and abstention audit."),
-    "pipeline_stage_4": ("Layer 6 · Stage 5 — External Evidence + Audit", "Final thesis real-world battery and Dirichlet audit", [
+    "pipeline_stage_4": ("Layer 6 · Stage 5 — External Evidence + Audit", "Final thesis real-world battery and Dirichlet abstention audit", [
         ("HELP", [
-            "The real-world battery requested 264 datasets/targets, loaded 228, evaluated 120, and retained 43 as eligible parent datasets.",
-            "Frozen specialists are applied without reoptimization; 26 of the 43 eligible parent datasets produced at least one corrected win, with 255 profile-matched confirmations surviving FDR control.",
-            "The Dirichlet audit is a separate abstention check, not another discovery stage.",
-            "It evaluates 4,000 random simplex vectors across eight audit seeds in benchmark-retained regimes.",
-            "The audit found 23 of 34 regimes with no random pass, 11 of 34 with some signal, and all 8 strongest positive controls passing.",
+            "STEP 1 — BUILD THE BATTERY: 264 public dataset targets formed the broad starting universe for testing frozen specialists outside simulation.",
+            "STEP 2 — LOAD + DOCUMENT: 228 sources loaded successfully. The registry preserves URL, access time, file hash, variables, transforms and diagnostics, so exclusions are visible rather than silent.",
+            "STEP 3 — EVALUATE USABLE DATA: 120 dataset IDs actually entered the compact external evaluation output after loading, preparation and selection.",
+            "STEP 4 — APPLY THE PROFILE GATE: 43 parent datasets remained eligible for the primary claim because their empirical profiles supported an in-regime, pre-registered specialist-versus-benchmark comparison.",
+            "STEP 5 — CONTROL MULTIPLICITY: gains and paired bootstrap evidence were aggregated at dataset level and filtered with Benjamini–Hochberg FDR. Corrected positive signal appeared in 26 of 43 eligible parents.",
+            "STEP 6 — MEASURE DEPTH: 255 corrected confirmations survived inside those parents. This is repeated profile-matched evidence, not 255 independent public datasets.",
+            "STEP 7 — AUDIT ABSTENTIONS: benchmark-retained synthetic cases were challenged with 4,000 random Dirichlet simplex mixtures across 8 seeds. Of 34 audited regime-mode rows, 23 had no random pass and 11 showed some random signal; the positive-control sanity check passes all 8 seeds.",
+            "The final interpretation is conditional: external evidence has both breadth and depth, while the audit shows benchmark retention was often meaningful without claiming that every abstention was beyond challenge.",
         ]),
-        ("POSSIBLE QUESTIONS", [("Why is the real-data layer calibration rather than known-theta validation?", "Real data do not reveal the population mean, so the full-sample mean is an empirical reference rather than population ground truth."), ("What does the Dirichlet audit test?", "It asks whether arbitrary simplex mixtures expose signal in regimes where the selected GA candidate abstained; it does not rerun or replace the GA."), ("Are the 255 confirmations 255 independent datasets?", "No. Breadth is represented by the 43 eligible parent datasets; the 255 results are profile-matched repeated confirmations within that external battery.")]),
-    ], "Now inspect the precomputed thesis results that survived this programme."),
+        ("POSSIBLE QUESTIONS", [
+            ("What exactly were the 264 requested items?", "They were public dataset targets or dataset-variable targets assembled for the external real-world battery; they are the starting universe, not the final evidence denominator."),
+            ("Why do 264 requested become 228 loaded?", "Some requested sources could not be loaded or used. The registry records loading status and provenance so the narrowing is auditable."),
+            ("Why do only 43 parent datasets define the main denominator?", "The primary claim is restricted to eligible in-regime, profile-matched, pre-registered comparisons. Related depth variants are nested under their parent and are not independent datasets."),
+            ("What do the 26 of 43 mean?", "Breadth: 26 eligible parent datasets produced at least one corrected positive external signal after the primary multiplicity layer."),
+            ("What do the 255 confirmations mean?", "Depth: 255 corrected surviving evidence rows occurred within the eligible parents. They are repeated confirmations, not 255 independent datasets."),
+            ("What does the Dirichlet audit add?", "It independently challenges benchmark-retained synthetic cases with random valid simplex mixtures to test whether abstention could simply reflect a missed easy composite."),
+        ]),
+    ], "Conclude with the bounded claim: conditional external transfer plus an independently audited abstention rule."),
     "results": ("Layer 7 · Results journey", "Defense deck · Results: strict validation and transfer/audit", [
         "Use the selected result stage to make a bounded claim. Stronger validation narrows broad discovery signals to local specialists.",
         "The essential conclusion is evidence conditional on profile, not a universal GA winner.",
@@ -478,8 +488,9 @@ PRESENTER_FORMULA_CARDS = {
         ("SECOND FREEZE", "w*_{26} → original + locked-unseen validation", ["w*_{26} = candidate learned in expanded rediscovery.", "Both validation modes use the exact frozen vector.", "No adaptation occurs after the second discovery cycle closes."]),
     ],
     "pipeline_stage_4": [
-        ("REAL-WORLD FUNNEL", "264 → 228 → 120 → 43", ["264 = requested targets/datasets in the external battery.", "228 = successfully loaded.", "120 = evaluated after preparation and profile logic.", "43 = eligible parent datasets used for the main parent-level evidence summary."]),
-        ("DIRICHLET AUDIT", "4,000 random vectors × 8 seeds", ["Random simplex vectors are tested in benchmark-retained regimes.", "This is an abstention audit rather than a new GA search."]),
+        ("EXTERNAL EVIDENCE FUNNEL", "264 requested → 228 loaded → 120 evaluated → 43 eligible parents", ["264 = public dataset targets assembled for external testing.", "228 = targets that loaded successfully with auditable provenance.", "120 = dataset IDs that actually entered external evaluation.", "43 = eligible parent datasets defining the primary external denominator."]),
+        ("BREADTH + DEPTH", "26 / 43 parents · 255 corrected confirmations", ["26 / 43 = breadth across independent parent sources.", "255 = depth of corrected profile-matched evidence within those parents.", "255 must not be described as 255 independent datasets."]),
+        ("ABSTENTION AUDIT", "34 rows · 4,000 random vectors × 8 seeds", ["23 / 34 audited regime-mode rows had no random pass.", "11 / 34 showed some random composite signal.", "The positive-control sanity check passes all 8 seeds."]),
     ],
     "results": [
         ("RELATIVE GAIN", "Gain% = 100 × (MSE_b − MSE_c) / MSE_b", [
@@ -942,39 +953,34 @@ if active_section == "06 · Experiment pipeline":
                           type="primary" if index == st.session_state.story_stage else "secondary",
                           on_click=_set_presenter_state, args=("story_stage", index))
         st.markdown('</div>', unsafe_allow_html=True)
-        components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
-        st.caption(f"You are seeing Stage {st.session_state.story_stage + 1} of 5. The numerical facts are fixed thesis settings/results; this visual narrative never reruns the thesis GA.")
-
-        # Stage 3 now carries its result directly below the method view so the
-        # presenter can scroll from "what changed" to "what happened" without
-        # jumping to a separate Results tab.
-        if int(st.session_state.story_stage) == 2:
-            st.markdown("---")
+        if int(st.session_state.story_stage) == 4:
+            # Stage 5 is intentionally unified into one screen: results on the
+            # left, methodology on the right, paired row-by-row with arrows.
             st.markdown(
-                "<div class='layer-heading'>Expanded rediscovery · result</div>",
-                unsafe_allow_html=True,
-            )
-            st.plotly_chart(result_figure(1), use_container_width=True)
-        elif int(st.session_state.story_stage) == 3:
-            st.markdown("---")
-            st.markdown(
-                "<div class='layer-heading'>Frozen Validation II · result</div>",
-                unsafe_allow_html=True,
-            )
-            st.plotly_chart(result_figure(2), use_container_width=True)
-        elif int(st.session_state.story_stage) == 4:
-            st.markdown("---")
-            st.markdown(
-                "<div class='layer-heading'>External evidence · real-world battery</div>",
+                "<div class='layer-heading'>External evidence + abstention audit</div>",
                 unsafe_allow_html=True,
             )
             st.plotly_chart(result_figure(3), use_container_width=True)
-            st.markdown("---")
-            st.markdown(
-                "<div class='layer-heading'>External evidence · Dirichlet audit</div>",
-                unsafe_allow_html=True,
-            )
-            st.plotly_chart(result_figure(4), use_container_width=True)
+            st.caption("One-screen synthesis of the fixed external battery and independent Dirichlet abstention audit. No retraining or recomputation occurs here.")
+        else:
+            components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
+            st.caption(f"You are seeing Stage {st.session_state.story_stage + 1} of 5. The numerical facts are fixed thesis settings/results; this visual narrative never reruns the thesis GA.")
+
+            # Stages 3–4 carry their result directly below the method view.
+            if int(st.session_state.story_stage) == 2:
+                st.markdown("---")
+                st.markdown(
+                    "<div class='layer-heading'>Expanded rediscovery · result</div>",
+                    unsafe_allow_html=True,
+                )
+                st.plotly_chart(result_figure(1), use_container_width=True)
+            elif int(st.session_state.story_stage) == 3:
+                st.markdown("---")
+                st.markdown(
+                    "<div class='layer-heading'>Frozen Validation II · result</div>",
+                    unsafe_allow_html=True,
+                )
+                st.plotly_chart(result_figure(2), use_container_width=True)
 
 if active_section == "08 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
