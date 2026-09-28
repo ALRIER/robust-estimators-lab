@@ -20,6 +20,7 @@ from src.presenter_catalog import (
     flat_sequence,
     speaking_cues,
 )
+from src.presenter_sync import read_current_cue
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +32,24 @@ _LOGO = "data:image/jpeg;base64," + b64encode(
 def _set_index(index: int) -> None:
     total = len(flat_sequence())
     st.session_state.companion_index = max(0, min(int(index), total - 1))
+
+
+def _index_for_key(sequence, cue_key: str | None) -> int | None:
+    if not cue_key:
+        return None
+    for index, (_layer, key, _label) in enumerate(sequence):
+        if key == cue_key:
+            return index
+    return None
+
+
+def _jump_to_audience() -> None:
+    sequence = flat_sequence()
+    cue_key, revision, _updated_at = read_current_cue()
+    index = _index_for_key(sequence, cue_key)
+    if index is not None:
+        st.session_state.companion_index = index
+        st.session_state.companion_seen_revision = revision
 
 
 def _cue_parts(raw: str, number: int) -> tuple[str, str]:
@@ -106,24 +125,42 @@ def render_presenter_companion() -> None:
     notes = all_presenter_notes()
     total = len(sequence)
 
-    # A HELP launcher can pass the exact cue key. Consume a newly arrived key
-    # once, then let Previous/Next navigation proceed independently.
+    if "companion_follow" not in st.session_state:
+        st.session_state.companion_follow = True
+    if "companion_index" not in st.session_state:
+        st.session_state.companion_index = 0
+
+    # A HELP launcher can pass the exact cue key. Consume a newly arrived key.
     try:
         requested_card = str(st.query_params.get("card", "")).strip()
     except Exception:
         requested_card = ""
 
     if requested_card and st.session_state.get("companion_url_card") != requested_card:
-        for index, (_layer, key, _label) in enumerate(sequence):
-            if key == requested_card:
-                st.session_state.companion_index = index
-                st.session_state.companion_url_card = requested_card
-                break
+        index = _index_for_key(sequence, requested_card)
+        if index is not None:
+            st.session_state.companion_index = index
+            st.session_state.companion_url_card = requested_card
 
-    if "companion_index" not in st.session_state:
-        st.session_state.companion_index = 0
+    # FOLLOW PRESENTATION is one-way. A new audience cue moves HELP to its
+    # matching card. Manual HELP navigation is then free until the audience
+    # presentation actually changes again.
+    live_cue, live_revision, _updated_at = read_current_cue()
+    previous_follow = bool(st.session_state.get("companion_follow_previous", False))
+    follow_now = bool(st.session_state.companion_follow)
+    force_align = follow_now and not previous_follow
+    seen_revision = int(st.session_state.get("companion_seen_revision", -1))
+    if follow_now and live_cue and (force_align or live_revision != seen_revision):
+        live_index = _index_for_key(sequence, live_cue)
+        if live_index is not None:
+            st.session_state.companion_index = live_index
+        st.session_state.companion_seen_revision = live_revision
+    st.session_state.companion_follow_previous = follow_now
+
     current = max(0, min(int(st.session_state.companion_index), total - 1))
     st.session_state.companion_index = current
+    live_index = _index_for_key(sequence, live_cue)
+    live_label = sequence[live_index][2] if live_index is not None else "Waiting for audience presentation"
 
     with st.sidebar:
         st.markdown(
@@ -133,6 +170,24 @@ def render_presenter_companion() -> None:
         )
         st.markdown("## PRESENTER COMPANION")
         st.caption("Same defense order · one cue card at a time")
+
+        st.toggle(
+            "🔗 FOLLOW PRESENTATION",
+            key="companion_follow",
+            help="When ON, a change in the audience presentation moves HELP to the matching cue. HELP navigation never changes the audience screen.",
+        )
+        st.caption(f"Audience now: **{html.escape(live_label)}**")
+        st.button(
+            "↩ Current audience slide",
+            key="companion_return_to_audience",
+            use_container_width=True,
+            on_click=_jump_to_audience,
+            disabled=live_index is None,
+        )
+        if live_index is not None and current != live_index:
+            st.caption("You are browsing HELP independently. The audience screen has not moved.")
+        else:
+            st.caption("HELP is aligned with the audience screen.")
 
         absolute = 0
         for layer, items in PRESENTER_SEQUENCE:
@@ -148,6 +203,26 @@ def render_presenter_companion() -> None:
                         args=(index,),
                     )
                 absolute += len(items)
+
+    # Lightweight polling keeps a second browser window synchronized.
+    # It performs a full rerun only when the audience cue revision changes.
+    if hasattr(st, "fragment"):
+        @st.fragment(run_every="1s")
+        def _live_follow_tick():
+            if not st.session_state.get("companion_follow", True):
+                return
+            cue_key, revision, _updated = read_current_cue()
+            if not cue_key:
+                return
+            if int(revision) == int(st.session_state.get("companion_seen_revision", -1)):
+                return
+            target = _index_for_key(sequence, cue_key)
+            if target is not None:
+                st.session_state.companion_index = target
+            st.session_state.companion_seen_revision = int(revision)
+            st.rerun()
+
+        _live_follow_tick()
 
     layer, key, label = sequence[current]
     note = notes.get(key)
