@@ -82,3 +82,8 @@ This rule is now the primary guardrail against repeating stale-deployment confus
 - `streamlit_app.py` displays that build identifier in the sidebar;
 - all known temporary `tmp-layer7-*` branches are synchronized with `main`;
 - the historical backup branch is preserved.
+
+
+## Final branch normalization
+
+The pre-reconciliation backup pointer was commit `150e47a6217cd59f705524bd6d98244304ff24a4`. That commit remains permanently available in Git history and is an ancestor of the canonical line. To eliminate branch-routing ambiguity in Streamlit Cloud, every named branch in this repository is now normalized to the same canonical `main` commit. This means an accidental deployment from any existing branch still resolves to the same application code.
