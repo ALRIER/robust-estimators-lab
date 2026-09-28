@@ -1,89 +1,68 @@
-# Data manifest
+# Data manifest — current dashboard evidence
 
-All dashboard-ready raw inputs live in `data/raw/`. Their original sources are preserved in `research_reference/source_archives/GA_Results.zip`.
+All thesis-result values displayed by the app come from bundled exported files. The dashboard does not infer missing research results.
 
-## Layer 1 — live teaching simulation
-No CSV required. `src/synthetic_data.py` generates samples. `src/estimators.py` computes teaching estimators.
+## Pedagogical simulation
+No research CSV is required.
 
-## Layer 2 — GA search
-### DEMO MODE
-No research CSV required. `src/mini_ga.py` owns the lightweight pedagogical GA.
+- `src/synthetic_data.py`
+- `src/estimators.py`
+- `src/mini_ga.py`
 
-### THESIS RESULTS context
+These generate teaching output only.
+
+## Discovery / expanded rediscovery
+### Processed
 `data/processed/winners_all.csv`
-- final 26 weights (`w_*`)
-- regime metadata
-- source seed
-- discovery gate pass
-- final selected type
-- GA and benchmark metrics
 
-Do **not** use this table to fabricate generational histories.
+Used for candidate/result inspection and the 26-component weight vectors.
 
-## Layer 3 — thesis results
-### Primary
-`data/processed/winners_all.csv`
-Built from the 12 per-family winner summaries under `data/raw/discovery/winner_summaries/`.
+### Raw discovery exports
+- `data/raw/discovery/combined_final_regime_results_all_rows.csv`
+- `data/raw/discovery/ga_winner_candidates_for_q1.csv`
+- `data/raw/discovery/winner_summaries/.../`
 
-Important fields:
-- distribution
-- specialist_regime_id
-- regime_key / condition_summary
-- specialist_seed / source seed context
-- gate_pass
-- final_selected_type
-- final_selected_estimator
-- ga_robust_q95_mse / ga_robust_mean_mse
-- best_benchmark_q95_estimator / best_benchmark_mean_estimator
-- ga_rel_improvement_q95 / ga_rel_improvement_mean
-- 26 `w_*` fields
+Do not interpret a discovery pass as fixed-weight confirmation.
 
-### Cross-family index
-`data/raw/discovery/combined_final_regime_results_all_rows.csv`
-Use for compact regime/seed filtering and status overview.
+## Frozen validation
+- `data/raw/validation/final_decision_table.csv`
+- `data/raw/validation/seed_level_expanded_gate.csv`
+- `data/raw/validation/bootstrap_ci.csv`
+- `data/raw/validation/selected_regimes.csv`
 
-### Candidate index
-`data/raw/discovery/ga_winner_candidates_for_q1.csv`
-Use for discovery-stage GA candidate examples only; do not label all rows as fixed-weight validated.
+These support frozen candidate decisions, seed-level gate behavior and bootstrap evidence.
 
-## Layer 4 — validation pipeline
-### Final fixed-weight decisions
-`data/raw/validation/final_decision_table.csv`
-Use for validation-level final decision cards.
+## Evidence taxonomy
+- `data/raw/evidence/evidence_taxonomy_all_candidates.csv`
+- `data/raw/evidence/evidence_grade_by_family.csv`
+- `data/raw/evidence/validated_specialists.csv`
 
-### Seed-level gate
-`data/raw/validation/seed_level_expanded_gate.csv`
-Use for per-validation-seed GA vs best benchmark metrics and expanded gate pass.
+These define bounded evidence labels and the validated-specialist summaries.
 
-### Bootstrap confidence intervals
-`data/raw/validation/bootstrap_ci.csv`
-Use for CI whiskers and `ci_confirmed` status.
+## Dirichlet abstention audit
+- `data/raw/dirichlet/abstain_audit_results.csv`
+- `data/raw/dirichlet/abstain_audit_summary_by_regime.csv`
+- `data/raw/dirichlet/dirichlet_signal_regime_modes.csv`
 
-### Evidence taxonomy
-`data/raw/evidence/evidence_taxonomy_all_candidates.csv`
-Use for evidence grade, interpretive note and stage-aligned gain summaries.
+This audit challenges benchmark-retained synthetic regimes with random valid simplex mixtures. It is not a new GA discovery stage.
 
-`data/raw/evidence/validated_specialists.csv`
-Use for the concise validated-specialist summary. This file currently contains the strongest fixed-weight-confirmed subset according to the source taxonomy.
+## External real-world evidence
+The summarized external-evidence facts shown in Stage 5 were validated against the archived external-battery result package used for the thesis. The compact public repository currently carries the presentation summaries rather than the full external-battery tables.
 
-### Dirichlet / abstain audit
-`data/raw/dirichlet/abstain_audit_results.csv`
-Use as optional final sanity/audit panel.
+Canonical Stage 5 facts:
+- 264 requested public targets
+- 228 loaded sources
+- 120 evaluated dataset IDs
+- 43 eligible parent datasets
+- 26 / 43 parents with corrected signal
+- 255 corrected confirmations
+- abstention audit: 34 regime-mode rows, 23 no-random-pass, 11 signal rows
 
-`data/raw/dirichlet/abstain_audit_summary_by_regime.csv`
-Use for compact regime-level audit overview.
-
-## Optional / later only
-Real-world battery results are preserved in the full GA results archive but are intentionally not part of the one-week MVP unless time remains.
+Breadth and depth must remain distinct:
+- parent datasets = breadth
+- corrected repeated confirmations = depth
 
 ## Processed files
-Run:
-```bash
-python scripts/build_processed_data.py
-```
-Outputs include:
-- `data/processed/winners_all.csv`
-- `data/processed/dashboard_cases.csv`
-- `data/processed/data_health.json`
+`scripts/build_processed_data.py` rebuilds the processed discovery tables.
 
-Never hand-edit processed files; regenerate them.
+Never hand-edit scientific result tables to make the dashboard fit a narrative.
