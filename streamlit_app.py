@@ -528,6 +528,7 @@ _query = st.query_params
 _browser_note = PRESENTER_NOTES.get(_query.get("section", "")) if _query.get("presenter_notes") == "1" else None
 st.set_page_config(page_title=_browser_note[0] if _browser_note else "Building Better Estimators: Benchmark-Gated, Regime-Conditional Composite Mean Estimation via Genetic Search", page_icon="📊", layout="wide")
 pio.templates.default = "plotly_dark"
+# Deployment refresh: Stage 5 paired external evidence screen.
 st.markdown("""<style>
 .stApp{background:radial-gradient(circle at 48% -12%,#16365c 0,#08172a 35%,#040a14 76%)!important;color:#eef5ff}.block-container{padding:.45rem 2rem 3rem!important;max-width:none!important}.stMetric{background:linear-gradient(135deg,#0d2038,#081525)!important;border:1px solid #218dca!important;border-top:3px solid #9a5cff!important;border-radius:7px;padding:10px;box-shadow:inset 0 0 18px rgba(33,141,202,.08)}.stMetric label,.stMetric [data-testid="stMetricLabel"]{color:#b8c8de!important}.stMetric [data-testid="stMetricValue"]{color:#f5f8ff!important}.badge{padding:6px 10px;border-radius:6px;font-size:.78rem;font-weight:800;display:inline-block;letter-spacing:.03em}.demo{background:#28184c;color:#d7c3ff;border:1px solid #8759de}.thesis{background:#0b372d;color:#9df0b7;border:1px solid #3aaf6f}
 h1{color:#f5f8ff!important;margin:0 0 .1rem!important;font-size:2rem!important;text-shadow:0 0 18px rgba(71,169,255,.34)}h2,h3{color:#f2f7ff!important}[data-testid="stCaptionContainer"],.stCaption{color:#aebed3!important}[data-baseweb="tab-list"]{border-bottom:1px solid #2374b4!important;box-shadow:none!important;margin-top:.25rem!important;gap:.4rem}[data-baseweb="tab-border"]{display:none!important}[data-testid="stTabs"]>div:first-child{border-bottom:0!important}[data-baseweb="tab"]{color:#aebed3!important;background:#0a1930!important;border:1px solid #1d5688!important;border-bottom:0!important;border-radius:6px 6px 0 0!important;font-weight:700!important}[aria-selected="true"][data-baseweb="tab"]{color:#f6fbff!important;background:#102a49!important;box-shadow:inset 0 2px #4fc3ff!important}.layer-heading{font-size:1.3rem;font-weight:800;color:#f5f8ff;margin:.3rem 0 .1rem;text-shadow:0 0 14px rgba(79,195,255,.25)}.layer-subheading{color:#aebed3;margin:0 0 .75rem}.scenario-panel{border:1px solid #237fc0;border-left:4px solid #4fc3ff;border-radius:7px;background:linear-gradient(135deg,#0e2743,#081626);padding:.8rem 1rem;margin:.45rem 0 .8rem;color:#e8f3ff}.independent-note{color:#aebed3;font-size:.86rem;border-top:1px solid #20517e;padding-top:.65rem;margin-top:.35rem}.metric-caption{font-size:.78rem;color:#aebed3;margin-top:-.4rem}
@@ -954,83 +955,12 @@ if active_section == "06 · Experiment pipeline":
                           on_click=_set_presenter_state, args=("story_stage", index))
         st.markdown('</div>', unsafe_allow_html=True)
         if int(st.session_state.story_stage) == 4:
-            # One-screen Stage 5 narrative. Kept inline to avoid renderer/cache ambiguity.
             st.markdown(
-                """
-                <style>
-                .ext-wrap{background:#081525;border:1px solid #2d6d9c;border-radius:16px;padding:22px 24px 18px;margin-top:.35rem}
-                .ext-head{display:grid;grid-template-columns:1fr 54px 1fr;gap:12px;align-items:end;margin-bottom:12px}
-                .ext-coltitle{font-size:1.22rem;font-weight:900;letter-spacing:.05em}
-                .ext-results{color:#f3c743}.ext-method{color:#72cfff;text-align:left}
-                .ext-row{display:grid;grid-template-columns:1fr 54px 1fr;gap:12px;align-items:stretch;margin:10px 0}
-                .ext-card{border-radius:11px;padding:13px 15px;min-height:88px;display:flex;flex-direction:column;justify-content:center}
-                .ext-result-card{background:#0c2238;border:1px solid #416f92}
-                .ext-method-card{background:#10253a;border:1px solid #3c7198}
-                .ext-arrow{display:flex;align-items:center;justify-content:center;color:#f3c743;font-size:1.8rem;font-weight:900}
-                .ext-kicker{font-size:.78rem;font-weight:900;letter-spacing:.08em;color:#72cfff;margin-bottom:4px}
-                .ext-value{font-size:1.38rem;font-weight:900;line-height:1.15;color:#fff}
-                .ext-note{font-size:.92rem;line-height:1.35;color:#b9c8d9;margin-top:5px}
-                .ext-result-card .ext-kicker{color:#f3c743}
-                .ext-take{margin-top:14px;padding:14px 16px;border-radius:11px;background:#12354a;border:1px solid #58aee8;border-left:6px solid #f3c743;color:#f5f8ff;font-size:1rem;line-height:1.42;font-weight:700}
-                @media (max-width: 1100px){
-                    .ext-head,.ext-row{grid-template-columns:1fr 38px 1fr}
-                    .ext-card{padding:11px 12px}.ext-value{font-size:1.15rem}.ext-note{font-size:.84rem}
-                }
-                </style>
-                <div class="ext-wrap">
-                  <div class="ext-head">
-                    <div class="ext-coltitle ext-results">RESULTS · WHAT WE FOUND</div><div></div>
-                    <div class="ext-coltitle ext-method">METHODOLOGY · WHAT WE DID</div>
-                  </div>
-
-                  <div class="ext-row">
-                    <div class="ext-card ext-result-card"><div class="ext-kicker">STARTING UNIVERSE</div><div class="ext-value">264 requested public dataset targets</div><div class="ext-note">The broad external-testing universe before any loading or eligibility filter.</div></div>
-                    <div class="ext-arrow">←</div>
-                    <div class="ext-card ext-method-card"><div class="ext-kicker">1 · BUILD THE EXTERNAL BATTERY</div><div class="ext-value">Assemble public real-world targets</div><div class="ext-note">Frozen specialists are taken outside simulation and challenged on a broad set of public dataset or dataset-variable targets.</div></div>
-                  </div>
-
-                  <div class="ext-row">
-                    <div class="ext-card ext-result-card"><div class="ext-kicker">SOURCE AVAILABILITY</div><div class="ext-value">228 sources loaded successfully</div><div class="ext-note">36 requested targets did not become usable loaded sources; the registry preserves those outcomes.</div></div>
-                    <div class="ext-arrow">←</div>
-                    <div class="ext-card ext-method-card"><div class="ext-kicker">2 · LOAD + DOCUMENT</div><div class="ext-value">Make exclusions auditable</div><div class="ext-note">For each source, record URL, access time, file hash, variable, transformation, loading status and diagnostics.</div></div>
-                  </div>
-
-                  <div class="ext-row">
-                    <div class="ext-card ext-result-card"><div class="ext-kicker">ACTUAL EVALUATION SET</div><div class="ext-value">120 dataset IDs entered evaluation</div><div class="ext-note">These are the real dataset IDs that actually reached the compact external evaluation output.</div></div>
-                    <div class="ext-arrow">←</div>
-                    <div class="ext-card ext-method-card"><div class="ext-kicker">3 · EVALUATE USABLE DATA</div><div class="ext-value">Run only prepared, selected targets</div><div class="ext-note">Loaded data are prepared and selected before frozen specialists are compared with admissible benchmarks.</div></div>
-                  </div>
-
-                  <div class="ext-row">
-                    <div class="ext-card ext-result-card"><div class="ext-kicker">PRIMARY DENOMINATOR</div><div class="ext-value">43 eligible parent datasets</div><div class="ext-note">This is the denominator for the primary external claim—not 264, 228 or 120.</div></div>
-                    <div class="ext-arrow">←</div>
-                    <div class="ext-card ext-method-card"><div class="ext-kicker">4 · APPLY THE PROFILE GATE</div><div class="ext-value">Restrict the claim to matched regimes</div><div class="ext-note">Keep only in-regime, profile-matched, pre-registered specialist-versus-benchmark comparisons; related depth variants remain nested under their parent.</div></div>
-                  </div>
-
-                  <div class="ext-row">
-                    <div class="ext-card ext-result-card"><div class="ext-kicker">BREADTH</div><div class="ext-value">26 / 43 parents showed corrected signal</div><div class="ext-note">Positive external evidence appears across many independent parent sources after multiplicity control.</div></div>
-                    <div class="ext-arrow">←</div>
-                    <div class="ext-card ext-method-card"><div class="ext-kicker">5 · CONTROL MULTIPLICITY</div><div class="ext-value">Bootstrap evidence + dataset-level BH-FDR</div><div class="ext-note">Compute specialist-versus-benchmark gains, quantify paired uncertainty, then control the primary family of tests at dataset level.</div></div>
-                  </div>
-
-                  <div class="ext-row">
-                    <div class="ext-card ext-result-card"><div class="ext-kicker">DEPTH</div><div class="ext-value">255 corrected confirmations</div><div class="ext-note">Repeated surviving evidence inside eligible parents. These are not 255 independent public datasets.</div></div>
-                    <div class="ext-arrow">←</div>
-                    <div class="ext-card ext-method-card"><div class="ext-kicker">6 · MEASURE DEPTH</div><div class="ext-value">Count repeated evidence without inflating breadth</div><div class="ext-note">Within-parent profile-matched confirmations are retained as depth evidence while parent-level breadth remains the independent-source summary.</div></div>
-                  </div>
-
-                  <div class="ext-row">
-                    <div class="ext-card ext-result-card"><div class="ext-kicker">ABSTENTION AUDIT</div><div class="ext-value">23 / 34 no random pass · 11 / 34 signal</div><div class="ext-note">The positive-control sanity check passes all 8 seeds, showing the audit can detect strong signal when present.</div></div>
-                    <div class="ext-arrow">←</div>
-                    <div class="ext-card ext-method-card"><div class="ext-kicker">7 · AUDIT BENCHMARK RETENTION</div><div class="ext-value">4,000 random Dirichlet mixtures × 8 seeds</div><div class="ext-note">Benchmark-retained synthetic regime-mode rows are challenged with valid random simplex mixtures. This is an abstention audit, not a new GA search.</div></div>
-                  </div>
-
-                  <div class="ext-take"><b>TAKE-HOME:</b> external evidence is conditional but substantive: it has breadth across 26 of 43 eligible parent datasets and depth through 255 corrected confirmations. The independent abstention audit shows benchmark retention was often meaningful while identifying cases where random composite signal still existed.</div>
-                </div>
-                """,
+                "<div class='layer-heading'>External evidence + abstention audit</div>",
                 unsafe_allow_html=True,
             )
-            st.caption("Fixed thesis outputs only. Stage 5 does not retrain a specialist, rerun the GA, or recompute the audit.")
+            st.plotly_chart(result_figure(3), use_container_width=True)
+            st.caption("One-screen synthesis of fixed thesis outputs: public external evidence plus the independent Dirichlet abstention audit.")
         else:
             components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
             st.caption(f"You are seeing Stage {st.session_state.story_stage + 1} of 5. The numerical facts are fixed thesis settings/results; this visual narrative never reruns the thesis GA.")
