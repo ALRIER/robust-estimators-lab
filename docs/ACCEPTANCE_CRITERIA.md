@@ -1,44 +1,57 @@
-# Acceptance criteria
+# Acceptance criteria — canonical Streamlit app
 
 ## Global
-- App runs locally with no network requirement.
-- Four layers/routes load without traceback.
-- Visual style is recognizably aligned with `design/mockups/`.
-- All thesis-result values come from data files.
-- `DEMO MODE` and `THESIS RESULTS` are visually unmistakable.
-- `pytest -q` passes.
+- App runs from `streamlit run streamlit_app.py`.
+- All nine defense sections load without traceback.
+- Sidebar shows the current build identifier.
+- Thesis-result values come only from bundled research outputs.
+- Demo output and thesis evidence are visibly distinct.
+- No full thesis GA is executed at runtime.
+- Main defense content is readable on a presentation screen.
 
-## Layer 1
-- User can choose distribution, contamination, contamination rate, outlier scale, and n.
-- Regenerating the sample updates plots and estimator values.
-- At minimum Mean, Median, Trimmed Mean, Huber and Biweight are visible.
-- Contamination can visibly displace the mean relative to robust estimators in suitable settings.
-- UI includes the teaching message that no estimator is uniformly best.
+## 01 · Research logic
+- Fixed target `E[X]` is clear.
+- Regime dependence is explained without implying a universal winner.
+- Composite estimator and simplex constraints are interpretable.
 
-## Layer 2
-- Mini-GA completes quickly on a laptop.
-- Every individual is a valid convex weight vector.
-- Playback exposes generation, best objective, diversity, and mutation rate.
-- 3D surface has terrain/contours and a clear low-error basin.
-- Figure explicitly says it is a low-dimensional simplex slice.
-- Any population path shown as thesis-real must have an authentic history source; otherwise only demo path is shown.
+## 02 · Data-generating world
+- Distribution families and contamination structures are visible.
+- Validation coverage is clearly separated from research-result claims.
 
-## Layer 3
-- Filters by family, regime and seed/context work.
-- Top weights sum to approximately 1 when all 26 are included.
-- GA win and benchmark-retained examples are both available.
-- Gate pass/fail exactly matches source CSV.
-- No discovery-stage candidate is mislabeled as fixed-weight validated.
+## 03 · Simulation lab
+- Controls update a deterministic pedagogical sample.
+- Mean and robust estimators visibly respond to contamination.
+- UI states that the simulation is pedagogical.
 
-## Layer 4
-- Fixed-weight final decision is sourced from `final_decision_table.csv`.
-- Bootstrap CI panel is sourced from `bootstrap_ci.csv`.
-- Evidence grade is sourced from taxonomy table.
-- Clear visual separation between original-regime and locked-unseen-similar validation modes.
-- Optional Dirichlet/abstain panel, if included, uses source verdict fields.
+## 04 · Monte Carlo engine
+- Monte Carlo measurement logic is explained.
+- Data-generating-world validation can be inspected independently.
+
+## 05 · GA search
+- Mini-GA runs quickly and deterministically.
+- Every candidate is a valid convex weight vector.
+- Any simplex slice is explicitly labelled as low-dimensional.
+- No fabricated thesis trajectory is shown.
+
+## 06 · Experiment pipeline
+- Five stages are navigable.
+- Discovery, frozen confirmation, rediscovery, frozen validation and external evidence remain distinct.
+- Stage 3 includes expanded rediscovery results.
+- Stage 4 includes strict frozen-validation results.
+- Stage 5 contains one coherent external-evidence + abstention-audit story.
+- External breadth and depth are not conflated.
+
+## 07 · Conclusions
+- Claims remain conditional and benchmark-gated.
+- Limits are visible.
+
+## 08 · Technical drill-down
+- Candidate-level result inspection works.
+- Fixed-weight decisions match exported files.
+- Bootstrap evidence and evidence taxonomy are source-derived.
+- External evidence detail is available as backup.
 
 ## Defense safety
-- A `Presentation mode` hides unnecessary controls.
-- Key pages can be navigated with a single click.
-- Backup screenshots exist under `exports/backup_screens/` before final freeze.
-- No long computation occurs during the live defense except mini-GA demo, which must be deterministic and fast.
+- No long runtime computation except the small pedagogical GA.
+- Navigation requires at most one click per main section.
+- Build ID in the sidebar makes stale deployment immediately detectable.
