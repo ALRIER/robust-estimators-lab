@@ -23,7 +23,7 @@ _LAYER4 = "04 · Monte Carlo engine"
 _LAYER7 = "07 · Results journey"
 _LAYER8 = "08 · Conclusions"
 _LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v15-technical-ef"
+_VERSION = "single-defense-runtime-v16-results-merged"
 _ACCESSIBLE_CUE_KEYS = {
     "research_problem",
     "research_objective",
@@ -116,8 +116,8 @@ def _current_note_key(active: str) -> str | None:
             "monte_carlo_fairness",
         )[view]
     if active == _LAYER7:
-        stage = max(0, min(int(st.session_state.get("results_stage", 0)), 4))
-        return f"results_stage_{stage}"
+        stage = max(0, min(int(st.session_state.get("results_stage", 0)), 2))
+        return ("results_stage_2", "results_stage_3", "results_stage_4")[stage]
     if active == _LAYER8:
         return "conclusions_contrib" if st.session_state.get("conclusion_view", "claims") == "contrib" else "conclusions_claims"
     if active == _LAYER9:
