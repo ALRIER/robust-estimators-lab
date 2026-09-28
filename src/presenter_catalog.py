@@ -68,22 +68,14 @@ PRESENTER_SEQUENCE = (
         ),
     ),
     (
-        "07 · Results journey",
-        (
-            ("results_stage_2", "Strict validation"),
-            ("results_stage_3", "Real-world battery"),
-            ("results_stage_4", "Dirichlet audit"),
-        ),
-    ),
-    (
-        "08 · Conclusions",
+        "07 · Conclusions",
         (
             ("conclusions_claims", "Claims H1–H4"),
             ("conclusions_contrib", "Contributions & Limits"),
         ),
     ),
     (
-        "09 · Technical drill-down",
+        "08 · Technical drill-down",
         (
             ("appendix_A", "GA mechanics"),
             ("appendix_B", "Metrics & gate"),
