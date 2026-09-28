@@ -15,31 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 RESULT_STAGES = (
     {
-        "label": "1–2 · Discovery + Frozen I",
-        "question": "What survived the first search?",
-        "claim": "TWO CONFIRMED SIGNALS",
-        "plain": "Many opportunities appeared. Only two survived frozen confirmation.",
-        "color": "#e66d4f",
-        "what": "The first GA search produced candidate wins, and then the exact same weights were tested again without retraining.",
-        "happened": "36 controlled regimes produced 16 discovery wins. Frozen confirmation reduced that set to two Lognormal signals: CV-019 and CV-010.",
-        "means": "Discovery tells us where to look. Frozen confirmation tells us what we can defend.",
-        "not_claim": "Do not call all 16 discovery wins confirmed results.",
-        "key": "36 → 16 → 2",
-    },
-    {
-        "label": "3 · Expanded rediscovery",
-        "question": "What changed when the search space became stronger?",
-        "claim": "OPPORTUNITY MAP CHANGED",
-        "plain": "A stronger 26-component search found a different pattern of opportunity.",
-        "color": "#a777e3",
-        "what": "The search was reopened with 26 learnable estimators instead of 10, stronger HPF2 exposure, and the modern benchmark gate active from the start.",
-        "happened": "Twelve discovery winners appeared across five of the six families. Inverse Gaussian contributed the largest number of winners; Ex-Gaussian contributed none.",
-        "means": "Changing the estimator library changes where useful mixtures can be found. The opportunity is structural, not universal.",
-        "not_claim": "Do not treat these twelve discovery wins as fixed-weight confirmations.",
-        "key": "10 → 26 components · 12 discovery winners",
-    },
-    {
         "label": "4 · Strict validation",
+        "figure_stage": 2,
+        "cue_key": "results_stage_2",
         "question": "Did the new candidates really transfer?",
         "claim": "TWO WEIBULL TRANSFER SPECIALISTS",
         "plain": "They worked in related unseen regimes, but not everywhere.",
@@ -52,6 +30,8 @@ RESULT_STAGES = (
     },
     {
         "label": "5A · Real-world battery",
+        "figure_stage": 3,
+        "cue_key": "results_stage_3",
         "question": "Does the signal appear in real data?",
         "claim": "EXTERNAL CALIBRATION",
         "plain": "The signal appears in real data, but external evidence is not known-truth validation.",
@@ -64,6 +44,8 @@ RESULT_STAGES = (
     },
     {
         "label": "5B · Dirichlet audit",
+        "figure_stage": 4,
+        "cue_key": "results_stage_4",
         "question": "Was benchmark retention meaningful?",
         "claim": "ABSTENTION AUDIT",
         "plain": "In most retained cells, even random simplex search could not beat the benchmark.",
@@ -77,16 +59,6 @@ RESULT_STAGES = (
 )
 
 EXPLAIN_STEPS = (
-    (
-        "1 · SIGNAL — The first search produced 16 apparent wins across 36 controlled regimes.",
-        "2 · PRESSURE — The weights were frozen and tested again on fresh validation seeds.",
-        "3 · MEANING — Only CV-019 and CV-010 remained defensible Lognormal signals.",
-    ),
-    (
-        "1 · CHANGE — The learnable basis expanded from 10 to 26 estimators.",
-        "2 · PRESSURE — HPF2 increased to 90% and modern robust competition was active from the beginning.",
-        "3 · MEANING — The family map changed, showing that opportunity depends on the search basis and regime.",
-    ),
     (
         "1 · SIGNAL — Two Weibull candidates looked strong after expanded rediscovery.",
         "2 · PRESSURE — Their frozen weights were tested in original and locked-unseen regimes.",
@@ -150,12 +122,13 @@ def render_results_journey() -> None:
     if "results_explanation" not in st.session_state:
         st.session_state.results_explanation = 0
 
-    stage = max(0, min(int(st.session_state.results_stage), 4))
+    stage = max(0, min(int(st.session_state.results_stage), len(RESULT_STAGES) - 1))
+    st.session_state.results_stage = stage
     item = RESULT_STAGES[stage]
     st.markdown(f'<div class="results-key">QUESTION: {item["question"]} &nbsp;&nbsp;|&nbsp;&nbsp; KEY EVIDENCE: {item["key"]}</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="results-nav">', unsafe_allow_html=True)
-    cols = st.columns(5, gap="small")
+    cols = st.columns(len(RESULT_STAGES), gap="small")
     for i, spec in enumerate(RESULT_STAGES):
         with cols[i]:
             st.button(spec["label"], key=f"results_direct_{i}", use_container_width=True,
@@ -165,7 +138,7 @@ def render_results_journey() -> None:
 
     hero, rail = st.columns([3.25, 1.1], gap="medium")
     with hero:
-        st.plotly_chart(result_figure(stage), use_container_width=True)
+        st.plotly_chart(result_figure(item["figure_stage"]), use_container_width=True)
     with rail:
         st.markdown(_message_html(stage), unsafe_allow_html=True)
 
