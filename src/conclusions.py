@@ -1,4 +1,4 @@
-"""Direct renderer for Layer 8 · Conclusions.
+"""Direct renderer for Layer 7 · Conclusions.
 
 No hooks or compatibility wrappers live here. This is the only audience-facing
 Layer 7 implementation used by streamlit_app.py after repository consolidation.
