@@ -272,37 +272,72 @@ def _result_strict_validation():
 def _result_external_funnel():
     fig = go.Figure()
 
-    _funnel_band(fig, .72, .90, .04, .57, .08, .53, MUTED, 264, "REQUESTED TARGETS")
-    _text(fig, .305, .675, "↓  availability + loading", size=11, color=SUBTLE, bold=True)
-    _funnel_band(fig, .55, .66, .10, .51, .14, .47, "#607995", 228, "LOADED")
-    _text(fig, .305, .505, "↓  preparation + evaluation", size=11, color=SUBTLE, bold=True)
-    _funnel_band(fig, .38, .48, .16, .45, .20, .41, BLUE, 120, "EVALUATED")
-    _text(fig, .305, .335, "↓  structural profile eligibility", size=11, color=SUBTLE, bold=True)
-    _funnel_band(fig, .20, .30, .22, .39, .245, .365, GREEN, 43, "ELIGIBLE PARENTS")
+    _text(fig, .23, .935, "RESULTS · WHAT WE FOUND", size=15, color=GOLD, bold=True)
+    _text(fig, .77, .935, "METHODOLOGY · WHAT WE DID", size=15, color=CYAN, bold=True)
 
-    _text(fig, .78, .895, "WHAT DID THOSE 43 PARENTS SHOW?", size=12, color=CYAN, bold=True)
-    _two_line_card(
-        fig, .61, .57, .96, .82, "BREADTH", "26 / 43",
-        "parent datasets · at least one corrected specialist win",
-        fill="#102c3f", border=BLUE, value_color=BLUE, heading_color=CYAN
-    )
-    _two_line_card(
-        fig, .61, .29, .96, .52, "DEPTH", "255",
-        "profile confirmations · repeated evidence inside eligible parents",
-        fill="#221e3e", border=PURPLE, value_color=PURPLE, heading_color="#d9bfff"
-    )
+    rows = [
+        ("264 requested public targets",
+         "Broad starting universe for external testing",
+         "1 · BUILD THE BATTERY",
+         "Assemble public dataset targets so frozen specialists can be tested outside simulation.",
+         MUTED),
+        ("228 loaded sources",
+         "Successfully retrieved and auditable",
+         "2 · LOAD + DOCUMENT",
+         "Check source availability and preserve URL, access time, file hash, variables, transforms and diagnostics.",
+         "#607995"),
+        ("120 evaluated dataset IDs",
+         "Real datasets that actually entered evaluation",
+         "3 · EVALUATE USABLE DATA",
+         "Only prepared and selected loaded datasets move into the external comparison pipeline.",
+         BLUE),
+        ("43 eligible parent datasets",
+         "True denominator for the primary claim",
+         "4 · APPLY THE PROFILE GATE",
+         "Keep only in-regime, profile-matched, pre-registered specialist-versus-benchmark comparisons.",
+         GREEN),
+        ("26 / 43 parents with corrected signal",
+         "Breadth across independent parent sources",
+         "5 · CONTROL MULTIPLICITY",
+         "Combine gains with paired bootstrap evidence and apply dataset-level Benjamini-Hochberg FDR.",
+         BLUE),
+        ("255 corrected confirmations",
+         "Depth inside those parents · not 255 independent datasets",
+         "6 · MEASURE DEPTH",
+         "Retain repeated profile-matched evidence within parents without inflating the independent-source count.",
+         PURPLE),
+        ("23 / 34 no random pass · 11 / 34 signal",
+         "Positive-control sanity check passes all 8 seeds",
+         "7 · AUDIT ABSTENTIONS",
+         "Challenge benchmark-retained synthetic cases with 4,000 random Dirichlet simplex mixtures across 8 seeds.",
+         GOLD),
+    ]
 
-    _rect(fig, .58, .105, .98, .22, fill="#f3c743", border=GOLD, width=1.6)
-    _text(fig, .78, .175, "IMPORTANT: 255 confirmations ≠ 255 independent datasets",
-          size=11, color=DARK_TEXT, bold=True)
-    _text(fig, .78, .135, "Breadth = parents · Depth = repeated profile evidence",
-          size=10, color="#1d2632", bold=True)
+    ys = [.815, .705, .595, .485, .375, .265, .155]
+    for (result_title, result_note, method_title, method_note, color), y in zip(rows, ys):
+        _rect(fig, .025, y-.042, .425, y+.042, fill="#0c2238", border=color, width=1.5)
+        _text(fig, .045, y+.014, result_title, size=13, color=color, anchor="left", align="left", bold=True)
+        _text(fig, .045, y-.020, result_note, size=9.7, color=SUBTLE, anchor="left", align="left")
+
+        _arrow(fig, .565, y, .440, y, color=color, width=2.2)
+
+        _rect(fig, .575, y-.042, .975, y+.042, fill="#10253a", border="#3c7198", width=1.4)
+        _text(fig, .595, y+.014, method_title, size=11.2, color=CYAN, anchor="left", align="left", bold=True)
+        _text(fig, .595, y-.020, method_note, size=9.2, color=TEXT, anchor="left", align="left")
+
+    _rect(fig, .055, .025, .945, .085, fill="#12354a", border=GOLD, width=1.6)
+    _text(
+        fig, .50, .055,
+        "TAKE-HOME · conditional external transfer has breadth (26/43 parents) and depth (255 corrected confirmations); "
+        "the abstention audit shows benchmark retention was often meaningful, but not beyond challenge in every case.",
+        size=10.5, color=TEXT, bold=True,
+    )
 
     return _base_layout(
         fig,
-        "Does the signal appear in real data?",
-        "The funnel explains why the external battery narrows, while the right side separates breadth from depth.",
-        height=690,
+        "External evidence + abstention audit",
+        "One screen pairs each methodological step with the result it produced.",
+        height=930,
     )
 
 
