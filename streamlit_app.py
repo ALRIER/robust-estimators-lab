@@ -30,6 +30,7 @@ UNIVERSITY_LOGO_DATA_URI = (
 
 # Presenter notes are a rehearsal aid, not a source of new thesis claims.  Each
 # Deployment refresh: Cycle II expanded-rediscovery evidence synchronized 2026-09-28.
+# Visual refresh: larger Cycle II family cards for defense readability.
 # entry below is condensed from the defense deck, thesis, and final KBS notation.
 PRESENTER_NOTES = {
     "cover": ("Opening", "Defense deck · title slide", [
