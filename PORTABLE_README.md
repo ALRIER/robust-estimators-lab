@@ -1,10 +1,13 @@
-# Robust Estimators Lab — portable launch
+# Robust Estimators Lab — runtime note
 
-## Local source mode
-- Linux/macOS: `./run_linux_mac.sh` then open http://127.0.0.1:8050
-- Windows: run `run_windows.ps1` then open http://127.0.0.1:8050
+This file is retained only as a compatibility pointer.
 
-## Container / hosted mode
-With Docker available, run `docker compose up --build` and open http://127.0.0.1:8050. For a server, expose port 8050 behind a reverse proxy and use its HTTPS URL.
+The repository now has one canonical application and one canonical set of instructions:
 
-The app is offline at runtime: it has no external APIs, fonts, telemetry, or network data calls. A first native dependency install or Docker build requires packages to be available locally; to make a target machine fully air-gapped, build/load the container image for that target platform in advance.
+1. Read `README.md`.
+2. Read `AGENTS.md`.
+3. Read `docs/DEPLOYMENT.md`.
+4. Read `docs/REPOSITORY_HEALTH.md`.
+
+Canonical runtime: `streamlit run streamlit_app.py`.
+Canonical deployment branch: `main`.
