@@ -1,19 +1,36 @@
-# Dashboard → 10–15 minute teaching/defense map
+# Dashboard → defense map
 
-**0:00–2:30 — Layer 1: the statistical problem**  
-Change contamination and show estimator movement. Message: estimator ranking depends on regime.
+## 00 · Cover
+State the problem and bounded contribution.
 
-**2:30–4:00 — Explain the simplex**  
-Show candidate weights summing to 1. Explain that each candidate is a convex estimator mixture.
+## 01 · Research logic
+Explain the fixed target, regime dependence, simplex mixture and H1–H4.
 
-**4:00–7:00 — Layer 2: mini-GA search**  
-Replay population evolution on the geological simplex slice. Explain selection, crossover, mutation, exploration and concentration.
+## 02 · Data-generating world
+Show the controlled structural coverage of the simulation world.
 
-**7:00–10:00 — Layer 3: actual thesis outputs**  
-Switch visibly from DEMO MODE to THESIS RESULTS. Show one discovery-stage GA pass and one benchmark-retained case.
+## 03 · Simulation lab
+Use one live example to show why estimator ranking changes under contamination.
 
-**10:00–12:30 — Layer 4: evidence, not just optimization**  
-Show locked/fixed-weight validation, bootstrap CI and evidence taxonomy.
+## 04 · Monte Carlo engine
+Explain how estimator risk is measured and how the simulation world was validated.
 
-**Closing message**  
-`The GA proposes candidate mixtures; held-out and fixed-weight evidence decides what survives.`
+## 05 · GA search
+Use the pedagogical GA to explain selection, mutation and simplex search. Keep demo behavior separate from thesis evidence.
+
+## 06 · Experiment pipeline
+Walk through the five evidence stages:
+1. Initial discovery
+2. Frozen confirmation I
+3. Expanded rediscovery
+4. Frozen validation II
+5. External evidence + abstention audit
+
+The key narrative is:
+`search proposes → weights freeze → evidence decides → external transfer is tested → abstentions are audited`.
+
+## 07 · Conclusions
+State conditional findings, contributions and limitations.
+
+## 08 · Technical drill-down
+Use only when the committee asks for candidate-level or audit-level detail.
