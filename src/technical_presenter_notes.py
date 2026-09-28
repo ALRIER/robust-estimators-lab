@@ -1,4 +1,4 @@
-"""Accessible presenter cues for Layer 9 · Technical drill-down."""
+"""Accessible presenter cues for Layer 8 · Technical drill-down."""
 
 TECHNICAL_PRESENTER_NOTES = {
     "appendix_A": (
