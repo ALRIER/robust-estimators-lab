@@ -14,6 +14,7 @@ from src.fixed_simplex import fixed_simplex_figure
 from src.simplex_svg import simplex_svg
 from src.cluster_evolution import cluster_map_svg, contamination_shift_svg
 from src.experiment_pipeline import STAGES as PIPELINE_STAGES, experiment_pipeline_svg
+from src.results_journey_polished import result_figure
 from src.thesis_ga_architecture import thesis_ga_architecture_svg
 from src.defense_mode import VALIDATION_STAGES, defense_scene_svg, validation_scene_svg
 from src.research_logic import PANELS as RESEARCH_PANELS, research_logic_svg
@@ -924,6 +925,17 @@ if active_section == "06 · Experiment pipeline":
         st.markdown('</div>', unsafe_allow_html=True)
         components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
         st.caption(f"You are seeing Stage {st.session_state.story_stage + 1} of 5. The numerical facts are fixed thesis settings/results; this visual narrative never reruns the thesis GA.")
+
+        # Stage 3 now carries its result directly below the method view so the
+        # presenter can scroll from "what changed" to "what happened" without
+        # jumping to a separate Results tab.
+        if int(st.session_state.story_stage) == 2:
+            st.markdown("---")
+            st.markdown(
+                "<div class='layer-heading'>Expanded rediscovery · result</div>",
+                unsafe_allow_html=True,
+            )
+            st.plotly_chart(result_figure(1), use_container_width=True)
 
 if active_section == "07 · Results journey":
     st.markdown('<span class="badge thesis">RESULTS JOURNEY — precomputed thesis evidence</span>', unsafe_allow_html=True)
