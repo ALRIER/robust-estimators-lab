@@ -1,8 +1,8 @@
-"""Accessible presenter cues for Layer 8 · Conclusions."""
+"""Accessible presenter cues for Layer 7 · Conclusions."""
 
 CONCLUSIONS_PRESENTER_NOTES = {
     "conclusions_claims": (
-        "Layer 8 · Claims H1–H4",
+        "Layer 7 · Claims H1–H4",
         "Discussion and contributions",
         [
             "H1|No universal estimator — supported.",
@@ -14,7 +14,7 @@ CONCLUSIONS_PRESENTER_NOTES = {
         "Next: state what the thesis contributes statistically, methodologically, and as an AI search framework.",
     ),
     "conclusions_contrib": (
-        "Layer 8 · Contributions & Limits",
+        "Layer 7 · Contributions & Limits",
         "Discussion and contributions",
         [
             "STATISTICS|Estimate the same target E[X], but search for lower risk in selected regimes.",
