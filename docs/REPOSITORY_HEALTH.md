@@ -18,7 +18,7 @@ At the time of reconciliation:
 - `backup-2026-09-28-stable` is retained intentionally as a historical stable backup.
 - `tmp-layer7-check`, `tmp-layer7-check2`, `tmp-layer7-force`, `tmp-layer7-force2`, `tmp-layer7-force3`, and `tmp-layer7-force4` all pointed to the same old commit and contained no unique work relative to `main`.
 
-Temporary branches are not valid deployment sources. They are synchronized to the canonical main line during repository reconciliation when deletion is unavailable.
+Temporary branches are not valid deployment sources. During this reconciliation, all six `tmp-layer7-*` branches were fast-forwarded to the canonical `main` line because branch deletion is unavailable through the current connector. `backup-2026-09-28-stable` remains intentionally untouched.
 
 ## Drift found and corrected
 
@@ -71,3 +71,14 @@ The project still contains historical presenter/runtime modules that are not par
 If the public app does not show the build identifier committed on `main`, do not keep editing visualization code. First resolve the Streamlit Cloud branch/main-file configuration or a failed deployment.
 
 This rule is now the primary guardrail against repeating stale-deployment confusion.
+
+
+## Reconciliation completed in this pass
+
+- active documentation now describes Streamlit, not the obsolete Dash prototype;
+- startup documents point to one canonical instruction set;
+- `PROJECT_INVENTORY.csv` is regenerated from the actual repository tree;
+- `src/app_meta.py` provides a visible build identifier;
+- `streamlit_app.py` displays that build identifier in the sidebar;
+- all known temporary `tmp-layer7-*` branches are synchronized with `main`;
+- the historical backup branch is preserved.
