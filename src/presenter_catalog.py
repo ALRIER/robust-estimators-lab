@@ -70,8 +70,6 @@ PRESENTER_SEQUENCE = (
     (
         "07 · Results journey",
         (
-            ("results_stage_0", "Discovery + Frozen I"),
-            ("results_stage_1", "Expanded rediscovery"),
             ("results_stage_2", "Strict validation"),
             ("results_stage_3", "Real-world battery"),
             ("results_stage_4", "Dirichlet audit"),
