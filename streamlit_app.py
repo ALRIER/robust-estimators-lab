@@ -643,9 +643,19 @@ def build_layer2_demo(family, contamination, contamination_rate, outlier_scale, 
 
 DEFENSE_INDEX = (
     "00 · Cover", "01 · Research logic", "02 · Data-generating world", "03 · Simulation lab",
-    "04 · Monte Carlo engine", "05 · GA search", "06 · Experiment pipeline", "07 · Results journey",
-    "08 · Conclusions", "09 · Technical drill-down",
+    "04 · Monte Carlo engine", "05 · GA search", "06 · Experiment pipeline",
+    "07 · Conclusions", "08 · Technical drill-down",
 )
+
+# Migrate browser sessions that still hold the pre-merge section names.
+_legacy_section = st.session_state.get("defense_section")
+_legacy_sections = {
+    "07 · Results journey": "06 · Experiment pipeline",
+    "07 · Conclusions": "07 · Conclusions",
+    "08 · Technical drill-down": "08 · Technical drill-down",
+}
+if _legacy_section in _legacy_sections:
+    st.session_state.defense_section = _legacy_sections[_legacy_section]
 
 def _navigate(index):
     st.session_state.defense_section = DEFENSE_INDEX[max(0, min(index, len(DEFENSE_INDEX) - 1))]
@@ -660,7 +670,7 @@ def _presenter_note_key(active_section: str) -> str:
     """Resolve the exact speaking note for the currently visible defense view."""
     fixed = {
         "00 · Cover": "cover", "03 · Simulation lab": "simulation_lab", "05 · GA search": "ga_search",
-        "07 · Results journey": "results", "08 · Conclusions": "conclusions", "09 · Technical drill-down": "technical",
+        "07 · Conclusions": "conclusions", "08 · Technical drill-down": "technical",
     }
     if active_section == "01 · Research logic":
         keys = ("research_problem", "research_objective", "research_hypotheses", "research_target", "research_why_win")
@@ -936,76 +946,28 @@ if active_section == "06 · Experiment pipeline":
                 unsafe_allow_html=True,
             )
             st.plotly_chart(result_figure(1), use_container_width=True)
+        elif int(st.session_state.story_stage) == 3:
+            st.markdown("---")
+            st.markdown(
+                "<div class='layer-heading'>Frozen Validation II · result</div>",
+                unsafe_allow_html=True,
+            )
+            st.plotly_chart(result_figure(2), use_container_width=True)
+        elif int(st.session_state.story_stage) == 4:
+            st.markdown("---")
+            st.markdown(
+                "<div class='layer-heading'>External evidence · real-world battery</div>",
+                unsafe_allow_html=True,
+            )
+            st.plotly_chart(result_figure(3), use_container_width=True)
+            st.markdown("---")
+            st.markdown(
+                "<div class='layer-heading'>External evidence · Dirichlet audit</div>",
+                unsafe_allow_html=True,
+            )
+            st.plotly_chart(result_figure(4), use_container_width=True)
 
-if active_section == "07 · Results journey":
-    st.markdown('<span class="badge thesis">RESULTS JOURNEY — precomputed thesis evidence</span>', unsafe_allow_html=True)
-    st.caption("Discovery finds opportunities; fixed-weight evidence decides what survives.")
-    result_stages = (
-        ("1–2 · Discovery + Frozen I", "OPPORTUNITY", "36 → 16 → 2", "Discovery creates opportunities; frozen confirmation narrows the claim."),
-        ("3 · Expanded rediscovery", "REDISCOVERY", "10 → 26", "Reopening the basis changes what the GA can discover."),
-        ("4 · Strict validation", "TRANSFER SPECIALIST", "2 Weibull specialists", "Harder pressure makes the evidence local, not universal."),
-        ("5A · Real-world battery", "EXTERNAL CALIBRATION", "26 / 43 parents", "Empirical transfer is calibration, not known-θ truth validation."),
-        ("5B · Dirichlet audit", "AUDIT", "23 / 34 no random pass", "Benchmark retention is often meaningful, not merely GA failure."),
-    )
-    if "results_stage" not in st.session_state:
-        st.session_state.results_stage = 0
-    buttons = st.columns(5)
-    for i, (label, _claim, _metric, _line) in enumerate(result_stages):
-        with buttons[i]:
-            if st.button(label, key=f"results_stage_{i}", use_container_width=True, type="primary" if i == st.session_state.results_stage else "secondary"):
-                st.session_state.results_stage = i
-                st.session_state.results_explanation = 0
-    stage = st.session_state.results_stage
-    label, claim, metric, interpretation = result_stages[stage]
-    colors = ("#e66d4f", "#a777e3", "#54c786", "#58aee8", "#4fc3ff")
-    hero, rail = st.columns([3.1, 1.05])
-    with hero:
-        fig = go.Figure()
-        if stage == 0:
-            fig.add_trace(go.Funnel(y=["Discovery regimes", "Discovery wins", "Locked confirmations"], x=[36,16,2], marker=dict(color=[colors[0],"#f3c743","#54c786"])))
-            fig.update_layout(title="Opportunity → fixed-weight confirmation", height=390)
-        elif stage == 1:
-            fig.add_trace(go.Bar(x=["Cycle I", "Cycle II"], y=[10,26], marker_color=["#7187a4",colors[1]], text=["10 components", "26 components"], textposition="outside"))
-            fig.add_annotation(x="Cycle II", y=26, text="HPF: 60% → 90%<br>CV-019 / CV-010 warm starts", showarrow=False, yshift=55)
-            fig.update_layout(title="Expanded component library", height=390, yaxis_title="Learnable components")
-        elif stage == 2:
-            evidence = load_evidence_taxonomy()
-            grades = evidence.evidence_grade.value_counts() if not evidence.empty else {}
-            fig.add_trace(go.Bar(x=list(grades.index), y=list(grades.values), marker_color=colors[2]))
-            fig.update_layout(title="Fixed-weight evidence taxonomy", height=390, xaxis_title="Evidence class", yaxis_title="Candidates")
-        elif stage == 3:
-            fig.add_trace(go.Bar(x=["Eligible parent datasets", "Parents with ≥1 corrected win"], y=[43,26], marker_color=["#7187a4",colors[3]], text=["43", "26"], textposition="outside"))
-            fig.add_annotation(x="Parents with ≥1 corrected win", y=26, text="255 profile-matched FDR 5% confirmations", showarrow=False, yshift=55)
-            fig.update_layout(title="Real-world external battery", height=390, yaxis_title="Parent datasets")
-        else:
-            audit = load_dirichlet_summary()
-            total = len(audit) if not audit.empty else 34
-            signals = int(audit["dirichlet_signal"].astype(str).str.lower().eq("true").sum()) if not audit.empty else 11
-            fig.add_trace(go.Bar(x=["No random pass", "Some random signal", "Strongest controls pass"], y=[23, signals, 8], marker_color=["#7187a4",colors[4],"#54c786"], text=["23 / 34", f"{signals} / {total}", "8 / 8"], textposition="outside"))
-            fig.update_layout(title="Dirichlet random-simplex abstain audit", height=390, yaxis_title="Regimes / controls")
-        fig.update_layout(plot_bgcolor="#081525", paper_bgcolor="#081525", font_color="#e9f4ff", margin=dict(l=25,r=25,t=52,b=40), showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
-    with rail:
-        st.markdown(f'''<div class="story-panel"><div class="story-kicker">CLAIM STATUS</div><div class="story-title" style="font-size:21px;color:{colors[stage]}">{claim}</div><div class="story-label">KEY EVIDENCE</div><div class="story-body">{metric}</div><div class="story-label" style="margin-top:18px">INTERPRETATION</div><div class="story-body">{interpretation}</div></div>''', unsafe_allow_html=True)
-    if "results_explanation" not in st.session_state:
-        st.session_state.results_explanation = 0
-    explain_steps = ("Signal — what first appeared in this stage.", "Pressure — what stronger comparison or validation tested.", "Interpretation — the precise, bounded claim allowed by the evidence.")
-    left, right = st.columns([1,4])
-    with left:
-        if st.button("Advance explanation", key="advance_results"):
-            st.session_state.results_explanation = min(2, st.session_state.results_explanation + 1)
-    with right:
-        st.info(explain_steps[st.session_state.results_explanation])
-    show_detail = st.toggle("Show technical detail", value=False, key="results_technical_detail")
-    if show_detail:
-        st.caption("Technical backup: precomputed candidate-level tables remain available below; no result is recomputed here.")
-        winners = load_winners()
-        if not winners.empty:
-            top = winners.copy()
-            top["gain"] = top["ga_rel_improvement_q95"].astype(float)
-            st.dataframe(top[["distribution", "specialist_regime_id", "gate_pass", "final_selected_type", "gain"]].head(12), use_container_width=True, hide_index=True)
-
-if active_section == "09 · Technical drill-down":
+if active_section == "08 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     winners=load_winners()
     if winners.empty: st.error('Not exported'); st.stop()
@@ -1020,7 +982,7 @@ if active_section == "09 · Technical drill-down":
     st.plotly_chart(wf,use_container_width=True)
     st.info(f"Relative gain in q95(MSE): {row.get('ga_rel_improvement_q95','Not exported')} · Relative gain in mean MSE: {row.get('ga_rel_improvement_mean','Not exported')}. Discovery does not equal fixed-weight confirmation.")
 
-if active_section == "09 · Technical drill-down":
+if active_section == "08 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — precomputed research output</span>', unsafe_allow_html=True)
     st.caption('Discovery → locked / fixed weights → bootstrap CI → evidence taxonomy')
     decisions,ci,evidence,validated=load_final_decisions(),load_bootstrap_ci(),load_evidence_taxonomy(),load_validated_specialists()
@@ -1038,7 +1000,7 @@ if active_section == "09 · Technical drill-down":
     fig.add_vline(x=0,line_dash='dash');fig.update_layout(title='Mean gain with bootstrap CI',height=400,xaxis_title='Mean gain',yaxis_title='Validation seed')
     st.plotly_chart(fig,use_container_width=True);st.caption(f'Validated specialists in curated taxonomy: {len(validated)}')
 
-if active_section == "09 · Technical drill-down":
+if active_section == "08 · Technical drill-down":
     st.markdown('<span class="badge thesis">THESIS RESULTS — external evidence</span>', unsafe_allow_html=True)
     st.caption("These two audits answer different questions and neither retrains a discovered estimator.")
     real, audit = st.columns(2)
@@ -1073,8 +1035,8 @@ if active_section == "00 · Cover":
         st.markdown("<br>", unsafe_allow_html=True)
         start, results, appendix = st.columns([1.45, 1, 1])
         start.button("Start Defense →", type="primary", use_container_width=True, on_click=_navigate, args=(1,))
-        results.button("Jump to Results", use_container_width=True, on_click=_navigate, args=(7,))
-        appendix.button("Technical Appendix", use_container_width=True, on_click=_navigate, args=(9,))
+        results.button("Jump to Evidence", use_container_width=True, on_click=_navigate, args=(6,))
+        appendix.button("Technical Appendix", use_container_width=True, on_click=_navigate, args=(8,))
     st.info("Conditional estimator discovery — not universal GA superiority.")
 
 if active_section == "01 · Research logic":
@@ -1152,10 +1114,10 @@ if active_section == "04 · Monte Carlo engine":
         components.html(validation_scene_svg(st.session_state.validation_stage), height=860, scrolling=False)
 
 DEFENSE_SCENE_SECTION = {
-    "08 · Conclusions": 6,
+    "07 · Conclusions": 6,
 }
 if active_section in DEFENSE_SCENE_SECTION:
     components.html(defense_scene_svg(DEFENSE_SCENE_SECTION[active_section]), height=770, scrolling=False)
     closing_a, closing_b = st.columns(2)
-    closing_a.button("Go to technical appendix", use_container_width=True, on_click=_navigate, args=(9,))
-    closing_b.button("Back to results", type="primary", use_container_width=True, on_click=_navigate, args=(7,))
+    closing_a.button("Go to technical appendix", use_container_width=True, on_click=_navigate, args=(8,))
+    closing_b.button("Back to evidence pipeline", type="primary", use_container_width=True, on_click=_navigate, args=(6,))
