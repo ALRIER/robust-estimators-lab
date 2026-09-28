@@ -228,11 +228,11 @@ def render_cover_page() -> None:
         )
     with results:
         st.button(
-            "Jump to Results",
+            "Jump to Evidence",
             key="cover_jump_results",
             use_container_width=True,
             on_click=_go,
-            args=("07 · Results journey",),
+            args=("06 · Experiment pipeline",),
         )
     with appendix:
         st.button(
@@ -240,5 +240,5 @@ def render_cover_page() -> None:
             key="cover_jump_appendix",
             use_container_width=True,
             on_click=_go,
-            args=("09 · Technical drill-down",),
+            args=("08 · Technical drill-down",),
         )
