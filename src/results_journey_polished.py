@@ -186,32 +186,38 @@ def _result_cycle_comparison():
                border=PURPLE, value_color="#d6b4ff", label_color="#d9c4f4")
 
     _text(fig, .75, .675, "12 discovery winners", size=23, color="#d6b4ff", bold=True)
-    _text(fig, .75, .625, "spread across five families", size=11, color=SUBTLE)
+    _text(fig, .75, .632, "five families · exact Cycle II candidate results", size=11, color=SUBTLE)
+    _text(fig, .75, .585, "WHO WON · HOW STRONGLY · UNDER WHAT CONDITIONS", size=10, color=CYAN, bold=True)
 
-    family_specs = [
-        ("NORMAL", "1", .565, .485, MUTED),
-        ("LOGNORMAL", "2", .700, .485, PURPLE),
-        ("WEIBULL", "2", .835, .485, GREEN),
-        ("INV. GAUSS.", "4", .565, .325, GOLD),
-        ("EX-GAUSS.", "0", .700, .325, MUTED),
-        ("EX-WALD", "3", .835, .325, BLUE),
+    winner_rows = [
+        ("NORMAL · 1", "s202·REG02", "q95 +7.0% · mean +1.7%",
+         "symmetric-t contamination · high severity", MUTED),
+        ("LOGNORMAL · 2", "s101·REG01 / REG03", "q95 +3.8–3.9% · mean +13.6–16.8%",
+         "clustered upper-tail · high/extreme severity", PURPLE),
+        ("WEIBULL · 2", "s101·REG01 / s202·REG02", "q95 +7.3–23.6% · mean +8.3–29.1%",
+         "extreme-scale upper-tail / point-mass · later transfer family", GREEN),
+        ("INV. GAUSS. · 4", "s101·REG01/02 · s202·REG02/03", "q95 +5.3–38.2% · mean +17.5–52.2%",
+         "heavy right tail · upper-tail / point-mass · largest cluster", GOLD),
+        ("EX-WALD · 3", "s101·REG01/03 · s202·REG03", "q95 +10.4–20.6% · mean +4.7–24.8%",
+         "extreme bimodal / clustered / point-mass", BLUE),
     ]
-    for label, value, x, y, color in family_specs:
-        _two_line_card(
-            fig, x, y, x+.105, y+.115, label, value, "",
-            fill="#101d31", border=color, value_color=color, heading_color=SUBTLE
-        )
+    row_y = [.505, .430, .355, .280, .205]
+    for (label, ids, gains, clue, color), y in zip(winner_rows, row_y):
+        _rect(fig, .555, y, .945, y+.060, fill="#101d31", border=color, width=1.15)
+        _text(fig, .568, y+.041, label, size=9.5, color=color, anchor="left", align="left", bold=True)
+        _text(fig, .568, y+.018, ids, size=8.3, color=SUBTLE, anchor="left", align="left")
+        _text(fig, .935, y+.041, gains, size=8.8, color=TEXT, anchor="right", align="right", bold=True)
+        _text(fig, .935, y+.018, clue, size=7.9, color=SUBTLE, anchor="right", align="right")
 
-    _rect(fig, .565, .175, .935, .270, fill="#241f3f", border=PURPLE)
-    _text(fig, .75, .237, "CV-019 + CV-010 = WARM STARTS", size=11, color="#eadcff", bold=True)
-    _text(fig, .75, .198, "allowed to compete · no automatic win", size=10, color=SUBTLE)
+    _text(fig, .75, .165, "EX-GAUSSIAN · 0  |  CV-019 + CV-010 entered only as protected warm starts",
+          size=8.8, color=SUBTLE, bold=True)
 
     _story_strip(fig, "THE STORY: when the component library became stronger, the winner pattern changed — exactly what regime-conditional search predicts.")
     return _base_layout(
         fig,
         "What changed when the search space became stronger?",
         "Cycle 1 and Cycle 2 are shown as two different evidence stories, not as one unexplained bar chart.",
-        height=700,
+        height=760,
     )
 
 
