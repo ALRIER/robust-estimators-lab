@@ -1,0 +1,24 @@
+name: Repository health
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install runtime dependencies
+        run: pip install -r requirements.txt
+      - name: Compile application
+        run: python -m compileall -q streamlit_app.py app.py src
+      - name: Run tests
+        run: pytest -q
+      - name: Import canonical Streamlit entrypoint
+        run: python -c "import streamlit_app; print('streamlit_app import OK')"
