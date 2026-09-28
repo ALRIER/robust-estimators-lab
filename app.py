@@ -1,14 +1,7 @@
 """Compatibility entry point for Streamlit Cloud.
 
-This is intentionally the deployment entrypoint.  Always reload the real
-application module so Streamlit Cloud cannot keep serving a stale imported
-copy after repository updates.
+The deployed app must execute the same Streamlit dashboard whether Cloud is
+configured with ``app.py`` or the explicit ``streamlit_app.py`` entry point.
 """
 
-import importlib
-import streamlit_app
-
-importlib.reload(streamlit_app)
-
-# Deployment revision: Stage 5 external evidence + abstention audit unified.
-# 2026-09-28
+from streamlit_app import *  # noqa: F401,F403 - Streamlit renders module top level.
