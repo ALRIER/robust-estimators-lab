@@ -71,18 +71,14 @@ def cue_for_presentation(active_section: str) -> str | None:
         stage = max(0, min(int(st.session_state.get("story_stage", 0)), 4))
         return f"pipeline_stage_{stage}"
 
-    if active_section == "07 · Results journey":
-        stage = max(0, min(int(st.session_state.get("results_stage", 0)), 2))
-        return ("results_stage_2", "results_stage_3", "results_stage_4")[stage]
-
-    if active_section == "08 · Conclusions":
+    if active_section == "07 · Conclusions":
         return (
             "conclusions_contrib"
             if st.session_state.get("conclusion_view", "claims") == "contrib"
             else "conclusions_claims"
         )
 
-    if active_section == "09 · Technical drill-down":
+    if active_section == "08 · Technical drill-down":
         section = max(0, min(int(st.session_state.get("appendix_section", 0)), 5))
         return f"appendix_{'ABCDEF'[section]}"
 
