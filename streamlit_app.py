@@ -651,8 +651,8 @@ DEFENSE_INDEX = (
 _legacy_section = st.session_state.get("defense_section")
 _legacy_sections = {
     "07 · Results journey": "06 · Experiment pipeline",
-    "07 · Conclusions": "07 · Conclusions",
-    "08 · Technical drill-down": "08 · Technical drill-down",
+    "08 · Conclusions": "07 · Conclusions",
+    "09 · Technical drill-down": "08 · Technical drill-down",
 }
 if _legacy_section in _legacy_sections:
     st.session_state.defense_section = _legacy_sections[_legacy_section]
