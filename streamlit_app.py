@@ -29,6 +29,7 @@ UNIVERSITY_LOGO_DATA_URI = (
 )
 
 # Presenter notes are a rehearsal aid, not a source of new thesis claims.  Each
+# Deployment refresh: Cycle II expanded-rediscovery evidence synchronized 2026-09-28.
 # entry below is condensed from the defense deck, thesis, and final KBS notation.
 PRESENTER_NOTES = {
     "cover": ("Opening", "Defense deck · title slide", [
@@ -160,15 +161,21 @@ PRESENTER_NOTES = {
         ]),
         ("POSSIBLE QUESTIONS", [("Why freeze the weights?", "Freezing prevents the candidate from adapting to the confirmation data, separating estimator evidence from search-cell artifacts."), ("Why introduce 26 estimators here if only 10 were learnable?", "At this stage the modern estimators are comparators only. They become learnable later when discovery is deliberately reopened.")]),
     ], "Only confirmed evidence may become a protected prior in rediscovery."),
-    "pipeline_stage_2": ("Layer 6 · Stage 3 — Expanded Rediscovery", "Final thesis expanded-basis design", [
+    "pipeline_stage_2": ("Layer 6 · Stage 3 — Expanded Rediscovery", "Final thesis expanded-basis design + fixed Cycle II results", [
         ("HELP", [
             "Discovery is reopened with all 26 estimator components learnable from HPF1 onward.",
             "HPF1 remains at 60% scenario exposure, while HPF2 increases from 80% to 90%.",
             "The expanded modern benchmark gate is active from the start rather than appearing only after discovery.",
-            "CV-019 and CV-010 enter as protected warm starts because they passed the earlier fixed-weight confirmation.",
-            "Their provenance is preserved, but they receive no fitness bonus and must compete again under the 26-component design.",
+            "Cycle II produced 12 discovery winners across five families: Normal 1, Lognormal 2, Weibull 2, Inverse Gaussian 4, Ex-Gaussian 0, and Ex-Wald 3.",
+            "Normal: s202·REG02 reached +7.0% q95 and +1.7% mean MSE under high-severity symmetric heavy-tailed-t contamination.",
+            "Lognormal: s101·REG01/REG03 reached +3.8–3.9% q95 and +13.6–16.8% mean MSE under clustered upper-tail contamination.",
+            "Weibull: s101·REG01 and s202·REG02 reached +7.3–23.6% q95 and +8.3–29.1% mean MSE; this family later produced the two transfer specialists.",
+            "Inverse Gaussian formed the largest cluster: four winners with +5.3–38.2% q95 and +17.5–52.2% mean MSE under heavy-right-tail upper-tail, clustered, and point-mass pressure.",
+            "Ex-Wald produced three winners with +10.4–20.6% q95 and +4.7–24.8% mean MSE under extreme bimodal, clustered-upper, and point-mass regimes.",
+            "CV-019 and CV-010 enter as protected warm starts because they passed the earlier fixed-weight confirmation; they receive no fitness bonus and no automatic win.",
+            "The substantive result is that the stronger 26-estimator library changed both the breadth and location of discovery instead of merely reproducing Cycle I.",
         ]),
-        ("POSSIBLE QUESTIONS", [("Why reopen the GA?", "This tests whether modern robust pressure changes what can be discovered when those estimators are inside the learnable basis from the beginning."), ("Do CV-019 and CV-010 get an unfair advantage?", "No. They are controlled starting priors only; they must re-survive the same fitness and gate logic as other candidates.")]),
+        ("POSSIBLE QUESTIONS", [("Why reopen the GA?", "This tests whether modern robust pressure changes what can be discovered when those estimators are inside the learnable basis from the beginning."), ("Which Cycle II signal was strongest?", "The largest q95 discovery gain in the exported Cycle II winners was Inverse Gaussian at about +38.2%, with about +52.2% mean-MSE improvement in that regime."), ("Do CV-019 and CV-010 get an unfair advantage?", "No. They are controlled starting priors only; they must re-survive the same fitness and gate logic as other candidates.")]),
     ], "Freeze the expanded candidates again before testing their evidential scope."),
     "pipeline_stage_3": ("Layer 6 · Stage 4 — Frozen Validation II", "Final thesis post-discovery fixed-weight validation", [
         ("HELP", [
@@ -464,6 +471,7 @@ PRESENTER_FORMULA_CARDS = {
     "pipeline_stage_2": [
         ("EXPANDED SEARCH SPACE", "10 learnable → 26 learnable", ["Modern robust estimators become part of the GA basis from HPF1.", "The benchmark gate is also modern from the beginning of rediscovery."]),
         ("EXPANDED EXPOSURE", "HPF1: 60%  →  HPF2: 90%", ["HPF1 keeps the same broad-screen role.", "HPF2 receives greater exposure than in the initial discovery cycle."]),
+        ("CYCLE II WINNERS", "12 winners across 5 families", ["Normal 1 · Lognormal 2 · Weibull 2 · Inverse Gaussian 4 · Ex-Gaussian 0 · Ex-Wald 3.", "q95 gains among accepted Cycle II winners range from about +3.8% to +38.2%.", "Inverse Gaussian is the largest cluster; Weibull is the family that later yields the transfer specialists."]),
     ],
     "pipeline_stage_3": [
         ("SECOND FREEZE", "w*_{26} → original + locked-unseen validation", ["w*_{26} = candidate learned in expanded rediscovery.", "Both validation modes use the exact frozen vector.", "No adaptation occurs after the second discovery cycle closes."]),
