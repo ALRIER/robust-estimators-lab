@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after simplifying Hard Numbers and Estimator Bases explanations.
+# Runtime refresh: rebuild Streamlit Cloud after synchronizing the submitted thesis title across the app.
 streamlit
 plotly
 pandas
