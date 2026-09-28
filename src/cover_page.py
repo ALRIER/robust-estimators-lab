@@ -141,8 +141,8 @@ html,body{{margin:0;padding:0;background:#06111f;color:#eef6ff;font-family:Arial
   <div class="net-right"></div><div class="net-left"></div>
   <div class="top">
     <div class="kicker">MASTER'S THESIS DEFENSE</div>
-    <div class="title">Building Better Estimators</div>
-    <div class="title2">An Interpretable GA Framework for Conditional Estimator Discovery and Validation</div>
+    <div class="title">Building Better Estimators:</div>
+    <div class="title2">Benchmark-Gated, Regime-Conditional Composite Mean Estimation via Genetic Search</div>
     <div class="rule"><span></span><div class="diamond"></div><span></span></div>
     <div class="tagline">A staged study of estimator discovery, validation, and evidence control under simulated and external data regimes.</div>
   </div>
