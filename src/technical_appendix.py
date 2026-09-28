@@ -1,7 +1,7 @@
-"""Layer 9 · Technical drill-down.
+"""Layer 8 · Technical drill-down.
 
 The timed defense now explains simulation and simulator validity in Layer 2.
-Layer 9 is intentionally narrower: GA mechanics, metrics/gate, detailed results,
+Layer 8 is intentionally narrower: GA mechanics, metrics/gate, detailed results,
 and committee Q&A. It is a backup layer only and never reruns the thesis GA.
 """
 
@@ -153,7 +153,7 @@ def _results() -> str:
     <div class='page'>
       <div class='kicker'>TECHNICAL APPENDIX C · RESULTS</div>
       <div class='title'>What exact evidence survived?</div>
-      <div class='subtitle'>This is the technical backup behind Layer 7. It restates fixed thesis evidence; it does not rerun the search.</div>
+      <div class='subtitle'>This is the technical backup behind the Layer 6 evidence pipeline. It restates fixed thesis evidence; it does not rerun the search.</div>
 
       <div class='section'>1 · EVIDENCE MAP</div>
       <div class='evidence-step'><div class='evidence-num'>36 → 16 → 2</div><div><div class='evidence-title'>Cycle I · discovery became frozen evidence</div><div class='evidence-copy'>Thirty-six controlled regimes produced 16 discovery wins. Only two Lognormal signals survived frozen confirmation.</div></div></div><div class='arrow'>↓</div>
