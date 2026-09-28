@@ -2,7 +2,7 @@
 
 The historical ``streamlit_app.py`` is still monolithic, so this is the one and only
 compatibility router. It keeps the redesigned cover, Layers 1–2, Layer 4, and
-Layers 7–9 synchronized with their current modular pages and presenter notes.
+the renumbered conclusion / technical layers synchronized with their modular pages.
 Target modules are reloaded from disk so Streamlit hot-reload cannot serve an old
 page implementation after a Git push.
 
@@ -20,10 +20,9 @@ _COVER = "00 · Cover"
 _LAYER1 = "01 · Research logic"
 _LAYER2 = "02 · Data-generating world"
 _LAYER4 = "04 · Monte Carlo engine"
-_LAYER7 = "07 · Results journey"
-_LAYER8 = "08 · Conclusions"
-_LAYER9 = "09 · Technical drill-down"
-_VERSION = "single-defense-runtime-v16-results-merged"
+_CONCLUSIONS = "07 · Conclusions"
+_TECHNICAL = "08 · Technical drill-down"
+_VERSION = "single-defense-runtime-v17-no-results-layer"
 _ACCESSIBLE_CUE_KEYS = {
     "research_problem",
     "research_objective",
@@ -115,12 +114,9 @@ def _current_note_key(active: str) -> str | None:
             "monte_carlo_validation_stages",
             "monte_carlo_fairness",
         )[view]
-    if active == _LAYER7:
-        stage = max(0, min(int(st.session_state.get("results_stage", 0)), 2))
-        return ("results_stage_2", "results_stage_3", "results_stage_4")[stage]
-    if active == _LAYER8:
+    if active == _CONCLUSIONS:
         return "conclusions_contrib" if st.session_state.get("conclusion_view", "claims") == "contrib" else "conclusions_claims"
-    if active == _LAYER9:
+    if active == _TECHNICAL:
         section = max(0, min(int(st.session_state.get("appendix_section", 0)), 5))
         return f"appendix_{'ABCDEF'[section]}"
     return None
@@ -256,7 +252,7 @@ def install_defense_runtime() -> None:
             base_markdown(_note_html(presenter_key), unsafe_allow_html=True)
             st.stop()
 
-        if active in (_COVER, _LAYER1, _LAYER2, _LAYER4, _LAYER7, _LAYER8, _LAYER9) and "presenter_notes=1" in text:
+        if active in (_COVER, _LAYER1, _LAYER2, _LAYER4, _CONCLUSIONS, _TECHNICAL) and "presenter_notes=1" in text:
             key = _current_note_key(active)
             if key:
                 old_keys = (
@@ -277,15 +273,7 @@ def install_defense_runtime() -> None:
                 rendering = False
             st.stop()
 
-        if active == _LAYER7 and "RESULTS JOURNEY — precomputed thesis evidence" in text:
-            rendering = True
-            try:
-                _render_current("src.results_page", "render_results_journey")
-            finally:
-                rendering = False
-            st.stop()
-
-        if active == _LAYER9 and (
+        if active == _TECHNICAL and (
             "THESIS RESULTS — precomputed research output" in text
             or "THESIS RESULTS — external evidence" in text
         ):
@@ -339,7 +327,7 @@ def install_defense_runtime() -> None:
             kwargs["scrolling"] = False
             return base_html(current_html, *args, **kwargs)
 
-        if active == _LAYER8 and "WHAT DID WE LEARN?" in text and "No Free Lunch, made operational." in text:
+        if active == _CONCLUSIONS and "WHAT DID WE LEARN?" in text and "No Free Lunch, made operational." in text:
             rendering = True
             try:
                 _render_current("src.conclusions", "render_conclusions")
