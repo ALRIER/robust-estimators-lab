@@ -22,16 +22,15 @@ from src.data_world import DATA_WORLD_VIEWS, data_world_detail_svg
 from src.data_loader import load_winners, load_final_decisions, load_bootstrap_ci, load_evidence_taxonomy, load_validated_specialists, load_dirichlet_summary, load_dirichlet_signals
 from src.constants import ESTIMATOR_NAMES
 from src.presenter_sync import publish_current_cue
+from src.app_meta import BUILD_ID, CANONICAL_BRANCH, CANONICAL_ENTRYPOINT
 
 UNIVERSITY_LOGO_DATA_URI = (
     "data:image/jpeg;base64,"
     + b64encode((Path(__file__).parent / "assets" / "university_of_hull_logo.jpeg").read_bytes()).decode("ascii")
 )
 
-# Presenter notes are a rehearsal aid, not a source of new thesis claims.  Each
-# Deployment refresh: Cycle II expanded-rediscovery evidence synchronized 2026-09-28.
-# Visual refresh: larger Cycle II family cards for defense readability.\n# Layout restore: evidence-pipeline SVG uses the stable Streamlit component renderer.\n# Stage 5 refresh: external evidence + abstention audit unified into one narrative screen.
-# entry below is condensed from the defense deck, thesis, and final KBS notation.
+# Presenter notes are a rehearsal aid, not a source of new thesis claims.
+# The entries below are condensed from the defense deck, thesis, and final KBS notation.
 PRESENTER_NOTES = {
     "cover": ("Opening", "Defense deck · title slide", [
         "Introduce the problem in one sentence: we want better estimates of a population mean when ordinary conditions fail.",
@@ -722,6 +721,7 @@ def _presenter_notes_link(section: str) -> str:
 with st.sidebar:
     st.markdown("### DEFENSE MODE")
     st.caption("Manual presentation index · live layers are preserved")
+    st.caption(f"Build: {BUILD_ID} · {CANONICAL_BRANCH} · {CANONICAL_ENTRYPOINT}")
     active_section = st.radio("Defense section", DEFENSE_INDEX, label_visibility="collapsed", key="defense_section")
     position = DEFENSE_INDEX.index(active_section)
     previous, following = st.columns(2)
