@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after synchronizing the submitted thesis title across the app.
+# Runtime refresh: rebuild Streamlit Cloud after adding one-way live Presenter Companion synchronization.
 streamlit
 plotly
 pandas
