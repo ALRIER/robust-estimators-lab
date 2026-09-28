@@ -1,4 +1,4 @@
-# Runtime refresh: rebuild Streamlit Cloud after merging Expanded Rediscovery method and results.
+# Runtime refresh: rebuild Streamlit Cloud after consolidating all Results into the Layer 6 evidence pipeline and renumbering final layers.
 streamlit
 plotly
 pandas
