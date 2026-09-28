@@ -504,7 +504,7 @@ PRESENTER_FORMULA_CARDS = {
 
 _query = st.query_params
 _browser_note = PRESENTER_NOTES.get(_query.get("section", "")) if _query.get("presenter_notes") == "1" else None
-st.set_page_config(page_title=_browser_note[0] if _browser_note else "Robust Estimators Lab", page_icon="📊", layout="wide")
+st.set_page_config(page_title=_browser_note[0] if _browser_note else "Building Better Estimators: Benchmark-Gated, Regime-Conditional Composite Mean Estimation via Genetic Search", page_icon="📊", layout="wide")
 pio.templates.default = "plotly_dark"
 st.markdown("""<style>
 .stApp{background:radial-gradient(circle at 48% -12%,#16365c 0,#08172a 35%,#040a14 76%)!important;color:#eef5ff}.block-container{padding:.45rem 2rem 3rem!important;max-width:none!important}.stMetric{background:linear-gradient(135deg,#0d2038,#081525)!important;border:1px solid #218dca!important;border-top:3px solid #9a5cff!important;border-radius:7px;padding:10px;box-shadow:inset 0 0 18px rgba(33,141,202,.08)}.stMetric label,.stMetric [data-testid="stMetricLabel"]{color:#b8c8de!important}.stMetric [data-testid="stMetricValue"]{color:#f5f8ff!important}.badge{padding:6px 10px;border-radius:6px;font-size:.78rem;font-weight:800;display:inline-block;letter-spacing:.03em}.demo{background:#28184c;color:#d7c3ff;border:1px solid #8759de}.thesis{background:#0b372d;color:#9df0b7;border:1px solid #3aaf6f}
@@ -1050,8 +1050,8 @@ if active_section == "00 · Cover":
     with logo:
         st.image("assets/university_of_hull_logo.jpeg", use_container_width=True)
     with opening:
-        st.markdown("## Building Better Estimators")
-        st.markdown("### Benchmark-gated, regime-conditional composite mean estimation via genetic search")
+        st.markdown("## Building Better Estimators:")
+        st.markdown("### Benchmark-Gated, Regime-Conditional Composite Mean Estimation via Genetic Search")
         st.caption("MSc Artificial Intelligence · Thesis Defense · Alvaro Rivera-Eraso · Supervisor · University of Hull")
         st.markdown("<br>", unsafe_allow_html=True)
         start, results, appendix = st.columns([1.45, 1, 1])
