@@ -18,7 +18,6 @@ from src.data_world_presenter_notes import DATA_WORLD_PRESENTER_NOTES
 from src.monte_carlo_presenter_notes import MONTE_CARLO_PRESENTER_NOTES
 from src.final_presenter_notes import FINAL_PRESENTER_NOTES
 from src.thesis_ga_presenter_notes import THESIS_GA_PRESENTER_NOTES
-from src.results_presenter_notes import RESULTS_PRESENTER_NOTES
 from src.conclusions_presenter_notes import CONCLUSIONS_PRESENTER_NOTES
 from src.technical_presenter_notes import TECHNICAL_PRESENTER_NOTES
 
@@ -122,7 +121,6 @@ def all_presenter_notes() -> dict:
     notes.update(DATA_WORLD_PRESENTER_NOTES)
     notes.update(MONTE_CARLO_PRESENTER_NOTES)
     notes.update(THESIS_GA_PRESENTER_NOTES)
-    notes.update(RESULTS_PRESENTER_NOTES)
     notes.update(CONCLUSIONS_PRESENTER_NOTES)
     notes.update(TECHNICAL_PRESENTER_NOTES)
     return notes
