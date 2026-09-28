@@ -36,11 +36,6 @@ _ACCESSIBLE_CUE_KEYS = {
     "monte_carlo_why_validate",
     "monte_carlo_validation_stages",
     "monte_carlo_fairness",
-    "results_stage_0",
-    "results_stage_1",
-    "results_stage_2",
-    "results_stage_3",
-    "results_stage_4",
     "conclusions_claims",
     "conclusions_contrib",
     "appendix_A",
@@ -63,8 +58,6 @@ def _load_notes():
     data_module = importlib.reload(data_module)
     monte_module = importlib.import_module("src.monte_carlo_presenter_notes")
     monte_module = importlib.reload(monte_module)
-    results_module = importlib.import_module("src.results_presenter_notes")
-    results_module = importlib.reload(results_module)
     conclusions_module = importlib.import_module("src.conclusions_presenter_notes")
     conclusions_module = importlib.reload(conclusions_module)
     technical_module = importlib.import_module("src.technical_presenter_notes")
@@ -75,7 +68,6 @@ def _load_notes():
     notes.update(research_module.RESEARCH_PRESENTER_NOTES)
     notes.update(data_module.DATA_WORLD_PRESENTER_NOTES)
     notes.update(monte_module.MONTE_CARLO_PRESENTER_NOTES)
-    notes.update(results_module.RESULTS_PRESENTER_NOTES)
     notes.update(conclusions_module.CONCLUSIONS_PRESENTER_NOTES)
     notes.update(technical_module.TECHNICAL_PRESENTER_NOTES)
     return notes
@@ -244,7 +236,6 @@ def install_defense_runtime() -> None:
             "data_world_why_simulation", "data_world_regime", "data_world_validity",
             "monte_carlo_measurement", "monte_carlo_why_validate",
             "monte_carlo_validation_stages", "monte_carlo_fairness",
-            "results_stage_0", "results_stage_1", "results_stage_2", "results_stage_3", "results_stage_4",
             "conclusions_claims", "conclusions_contrib",
             "appendix_A", "appendix_B", "appendix_C", "appendix_D", "appendix_E", "appendix_F",
         }
