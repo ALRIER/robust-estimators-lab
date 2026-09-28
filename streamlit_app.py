@@ -30,7 +30,7 @@ UNIVERSITY_LOGO_DATA_URI = (
 
 # Presenter notes are a rehearsal aid, not a source of new thesis claims.  Each
 # Deployment refresh: Cycle II expanded-rediscovery evidence synchronized 2026-09-28.
-# Visual refresh: larger Cycle II family cards for defense readability.
+# Visual refresh: larger Cycle II family cards for defense readability.\n# Layout refresh: evidence-pipeline SVG now renders responsively at full app width.
 # entry below is condensed from the defense deck, thesis, and final KBS notation.
 PRESENTER_NOTES = {
     "cover": ("Opening", "Defense deck · title slide", [
@@ -942,7 +942,7 @@ if active_section == "06 · Experiment pipeline":
                           type="primary" if index == st.session_state.story_stage else "secondary",
                           on_click=_set_presenter_state, args=("story_stage", index))
         st.markdown('</div>', unsafe_allow_html=True)
-        components.html(experiment_pipeline_svg(st.session_state.story_stage), height=790, scrolling=False)
+        st.html(experiment_pipeline_svg(st.session_state.story_stage))
         st.caption(f"You are seeing Stage {st.session_state.story_stage + 1} of 5. The numerical facts are fixed thesis settings/results; this visual narrative never reruns the thesis GA.")
 
         # Stage 3 now carries its result directly below the method view so the
