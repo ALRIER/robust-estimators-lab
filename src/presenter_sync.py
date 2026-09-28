@@ -72,8 +72,8 @@ def cue_for_presentation(active_section: str) -> str | None:
         return f"pipeline_stage_{stage}"
 
     if active_section == "07 · Results journey":
-        stage = max(0, min(int(st.session_state.get("results_stage", 0)), 4))
-        return f"results_stage_{stage}"
+        stage = max(0, min(int(st.session_state.get("results_stage", 0)), 2))
+        return ("results_stage_2", "results_stage_3", "results_stage_4")[stage]
 
     if active_section == "08 · Conclusions":
         return (
