@@ -119,10 +119,10 @@ FINAL_PRESENTER_NOTES = {
     ),
 
     # ------------------------------------------------------------------
-    # Layer 8 · Conclusions
+    # Layer 7 · Conclusions
     # ------------------------------------------------------------------
     "conclusions_claims": (
-        "Layer 8 · Claims H1–H4",
+        "Layer 7 · Claims H1–H4",
         "Discussion and contributions",
         [
             "H1, H2 and H4 are supported. H3 has conservative support.",
@@ -132,7 +132,7 @@ FINAL_PRESENTER_NOTES = {
         "Open Contributions & Limits to state what the thesis adds and where the claim stops.",
     ),
     "conclusions_contrib": (
-        "Layer 8 · Contributions & Limits",
+        "Layer 7 · Contributions & Limits",
         "Discussion and contributions",
         [
             "Statistical contribution: target-aware robust estimation of the same population mean E of X.",
@@ -145,7 +145,7 @@ FINAL_PRESENTER_NOTES = {
     ),
 
     # ------------------------------------------------------------------
-    # Layer 9 · Technical appendix — deliberately narrow after Layer 2 redesign
+    # Layer 8 · Technical appendix — deliberately narrow after Layer 2 redesign
     # ------------------------------------------------------------------
     "appendix_A": (
         "Appendix A · GA mechanics",
@@ -182,7 +182,7 @@ FINAL_PRESENTER_NOTES = {
         "Appendix C · Technical results",
         "Technical backup",
         [
-            "Use this page for exact evidence behind Layer 7.",
+            "Use this page for exact evidence behind the Layer 6 evidence pipeline.",
             "Cycle I is 36 regimes to 16 discovery wins to 2 frozen confirmations.",
             "CV-019 has about 16.3 percent q95 gain and CV-010 about 2.2 percent; both survive 8 out of 8 validation seeds.",
             "Expanded rediscovery used 26 learnable components and produced 12 discovery winners across five families.",
