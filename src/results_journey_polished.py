@@ -270,39 +270,102 @@ def _result_strict_validation():
 
 
 def _result_external_funnel():
+    """One-screen synthesis of the external battery and abstention audit.
+
+    Left = what the evidence produced. Right = what the protocol did.
+    Every result is paired to the step that creates its meaning.
+    """
     fig = go.Figure()
 
-    _funnel_band(fig, .72, .90, .04, .57, .08, .53, MUTED, 264, "REQUESTED TARGETS")
-    _text(fig, .305, .675, "↓  availability + loading", size=11, color=SUBTLE, bold=True)
-    _funnel_band(fig, .55, .66, .10, .51, .14, .47, "#607995", 228, "LOADED")
-    _text(fig, .305, .505, "↓  preparation + evaluation", size=11, color=SUBTLE, bold=True)
-    _funnel_band(fig, .38, .48, .16, .45, .20, .41, BLUE, 120, "EVALUATED")
-    _text(fig, .305, .335, "↓  structural profile eligibility", size=11, color=SUBTLE, bold=True)
-    _funnel_band(fig, .20, .30, .22, .39, .245, .365, GREEN, 43, "ELIGIBLE PARENTS")
+    _text(fig, .235, .945, "RESULTS · WHAT WE FOUND", size=14, color=GOLD, bold=True)
+    _text(fig, .765, .945, "METHODOLOGY · WHAT WE DID", size=14, color=CYAN, bold=True)
+    _text(fig, .50, .905, "Each result is tied to the methodological step that produced it.",
+          size=11, color=SUBTLE, bold=True)
 
-    _text(fig, .78, .895, "WHAT DID THOSE 43 PARENTS SHOW?", size=12, color=CYAN, bold=True)
-    _two_line_card(
-        fig, .61, .57, .96, .82, "BREADTH", "26 / 43",
-        "parent datasets · at least one corrected specialist win",
-        fill="#102c3f", border=BLUE, value_color=BLUE, heading_color=CYAN
-    )
-    _two_line_card(
-        fig, .61, .29, .96, .52, "DEPTH", "255",
-        "profile confirmations · repeated evidence inside eligible parents",
-        fill="#221e3e", border=PURPLE, value_color=PURPLE, heading_color="#d9bfff"
-    )
+    rows = [
+        (
+            "264 REQUESTED PUBLIC TARGETS",
+            "Starting universe for external testing",
+            "1 · BUILD THE EXTERNAL BATTERY",
+            "Assemble 264 public dataset targets so frozen specialists can be tested outside simulation.",
+            MUTED,
+        ),
+        (
+            "228 LOADED SOURCES",
+            "Successfully retrieved and auditable",
+            "2 · LOAD + DOCUMENT SOURCES",
+            "Check availability and readability; record URL, access time, file hash, variables, transforms and diagnostics.",
+            "#607995",
+        ),
+        (
+            "120 EVALUATED DATASET IDs",
+            "Datasets that actually entered external evaluation",
+            "3 · EVALUATE USABLE DATASETS",
+            "Only loaded dataset IDs that pass preparation and selection enter the compact evaluation output.",
+            BLUE,
+        ),
+        (
+            "43 ELIGIBLE PARENT DATASETS",
+            "True denominator for the primary external claim",
+            "4 · APPLY THE PROFILE GATE",
+            "Keep only in-regime, profile-matched comparisons using the pre-registered empirical profile and benchmark policy.",
+            GREEN,
+        ),
+        (
+            "26 / 43 PARENTS WITH CORRECTED SIGNAL",
+            "Breadth: positive evidence across many parent sources",
+            "5 · CONTROL MULTIPLICITY",
+            "Compute specialist-vs-benchmark gains and paired bootstrap evidence, then apply dataset-level BH-FDR to the primary claim.",
+            BLUE,
+        ),
+        (
+            "255 CORRECTED CONFIRMATIONS",
+            "Depth inside those parents · not 255 independent datasets",
+            "6 · MEASURE DEPTH",
+            "Count surviving profile-matched evidence rows within eligible parents without treating repeated rows as independent sources.",
+            PURPLE,
+        ),
+        (
+            "AUDIT · 23 / 34 NO RANDOM PASS",
+            "11 / 34 show signal · positive-control sanity check passes all 8 seeds",
+            "7 · AUDIT THE ABSTENTIONS",
+            "Challenge benchmark-retained synthetic cases with 4,000 random Dirichlet simplex mixtures across 8 audit seeds.",
+            GOLD,
+        ),
+    ]
 
-    _rect(fig, .58, .105, .98, .22, fill="#f3c743", border=GOLD, width=1.6)
-    _text(fig, .78, .175, "IMPORTANT: 255 confirmations ≠ 255 independent datasets",
-          size=11, color=DARK_TEXT, bold=True)
-    _text(fig, .78, .135, "Breadth = parents · Depth = repeated profile evidence",
-          size=10, color="#1d2632", bold=True)
+    centers = [.825, .715, .605, .495, .385, .275, .165]
+    for (result_title, result_note, method_title, method_note, color), y in zip(rows, centers):
+        # Left: result.
+        _rect(fig, .025, y-.043, .425, y+.043, fill="#0c2238", border=color, width=1.55)
+        _text(fig, .045, y+.015, result_title, size=13, color=color,
+              anchor="left", align="left", bold=True)
+        _text(fig, .045, y-.020, result_note, size=9.6, color=SUBTLE,
+              anchor="left", align="left")
+
+        # Right: methodology.
+        _rect(fig, .575, y-.043, .975, y+.043, fill="#10253a", border="#3c7198", width=1.35)
+        _text(fig, .595, y+.017, method_title, size=11.2, color=CYAN,
+              anchor="left", align="left", bold=True)
+        _text(fig, .595, y-.020, method_note, size=9.2, color=TEXT,
+              anchor="left", align="left")
+
+        # Method -> result: the arrow makes the causal/narrative pairing explicit.
+        _arrow(fig, .565, y, .440, y, color=color, width=2.2)
+
+    _rect(fig, .06, .025, .94, .090, fill="#10253a", border=GOLD, width=1.6)
+    _text(
+        fig, .50, .058,
+        "TAKE-HOME · conditional real-world transfer has breadth (26/43 parents) and depth (255 corrected confirmations); "
+        "the abstention audit shows benchmark retention was often meaningful, but not beyond challenge in every case.",
+        size=10.5, color=TEXT, bold=True,
+    )
 
     return _base_layout(
         fig,
-        "Does the signal appear in real data?",
-        "The funnel explains why the external battery narrows, while the right side separates breadth from depth.",
-        height=690,
+        "External evidence + abstention audit",
+        "A single story: how public data were filtered into a defensible external claim, then how benchmark retention was independently challenged.",
+        height=920,
     )
 
 
@@ -370,6 +433,6 @@ def result_figure(stage: int):
         return _result_cycle_comparison()
     if stage == 2:
         return _result_strict_validation()
-    if stage == 3:
+    if stage in (3, 4):
         return _result_external_funnel()
-    return _result_dirichlet_audit()
+    return _result_external_funnel()
