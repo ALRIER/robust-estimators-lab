@@ -1,7 +1,7 @@
 """Direct renderer for Layer 8 · Conclusions.
 
 No hooks or compatibility wrappers live here. This is the only audience-facing
-Layer 8 implementation used by streamlit_app.py after repository consolidation.
+Layer 7 implementation used by streamlit_app.py after repository consolidation.
 """
 
 import streamlit as st
@@ -39,7 +39,7 @@ def _claims_html() -> str:
       .caution{background:#3a3214;color:#ffe387;border:1px solid #f3c743}
     </style>
     <div class='page'>
-      <div class='kicker'>08 · DISCUSSION AND CONTRIBUTIONS</div>
+      <div class='kicker'>07 · DISCUSSION AND CONTRIBUTIONS</div>
       <div class='title'>No Free Lunch, made operational.</div>
       <div class='subtitle'>The thesis turns one theoretical idea into four testable claims and a disciplined evidence pipeline.</div>
       <div class='chain'>
@@ -81,7 +81,7 @@ def _contributions_html() -> str:
       .strongest-copy{font-size:21px;line-height:1.35;font-weight:900;color:#fff}
     </style>
     <div class='page'>
-      <div class='kicker'>08 · CONTRIBUTIONS AND LIMITS</div>
+      <div class='kicker'>07 · CONTRIBUTIONS AND LIMITS</div>
       <div class='title'>What the thesis contributes — and where the claim stops.</div>
       <div class='subtitle'>The contribution is easier to defend when each part is explicit: what is statistical, what is AI, what is methodological, and what remains outside the claim.</div>
 
@@ -173,5 +173,5 @@ def render_conclusions() -> None:
         st.info("End of timed defense. Stop here, thank the committee, and open the technical appendix only if a question requires it.")
     with right:
         if st.button("Technical Appendix →", type="primary", use_container_width=True, key="conclusion_direct_appendix"):
-            st.session_state.defense_section = "09 · Technical drill-down"
+            st.session_state.defense_section = "08 · Technical drill-down"
             st.rerun()
