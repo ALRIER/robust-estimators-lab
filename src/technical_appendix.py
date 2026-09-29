@@ -2,7 +2,8 @@
 
 The timed defense now explains simulation and simulator validity in Layer 2.
 Layer 8 is intentionally narrower: GA mechanics, metrics/gate, detailed results,
-and committee Q&A. It is a backup layer only and never reruns the thesis GA.
+hard numbers and estimator bases. Committee Q&A is private presenter material and
+is never rendered in the audience-facing appendix.
 """
 
 from pathlib import Path
@@ -23,9 +24,8 @@ APPENDIX_LABELS = (
     "A · GA mechanics",
     "B · Metrics & gate",
     "C · Results",
-    "D · Q&A",
-    "E · Hard numbers",
-    "F · Estimator bases",
+    "D · Hard numbers",
+    "E · Estimator bases",
 )
 
 
@@ -181,31 +181,6 @@ def _results() -> str:
       <div class='three'><div class='small-card'><div class='n'>23 / 34</div><div class='h'>No random pass</div><div class='c'>Benchmark retention resisted random simplex challenge.</div></div><div class='small-card'><div class='n'>11 / 34</div><div class='h'>Some signal</div><div class='c'>These abstentions deserve more investigation.</div></div><div class='small-card'><div class='n'>8 / 8</div><div class='h'>Positive controls pass</div><div class='c'>The audit detects strong signal when present.</div></div></div>
 
       <div class='takeaway'>TAKE-HOME: the evidence becomes narrower as validation becomes harder. That is the intended behaviour of the design.</div>
-    </div>"""
-
-
-def _qa() -> str:
-    return _css() + """
-    <div class='page'>
-      <div class='kicker'>TECHNICAL APPENDIX D · COMMITTEE Q&A</div>
-      <div class='title'>Short answers to difficult questions</div>
-      <div class='subtitle'>Say the bold sentence first. Expand only if the committee asks for more detail.</div>
-
-      <div class='qa'><div class='q'>Why use a genetic algorithm?</div><div class='a'><b>Because I am searching many interpretable weight combinations across generations.</b></div><div class='more'>The GA proposes candidates on the simplex. It does not decide the final scientific claim.</div></div>
-      <div class='qa'><div class='q'>Why not just select one robust estimator?</div><div class='a'><b>Because no single estimator is best across all regimes.</b></div><div class='more'>The thesis tests whether a convex mixture can improve the bias–variance trade-off in selected regimes.</div></div>
-      <div class='qa'><div class='q'>Why q95?</div><div class='a'><b>Because average performance can hide difficult cases.</b></div><div class='more'>q95 is the 95th percentile of replicate squared errors. It is not a p-value.</div></div>
-      <div class='qa'><div class='q'>What is frozen validation?</div><div class='a'><b>The weights are locked before new evidence is evaluated.</b></div><div class='more'>There is no retraining, so the candidate cannot adapt to the validation data.</div></div>
-      <div class='qa'><div class='q'>Why do FWVR011 and FWVR012 pass locked-unseen but fail original-regime validation?</div><div class='a'><b>Because they are narrow transfer specialists, not general Weibull winners.</b></div><div class='more'>That contrast defines the boundary of the claim instead of hiding it.</div></div>
-      <div class='qa'><div class='q'>What do real-data results prove?</div><div class='a'><b>They show external empirical support, not known-truth validation.</b></div><div class='more'>The full-sample empirical mean is a reference; the population mean remains unknown.</div></div>
-      <div class='qa'><div class='q'>Why is benchmark retention a result?</div><div class='a'><b>Because the design allows the GA to lose.</b></div><div class='more'>If independent evidence does not support replacement, keeping the strongest admissible benchmark is the correct scientific decision.</div></div>
-      <div class='qa'><div class='q'>What does the 11/34 Dirichlet signal mean?</div><div class='a'><b>It means some retained cells deserve another look.</b></div><div class='more'>It does not erase the 23/34 no-pass cells, and it does not replace fixed-weight confirmation.</div></div>
-      <div class='qa'><div class='q'>What is the strongest contribution?</div><div class='a'><b>A reproducible framework that knows when to claim improvement and when to keep the benchmark.</b></div><div class='more'>The contribution combines statistical targeting, interpretable AI search and explicit claim control.</div></div>
-      <div class='qa'><div class='q'>What is the main limitation?</div><div class='a'><b>The strongest known-truth evidence is simulation-based and the confirmed gains are narrow.</b></div><div class='more'>That is why the final claim is conditional rather than universal.</div></div>
-      <div class='qa'><div class='q'>What exact hyperparameters did you use?</div><div class='a'><b>Open Appendix E · Hard numbers.</b></div><div class='more'>It contains the population, operators, mutation, stopping, fitness penalties, HPF budgets and stage-by-stage changes.</div></div>
-      <div class='qa'><div class='q'>Which estimators were learnable in each discovery cycle?</div><div class='a'><b>Open Appendix F · Estimator bases.</b></div><div class='more'>Discovery I used 10 components; Discovery II kept those 10 and added 16 modern robust components.</div></div>
-      <div class='qa'><div class='q'>What would you do next?</div><div class='a'><b>I would test prospective transfer in new domains without changing the frozen specialists.</b></div><div class='more'>I would also investigate the Dirichlet-signal cells and seek independent external replications.</div></div>
-
-      <div class='takeaway'>Q&A RULE: answer the question first. Then open the exact technical tab — A through F — only if the committee asks for more detail.</div>
     </div>"""
 
 
@@ -407,8 +382,8 @@ def render_technical_appendix() -> None:
                       on_click=_set_section, args=(i,))
     st.markdown('</div>', unsafe_allow_html=True)
 
-    docs = (_ga_mechanics, _metrics_gate, _results, _qa, _hard_numbers, _estimator_bases)
-    heights = (1800, 1850, 3000, 2200, 4300, 2600)
+    docs = (_ga_mechanics, _metrics_gate, _results, _hard_numbers, _estimator_bases)
+    heights = (1800, 1850, 3000, 4300, 2600)
     sec = st.session_state.appendix_section
     components.html(docs[sec](), height=heights[sec], scrolling=False)
 
