@@ -79,9 +79,9 @@ PRESENTER_SEQUENCE = (
             ("appendix_A", "GA mechanics"),
             ("appendix_B", "Metrics & gate"),
             ("appendix_C", "Technical results"),
-            ("appendix_D", "Committee Q&A"),
             ("appendix_E", "Hard numbers"),
             ("appendix_F", "Estimator bases"),
+            ("appendix_D", "Committee Q&A"),
         ),
     ),
 )
