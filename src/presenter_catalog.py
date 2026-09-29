@@ -82,6 +82,7 @@ PRESENTER_SEQUENCE = (
             ("appendix_E", "Hard numbers"),
             ("appendix_F", "Estimator bases"),
             ("appendix_D", "Committee Q&A"),
+            ("appendix_QA2", "Q&A2"),
         ),
     ),
 )
