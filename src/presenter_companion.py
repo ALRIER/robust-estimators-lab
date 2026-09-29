@@ -80,10 +80,20 @@ def _cue_html(title: str, cues: list[str], transition: str, layer: str, label: s
             "WIN CONDITION", "TAKE-HOME", "IMPORTANT", "MAIN IDEA",
             "SUMMARY", "5 STEPS", "6 STAGES", "ORDER",
         }
+        if "•" in copy:
+            bullet_parts = [part.strip() for part in copy.split("•") if part.strip()]
+            copy_html = (
+                '<ul class="copy-bullets">'
+                + "".join(f"<li>{html.escape(part)}</li>" for part in bullet_parts)
+                + "</ul>"
+            )
+        else:
+            copy_html = html.escape(copy)
+
         rows.append(
             f'<div class="cue-row{" emphasis" if emphasis else ""}">'
             f'<div class="anchor">{html.escape(anchor)}</div>'
-            f'<div class="copy">{html.escape(copy)}</div>'
+            f'<div class="copy">{copy_html}</div>'
             '</div>'
         )
 
@@ -101,6 +111,9 @@ def _cue_html(title: str, cues: list[str], transition: str, layer: str, label: s
       .cue-row.emphasis{{border-left-color:#f3c743;background:#102a43}}
       .anchor{{font-size:1.08rem;font-weight:900;line-height:1.25;letter-spacing:.075em;color:#f3c743;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}}
       .copy{{font-size:1.83rem;font-weight:750;line-height:1.33;color:#fff}}
+      .copy-bullets{{margin:.05rem 0;padding-left:1.35rem}}
+      .copy-bullets li{{margin:.42rem 0;line-height:1.34}}
+      .copy-bullets li::marker{{color:#72cfff}}
       .transition{{margin-top:1.5rem;padding:1rem 1.2rem;border-top:1px solid #315570;color:#bcd0e2;font-size:1.12rem;line-height:1.4}}
       .transition b{{font-size:.86rem;letter-spacing:.12em;color:#72cfff;margin-right:.65rem}}
       @media(max-width:900px){{
