@@ -383,7 +383,7 @@ def render_technical_appendix() -> None:
     st.markdown('</div>', unsafe_allow_html=True)
 
     docs = (_ga_mechanics, _metrics_gate, _results, _hard_numbers, _estimator_bases)
-    heights = (1800, 1850, 3000, 4300, 2600)
+    heights = (1800, 2800, 4300, 4300, 2600)
     sec = st.session_state.appendix_section
     components.html(docs[sec](), height=heights[sec], scrolling=False)
 
