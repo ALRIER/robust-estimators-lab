@@ -24,8 +24,8 @@ APPENDIX_LABELS = (
     "A · GA mechanics",
     "B · Metrics & gate",
     "C · Results",
-    "D · Hard numbers",
-    "E · Estimator bases",
+    "E · Hard numbers",
+    "F · Estimator bases",
 )
 
 
