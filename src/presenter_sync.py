@@ -79,8 +79,12 @@ def cue_for_presentation(active_section: str) -> str | None:
         )
 
     if active_section == "08 · Technical drill-down":
-        section = max(0, min(int(st.session_state.get("appendix_section", 0)), 5))
-        return f"appendix_{'ABCDEF'[section]}"
+        # Public Technical Drill-down intentionally omits Appendix D (Committee Q&A).
+        # Map the visible public tabs by identity, not by alphabetic position:
+        # 0=A mechanics, 1=B metrics, 2=C results, 3=E hard numbers, 4=F estimator bases.
+        public_appendix_keys = ("appendix_A", "appendix_B", "appendix_C", "appendix_E", "appendix_F")
+        section = max(0, min(int(st.session_state.get("appendix_section", 0)), len(public_appendix_keys) - 1))
+        return public_appendix_keys[section]
 
     return None
 
