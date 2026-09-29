@@ -92,7 +92,6 @@ TECHNICAL_PRESENTER_NOTES = {
         ],
         "Return to the committee question; this tab is only the exact estimator lookup.",
     ),
-,
     "appendix_QA2": (
         "Q&A2 · Extra defense questions",
         "Presenter-only help · final backup card",
