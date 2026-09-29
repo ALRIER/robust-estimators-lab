@@ -11,6 +11,8 @@ from base64 import b64encode
 from pathlib import Path
 import html
 import re
+import json
+import hmac
 
 import streamlit as st
 
@@ -50,6 +52,45 @@ def _jump_to_audience() -> None:
     if index is not None:
         st.session_state.companion_index = index
         st.session_state.companion_seen_revision = revision
+
+
+def _private_committee_qa_note():
+    """Load full private committee Q&A from Streamlit Secrets only."""
+    try:
+        secret = st.secrets.get("private_committee_qa", {})
+    except Exception:
+        secret = {}
+
+    pin = str(secret.get("pin", "")).strip() if secret else ""
+    items_json = str(secret.get("items_json", "")).strip() if secret else ""
+
+    if not pin or not items_json:
+        return None, pin
+
+    try:
+        items = json.loads(items_json)
+    except Exception:
+        return None, pin
+
+    cues = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        question = str(item.get("question", "")).strip()
+        answer = str(item.get("answer", "")).strip()
+        if question and answer:
+            cues.append(f"{question}|{answer}")
+
+    if not cues:
+        return None, pin
+
+    note = (
+        "Private Committee Q&A",
+        "Private Streamlit Secrets",
+        cues,
+        "Return to the committee question. Do not expose this card on the audience screen.",
+    )
+    return note, pin
 
 
 def _cue_parts(raw: str, number: int) -> tuple[str, str]:
@@ -225,7 +266,30 @@ def render_presenter_companion() -> None:
         _live_follow_tick()
 
     layer, key, label = sequence[current]
-    note = notes.get(key)
+
+    if key == "appendix_D":
+        private_note, required_pin = _private_committee_qa_note()
+        if private_note is None:
+            st.error("Private Committee Q&A is not configured in Streamlit Secrets.")
+            st.caption("This content is intentionally excluded from the public repository and audience-facing app.")
+            st.stop()
+
+        if not st.session_state.get("private_qa_unlocked", False):
+            st.markdown("## 🔒 Private Committee Q&A")
+            st.caption("Presenter-only material. Enter the private PIN to unlock this cue card.")
+            entered_pin = st.text_input("Private PIN", type="password", key="private_qa_pin_entry")
+            if st.button("Unlock private Q&A", type="primary", use_container_width=True):
+                if hmac.compare_digest(str(entered_pin), str(required_pin)):
+                    st.session_state.private_qa_unlocked = True
+                    st.rerun()
+                else:
+                    st.error("Incorrect PIN.")
+            st.stop()
+
+        note = private_note
+    else:
+        note = notes.get(key)
+
     if note:
         title, _source, _points, transition = note
         cues = speaking_cues(note)
